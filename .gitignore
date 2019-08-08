@@ -1,0 +1,37 @@
+# TODOs files
+*.todo
+
+# emacs previous version
+*~
+\#*\#
+.\#*
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+*.egg-info/
+
+# Jupyter notebooks
+*.ipynb
+notebooks
+.ipynb_checkpoints
+
+# Pytest cache
+.pytest_cache
+.cache
+
+# Coverage files
+.coverage
+
+# Development/scratch work director
+dev/
+
+# Generated files
+*.so
+*.c
+dist/
+

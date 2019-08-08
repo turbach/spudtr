@@ -1,0 +1,18 @@
+# usage:
+#   conda env create -f environment.yml
+#   conda activate eegfun
+name: pfunky
+channels:
+    - kutaslab
+dependencies:
+    - pytest
+    - pytest-cov
+    - python
+    - Cython
+    - numpy
+    - scipy
+    - pandas
+    - matplotlib
+    - bottleneck
+    - pytables
+    - pyarrow

@@ -1,0 +1,34 @@
+package:
+    name: pfunky
+    version: "0.0.0.dev0"
+
+source:
+    path: ../
+
+build:
+    script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+    build:
+        - python
+        - Cython
+
+    run:
+        - python
+        - pytest
+        - numpy
+        - scipy
+        - pandas
+        - matplotlib
+        - bottleneck
+        - pytables
+        - pyarrow
+
+test:
+    imports:
+        - pfunky
+
+about:
+    home: https://github.com/kutaslab/pfunky
+    license: BSD
+    license_file: LICENSE
