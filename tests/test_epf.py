@@ -4,6 +4,7 @@ import pfunky.epf as epf
 
 TEST_DATA_DIR = Path(__file__).parent / 'data'
 
+
 @pytest.mark.parametrize(
     "_f,h5_group",
     [

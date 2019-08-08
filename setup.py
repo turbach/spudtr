@@ -7,11 +7,7 @@ import numpy as np
 import re
 
 extensions = [
-    Extension(
-        "_pfunky",
-        ["src/_pfunky.pyx"],
-        include_dirs=[np.get_include()],
-    )
+    Extension("_pfunky", ["src/_pfunky.pyx"], include_dirs=[np.get_include()])
 ]
 
 # single source versioning with a bit of error checking
