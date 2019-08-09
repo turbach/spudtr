@@ -1,7 +1,7 @@
 # TODOs files
 *.todo
 
-# emacs previous version
+# emacs temp files
 *~
 \#*\#
 .\#*
@@ -27,11 +27,11 @@ notebooks
 # Coverage files
 .coverage
 
-# Development/scratch work director
+# Development/scratch work directory
 dev/
 
 # Generated files
 *.so
 *.c
 dist/
-
+docs/build/
