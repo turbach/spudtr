@@ -465,4 +465,3 @@ def lowpass_filter_epochs(
         )
     else:
         return filt_epochs_df
-
