@@ -122,6 +122,7 @@ def add_roi_columns(epochs_df, rois):
     }
 
     """
+
     LOGGER.info(f'add_roi_columns {rois}')
     for roi, chans in rois.items():
         df[roi] = df[chans].mean(axis=1)  # average across chans columns
