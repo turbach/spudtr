@@ -3,6 +3,7 @@
 from setuptools import find_packages, setup, Extension
 from Cython.Distutils import build_ext
 from Cython.Build import cythonize
+from pathlib import Path
 import numpy as np
 import re
 
@@ -12,7 +13,7 @@ extensions = [
 
 # single source versioning with a bit of error checking
 def get_ver():
-    with open("__init__.py", "r") as stream:
+    with open(Path(__file__).parent / "pfunky/__init__.py", "r") as stream:
         pf_ver = re.search(
             r".*__version__.*=.*[\"\'](?P<ver_str>\d+\.\d+\.\d+\S*)[\'\"].*",
             stream.read(),

@@ -102,25 +102,23 @@ def get_logger(logger_name):
     return logr
 
 
-def add_roi_columns(df, rois):
-    """add a new "region of interest" column equal to the mean of existing
-eeg columns
+def add_roi_columns(epochs_df, rois):
+    """pool EEG columns into a spatial region of interest
 
     Parameters
     ----------
 
-    df : pd.DataFrame samples in rows, channels in column
+    epochs_df : pd.DataFrame
 
-    rois : dict
-        each key is an new column roi label, each value is a list of
-        column labels to pool
+    rois : dict of key: val pairs
+        `key` is the new column roi label, `val` is a list of
+        column labels to pool.
 
-    Example
-    -------
+    Examples
+    --------
 
     rois = {
-    'cp_roi': ['LMCe', 'RMCe', 'MiCe', 'MiPa', 'LDCe', 'RDCe']
-
+       'cp_roi': ['LMCe', 'RMCe', 'MiCe', 'MiPa', 'LDCe', 'RDCe']
     }
 
     """
