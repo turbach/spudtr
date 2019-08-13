@@ -34,4 +34,4 @@ dev/
 *.so
 *.c
 dist/
-docs/build/
+# docs/build/
