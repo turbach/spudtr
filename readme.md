@@ -1,1 +1,1 @@
-utility functions for epochs dataframes
+Utility functions for epochs dataframes.
