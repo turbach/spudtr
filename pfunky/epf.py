@@ -19,15 +19,15 @@ def _validate_epochs_df(epochs_df, epoch_id=None, time=None):
 
     # LOGGER.info('validating epochs pd.DataFrame')
     if epoch_id is None:
-        epoch_id = 'Epoch_idx'
+        epoch_id = "Epoch_idx"
 
     if time is None:
-        time = 'Time'
+        time = "Time"
 
-    for key, val in {'epoch_id': epoch_id, 'time': time}.items():
+    for key, val in {"epoch_id": epoch_id, "time": time}.items():
         # pdb.set_trace()
         if val not in epochs_df.columns:
-            raise ValueError(f'{key} column {val} not found')
+            raise ValueError(f"{key} column {val} not found")
 
 
 def _hdf_read_epochs(epochs_f, h5_group=None):
@@ -73,7 +73,7 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     # LOGGER.info(msg)
 
     validate_epochs_df(epochs_df)
-    times = epochs_df.index.unique('Time')
+    times = epochs_df.index.unique("Time")
     assert start >= times[0]
     assert stop <= times[-1]
 
@@ -86,7 +86,5 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     # TO DO: for each epoch and each eeg stream, check that the mean amplitude
     # (start, stop) interval is 0 (to within rounding error).
 
-
     validate_epochs_df(epochs_df)
     return epochs_df
-

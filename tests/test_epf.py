@@ -2,7 +2,7 @@ from pathlib import Path
 import pytest
 import pfunky.epf as epf
 
-TEST_DATA_DIR = Path(__file__).parent / 'data'
+TEST_DATA_DIR = Path(__file__).parent / "data"
 
 
 @pytest.mark.parametrize(

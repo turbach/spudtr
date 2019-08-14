@@ -29,7 +29,7 @@ def get_ver():
         """
         raise ValueError(msg)
     else:
-        return pf_ver['ver_str']
+        return pf_ver["ver_str"]
 
 
 setup(
