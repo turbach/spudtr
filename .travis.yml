@@ -17,4 +17,20 @@ script:
     - pytest --cov=fitgrid
 after_success:
     - pip install codecov && codecov
-    
+before_deploy:
+    - pip install sphinx sphinx_rtd_theme jupyter nbsphinx nbconvert!=5.4
+    - conda install -c conda-forge pandoc
+    - pip install -e . # install fitgrid locally so it can be imported in the notebook
+    - conda list
+    - cd docs
+    - make html
+    - touch build/html/.nojekyll
+deploy:
+    provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    keep-history: true
+    on:
+        branch: master
+    target_branch: gh-pages # that's the default anyway, just to be explicit
+local_dir: docs/build/html
