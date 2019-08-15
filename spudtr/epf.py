@@ -1,7 +1,4 @@
-"""utilities for epoched EEG data in pandas.DataFrame with columns:
-`epoch_idx`, `time`, `ch_01`, `ch_02`, ..., `ch_J`"
-
-"""
+"""utilities for epoched EEG data in a pandas.DataFrame """
 import numpy as np
 import pandas as pd
 import bottleneck as bn
