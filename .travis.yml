@@ -34,4 +34,4 @@ deploy:
     on:
         branch: master
     target_branch: gh-pages # that's the default anyway, just to be explicit
-local_dir: docs/build/html
+    local_dir: docs/build/html
