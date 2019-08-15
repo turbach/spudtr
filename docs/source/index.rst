@@ -4,7 +4,7 @@
 spudtr
 ======
 
-Utility functions and data transforms for epoch dataframes
+Some pandas utilities and data transforms
 
 .. toctree::
    :maxdepth: 2
