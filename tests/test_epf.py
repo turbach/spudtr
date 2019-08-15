@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-import pfunky.epf as epf
+import spudtr.epf as epf
 
 TEST_DATA_DIR = Path(__file__).parent / "data"
 

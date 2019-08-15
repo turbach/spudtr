@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pfunky documentation build configuration file, created by
+# spudtr documentation build configuration file, created by
 # sphinx-quickstart on Fri Aug  9 09:44:21 2019.
 #
 # This file is execfile()d with the current directory set to its
@@ -56,7 +56,7 @@ source_suffix = ".rst"
 master_doc = "Index"
 
 # General information about the project.
-project = "pfunky"
+project = "spudtr"
 copyright = "2019, Thomas P. Urbach"
 author = "Thomas P. Urbach"
 
@@ -111,7 +111,7 @@ html_static_path = ["_static"]
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "pfunkydoc"
+htmlhelp_basename = "spudtrdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -137,8 +137,8 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "pfunky.tex",
-        "pfunky Documentation",
+        "spudtr.tex",
+        "spudtr Documentation",
         "Thomas P. Urbach",
         "manual",
     )
@@ -149,7 +149,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "pfunky", "pfunky Documentation", [author], 1)]
+man_pages = [(master_doc, "spudtr", "spudtr Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -160,10 +160,10 @@ man_pages = [(master_doc, "pfunky", "pfunky Documentation", [author], 1)]
 texinfo_documents = [
     (
         master_doc,
-        "pfunky",
-        "pfunky Documentation",
+        "spudtr",
+        "spudtr Documentation",
         author,
-        "pfunky",
+        "spudtr",
         "One line description of project.",
         "Miscellaneous",
     )

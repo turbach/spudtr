@@ -7,7 +7,7 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
     - conda env create -f conda/environment.yml
-    - source activate pfunky
+    - source activate spudtr
     - conda list
     - lscpu
     - python -c 'import numpy; numpy.show_config()'

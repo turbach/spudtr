@@ -1,7 +1,7 @@
-pfunky
+spudtr
 ======
 
 .. toctree::
    :maxdepth: 4
 
-   pfunky
+   spudtr

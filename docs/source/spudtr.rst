@@ -1,13 +1,13 @@
-pfunky package
+spudtr package
 ==============
 
 Submodules
 ----------
 
-pfunky.epf module
+spudtr.epf module
 -----------------
 
-.. automodule:: pfunky.epf
+.. automodule:: spudtr.epf
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ pfunky.epf module
 Module contents
 ---------------
 
-.. automodule:: pfunky
+.. automodule:: spudtr
     :members:
     :undoc-members:
     :show-inheritance:

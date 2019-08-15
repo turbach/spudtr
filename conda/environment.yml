@@ -1,7 +1,7 @@
 # usage:
 #   conda env create -f environment.yml
-#   conda activate eegfun
-name: pfunky
+#   conda activate spudtr
+name: spudtr
 channels:
     - kutaslab
 dependencies:

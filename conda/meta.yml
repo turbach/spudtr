@@ -1,5 +1,5 @@
 package:
-    name: pfunky
+    name: spudtr
     version: "0.0.0.dev0"
 
 source:
@@ -26,9 +26,9 @@ requirements:
 
 test:
     imports:
-        - pfunky
+        - spudtr
 
 about:
-    home: https://github.com/kutaslab/pfunky
+    home: https://github.com/kutaslab/spudtr
     license: BSD
     license_file: LICENSE

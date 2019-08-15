@@ -8,12 +8,12 @@ import numpy as np
 import re
 
 extensions = [
-    Extension("_pfunky", ["src/_pfunky.pyx"], include_dirs=[np.get_include()])
+    Extension("_spudtr", ["src/_spudtr.pyx"], include_dirs=[np.get_include()])
 ]
 
 # single source versioning with a bit of error checking
 def get_ver():
-    with open(Path(__file__).parent / "pfunky/__init__.py", "r") as stream:
+    with open(Path(__file__).parent / "spudtr/__init__.py", "r") as stream:
         pf_ver = re.search(
             r".*__version__.*=.*[\"\'](?P<ver_str>\d+\.\d+\.\d+\S*)[\'\"].*",
             stream.read(),
@@ -21,7 +21,7 @@ def get_ver():
 
     if pf_ver is None:
         msg = f"""
-        pfunky __init__.py must have an X.Y.Z semantic version, e.g.,
+        spudtr __init__.py must have an X.Y.Z semantic version, e.g.,
 
         __version__ = '0.0.0'
         __version__ = '0.0.0.dev0.0'
@@ -33,7 +33,7 @@ def get_ver():
 
 
 setup(
-    name="pfunky",
+    name="spudtr",
     version=get_ver(),
     description="pandas dataframe function transforms",
     author="Thomas P. Urbach",
