@@ -51,7 +51,7 @@ def _hdf_read_epochs(epochs_f, h5_group=None):
 
 
 def center_eeg(epochs_df, eeg_streams, start, stop):
-    """center (a.k.a. "baseline") EEG amplitude on mean amplitude from start to stop
+    """center (a.k.a. "baseline") EEG amplitude on mean from start to stop
 
     Parameters
     ----------
