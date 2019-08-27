@@ -71,6 +71,7 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
 
     validate_epochs_df(epochs_df)
     times = epochs_df.index.unique("Time")
+  #  times = epochs_df.Time.unique()  #Qin added
     assert start >= times[0]
     assert stop <= times[-1]
 
@@ -83,5 +84,7 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     # TO DO: for each epoch and each eeg stream, check that the mean amplitude
     # (start, stop) interval is 0 (to within rounding error).
 
-    validate_epochs_df(epochs_df)
+    # check with numpy is close epochs_df[eeg_streams].query(qstr)
+
+    _validate_epochs_df(epochs_df)
     return epochs_df

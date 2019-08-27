@@ -2,8 +2,9 @@ from pathlib import Path
 import pytest
 import spudtr.epf as epf
 
-TEST_DATA_DIR = Path(__file__).parent / "data"
+import pdb
 
+TEST_DATA_DIR = Path(__file__).parent / "data"
 
 @pytest.mark.parametrize(
     "_f,h5_group",
@@ -15,3 +16,18 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
 )
 def test_hdf_read_epochs(_f, h5_group):
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group)
+
+
+def test_center_on():
+
+    # fake some data
+    # check center_on function with fake data
+    import numpy as np
+    import warnings
+    randval = np.random.random()
+    if randval > 0.5:
+        pdb.set_trace()
+        raise ValueError(f'randval > 0.5 {randval}')
+    else:
+        warnings.warn(f'randval <= 0.5 {randval}')
+
