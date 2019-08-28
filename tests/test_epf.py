@@ -14,10 +14,12 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
         ["sub000wr.epochs.h5", "wr"],
     ],
 )
+pdb.set_trace()
 def test_hdf_read_epochs(_f, h5_group):
+    pdb.set_trace()
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group)
 
-
+"""
 def test_center_on():
 
     # fake some data
@@ -30,4 +32,5 @@ def test_center_on():
         raise ValueError(f'randval > 0.5 {randval}')
     else:
         warnings.warn(f'randval <= 0.5 {randval}')
+"""
 
