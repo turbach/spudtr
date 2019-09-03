@@ -46,14 +46,20 @@ def _hdf_read_epochs(epochs_f, h5_group):
     """
 
     if h5_group is None:
-       raise ValueError('You have to give h5_group key')
+        raise ValueError('You have to give h5_group key')
     else:
         epochs_df = pd.read_hdf(epochs_f, h5_group)
 
     _validate_epochs_df(epochs_df, epoch_id=None, time=None)
     return epochs_df
 
-def _epochs_QC(epochs_df, eeg_streams):
+
+def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
+    if epoch_id is None:
+        epoch_id = "Epoch_idx"
+
+    if time is None:
+        time = "Time"
 
     # epochs_df must be a Pandas DataFrame.
     if not isinstance(epochs_df, pd.DataFrame):
@@ -62,7 +68,7 @@ def _epochs_QC(epochs_df, eeg_streams):
     # eeg_streams must be a list of strings
     if not isinstance(eeg_streams, list) or not all(
             isinstance(item, str) for item in eeg_streams
-        ):
+    ):
         raise ValueError('eeg_streams should be a list of strings.')
 
     # all channels must be present as epochs_df columns
@@ -84,8 +90,8 @@ def _epochs_QC(epochs_df, eeg_streams):
 
     # check values of epoch_id in every time group are the same, and unique in each time group
     # make our own copy so we are immune to modification to original table
-    epoch_id = "Epoch_idx"
-    time = "Time"
+    # epoch_id = "Epoch_idx"
+    # time = "Time"
     table = (
             epochs_df.copy().reset_index().set_index(epoch_id).sort_index()
         )
@@ -113,7 +119,7 @@ def _epochs_QC(epochs_df, eeg_streams):
         dupes = prev_group.index.filter(lambda x: len(x) > 1)
         raise ValueError(
            f'Duplicate values of epoch_id in each time group not allowed:\n{dupes}'
-           )
+        )
 
 
 def center_eeg(epochs_df, eeg_streams, start, stop):
@@ -138,15 +144,15 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     # _validate_epochs_df(epochs_df)
     _epochs_QC(epochs_df, eeg_streams)
 
-  #  times = epochs_df.index.unique("Time")
+    #  times = epochs_df.index.unique("Time")
 
     times = epochs_df.Time.unique()  # Qin added
-    assert start >= times[0]
-    assert stop <= times[-1]
     if not start >= times[0]:
         start = times[0]
     if not stop <= times[-1]:
         stop = times[-1]
+    assert start >= times[0]
+    assert stop <= times[-1]
 
     # baseline subtraction ... compact expression, numpy is faster
     qstr = f"{start} <= Time and Time < {stop}"
@@ -171,11 +177,10 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     a = after_mean.values
     b = np.zeros(after_mean.shape)
 
-    #np.isclose(a,b)   #all false
-    #np.isclose(a,b,atol=1e-05)  #most true, but some false
+    # np.isclose(a,b)   #all false
+    # np.isclose(a,b,atol=1e-05)  #most true, but some false
 
     # The absolute tolerance parameter: atol=1e-04
-
     TorF = np.isclose(a,b,atol=1e-04)
     if (sum(sum(TorF)) == TorF.shape[0]*TorF.shape[1]):
         print('center_on is correct')
@@ -186,4 +191,3 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
 
     _validate_epochs_df(epochs_df_tmp)
     return epochs_df_tmp
-
