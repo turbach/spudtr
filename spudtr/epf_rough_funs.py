@@ -31,11 +31,11 @@ def get_logger(logger_name):
     log_sh = logging.StreamHandler()  # stream=sys.stdout)
     log_sh.setLevel(logging.DEBUG)
 
-    log_fh = logging.FileHandler(logger_name + '.log', mode='w')
+    log_fh = logging.FileHandler(logger_name + ".log", mode="w")
     log_fh.setLevel(logging.DEBUG)
 
     log_formatter = logging.Formatter(
-        "{name}:{levelname}:{message}", style='{'
+        "{name}:{levelname}:{message}", style="{"
     )
     log_fh.setFormatter(log_formatter)
     log_sh.setFormatter(log_formatter)
@@ -66,7 +66,7 @@ def add_roi_columns(epochs_df, rois):
 
     """
 
-    LOGGER.info(f'add_roi_columns {rois}')
+    LOGGER.info(f"add_roi_columns {rois}")
     for roi, chans in rois.items():
         df[roi] = df[chans].mean(axis=1)  # average across chans columns
         # LOGGER.info('\nNew ROI head\n{0}'.format(df[chans + [roi]].head()))
@@ -89,9 +89,9 @@ def tag_peak_to_peak_excursions(epochs_df, eeg_streams, crit_ptp):
     )
 
     # scan each epoch for peak-to-peak excursions
-    for idx, epoch in epochs_df[eeg_streams].groupby('Epoch_idx'):
+    for idx, epoch in epochs_df[eeg_streams].groupby("Epoch_idx"):
         ptps = epoch.to_numpy().ptp(axis=0).T  # pandas 24 T to keep it wide
-        mask = (ptps > crit_ptp).astype('uint8')  # 0's and 1's each channel
+        mask = (ptps > crit_ptp).astype("uint8")  # 0's and 1's each channel
         ptp_codes.append((idx, encode_eeg_fail(mask)))
 
     # before
@@ -100,9 +100,9 @@ def tag_peak_to_peak_excursions(epochs_df, eeg_streams, crit_ptp):
     # propagate to all time points in the epoch
     ptp_excursion = np.repeat(ptp_codes, n_samps, axis=0)
     assert all(
-        epochs_df.index.get_level_values('Epoch_idx') == ptp_excursion[:, 0]
+        epochs_df.index.get_level_values("Epoch_idx") == ptp_excursion[:, 0]
     )
-    epochs_df['ptp_excursion'] = ptp_excursion[:, 1]
+    epochs_df["ptp_excursion"] = ptp_excursion[:, 1]
 
     # after
     assert n_samps, n_epochs == check_epochs_shape(epochs_df)
@@ -133,7 +133,7 @@ def tag_flat_eeg(epochs_df, eeg_streams, blocking_min, blocking_n_samps):
     )
 
     blocking_codes = []
-    for idx, epoch in epochs_df[eeg_streams].groupby('Epoch_idx'):
+    for idx, epoch in epochs_df[eeg_streams].groupby("Epoch_idx"):
 
         n_samps, n_epochs = check_epochs_shape(epochs_df)
 
@@ -144,17 +144,17 @@ def tag_flat_eeg(epochs_df, eeg_streams, blocking_min, blocking_n_samps):
 
         # minimum peak-to-peak of any window in the epoch
         win_ptp = np.nanmin(win_maxs - win_mins, axis=0)
-        blck_mask = (win_ptp < blocking_min).astype('uint8')
+        blck_mask = (win_ptp < blocking_min).astype("uint8")
         blocking_codes.append((idx, encode_eeg_fail(blck_mask)))
 
     blocked = np.repeat(blocking_codes, n_samps, axis=0)
-    assert all(epochs_df.index.get_level_values('Epoch_idx') == blocked[:, 0])
+    assert all(epochs_df.index.get_level_values("Epoch_idx") == blocked[:, 0])
 
-    epochs_df['blocked'] = blocked[:, 1]
+    epochs_df["blocked"] = blocked[:, 1]
     assert n_samps, n_epochs == check_epochs_shape(epochs_df)
 
     blocked_epoch_ids = epochs_df.query("blocked != 0").index.unique(
-        'Epoch_idx'
+        "Epoch_idx"
     )
 
     LOGGER.info(
@@ -168,16 +168,16 @@ def tag_garv_artifacts(epochs_df):
 
     # unpack and propagate garv codes into columns
     n_samps, n_epochs = check_epochs_shape(epochs_df)
-    epochs_df['garv_blink'] = np.repeat(
-        epochs_df.query("Time==0")['garv_reject']
+    epochs_df["garv_blink"] = np.repeat(
+        epochs_df.query("Time==0")["garv_reject"]
         .apply(lambda x: 1 if x >= 48 else 0)
         .to_numpy(),  # pandas 24
         n_samps,
     )
 
     # propagate and rename garv rejects
-    epochs_df['garv_screen'] = np.repeat(
-        epochs_df.query("Time==0")['garv_reject']
+    epochs_df["garv_screen"] = np.repeat(
+        epochs_df.query("Time==0")["garv_reject"]
         .apply(lambda x: "accept" if x == 0 else "reject")
         .to_numpy(),
         n_samps,
@@ -219,11 +219,11 @@ def downsample_epochs(epochs_df, t0, t1, by):
     # careful with index slice (start, stop, step) in pandas
     # start, stop are ms ROW LABELS, step is a ROW INDEX *COUNTER* not ms
     assert epochs_df.index.names == [
-        'Epoch_idx',
-        'expt',
-        'sub_id',
-        'item_id',
-        'Time',
+        "Epoch_idx",
+        "expt",
+        "sub_id",
+        "item_id",
+        "Time",
     ]
 
     time_slicer = pd.IndexSlice[:, :, :, :, slice(t0, t1, by)]
@@ -247,10 +247,10 @@ def drop_data_rejects(epochs_df, reject_column):
     good_epochs_df.sort_index(inplace=True)
 
     # sanity check the result
-    for epoch_idx, epoch_data in good_epochs_df.groupby('Epoch_idx'):
+    for epoch_idx, epoch_data in good_epochs_df.groupby("Epoch_idx"):
         n_goods = len(np.where(epoch_data[reject_column] == 0)[0])
         if n_goods != len(epoch_data):
-            raise Exception('uncaught exception')
+            raise Exception("uncaught exception")
 
     return good_epochs_df
 
@@ -266,7 +266,6 @@ def bimastoid_reference(epochs_df, eeg_streams, a2):
         br_epochs_df[col] = br_epochs_df[col] - half_A2
 
     return br_epochs_df
-
 
 
 def lowpass_filter_epochs(
@@ -314,7 +313,7 @@ def lowpass_filter_epochs(
         N, beta = kaiserord(ripple_db, width)
 
         # firwin with a Kaiser window to create a lowpass FIR filter.
-        taps = firwin(N, cutoff_hz / nyq_rate, window=('kaiser', beta))
+        taps = firwin(N, cutoff_hz / nyq_rate, window=("kaiser", beta))
 
         # frequency response ... useful for reporting
         w, h = freqz(taps)
@@ -367,7 +366,7 @@ def lowpass_filter_epochs(
     # optionally drop corrupted data
     if trim_edges:
         half_width = int(np.floor(N / 2))
-        times = filt_epochs_df.index.unique('Time')
+        times = filt_epochs_df.index.unique("Time")
         start_good = times[
             half_width
         ]  # == first good sample b.c. 0-base index
