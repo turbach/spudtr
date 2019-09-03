@@ -47,7 +47,7 @@ def _generate(
 
     total = n_epochs * n_samples * n_categories
 
-    categories = np.array([f'cat{i}' for i in range(n_categories)])
+    categories = np.array([f"cat{i}" for i in range(n_categories)])
 
     indices = {
         epoch_id: np.repeat(np.arange(n_epochs * n_categories), n_samples),
@@ -55,11 +55,11 @@ def _generate(
     }
 
     predictors = {
-        'categorical': np.tile(np.repeat(categories, n_samples), n_epochs),
-        'continuous': np.random.uniform(size=total),
+        "categorical": np.tile(np.repeat(categories, n_samples), n_epochs),
+        "continuous": np.random.uniform(size=total),
     }
 
-    channels = [f'channel{i}' for i in range(n_channels)]
+    channels = [f"channel{i}" for i in range(n_channels)]
     eeg = {
         channel: np.random.normal(loc=0, scale=30, size=total)
         for channel in channels

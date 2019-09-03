@@ -8,6 +8,7 @@ import pdb
 
 TEST_DATA_DIR = Path(__file__).parent / "data"
 
+
 @pytest.mark.parametrize(
     "_f,h5_group",
     [
@@ -16,9 +17,9 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
         ["sub000wr.epochs.h5", "wr"],
     ],
 )
-
 def test_hdf_read_epochs(_f, h5_group):
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group)
+
 
 # test one file
 def test_epochs_QC():
@@ -27,11 +28,11 @@ def test_epochs_QC():
         n_samples=100,
         n_categories=2,
         n_channels=32,
-        time='Time',
-        epoch_id='Epoch_idx',
+        time="Time",
+        epoch_id="Epoch_idx",
     )
-    
-    eeg_streams = ['channel0', 'channel1', 'channel2', 'channel3', 'channel4']
+
+    eeg_streams = ["channel0", "channel1", "channel2", "channel3", "channel4"]
     epf._epochs_QC(epochs_df, eeg_streams)
 
 
@@ -41,11 +42,11 @@ def test_center_on():
         n_samples=100,
         n_categories=2,
         n_channels=32,
-        time='Time',
-        epoch_id='Epoch_idx',
+        time="Time",
+        epoch_id="Epoch_idx",
     )
 
-    eeg_streams = ['channel0', 'channel1', 'channel2', 'channel3', 'channel4']
+    eeg_streams = ["channel0", "channel1", "channel2", "channel3", "channel4"]
     start, stop = 30, 60
     epochs_df_centeron = epf.center_eeg(epochs_df, eeg_streams, start, stop)
 
@@ -65,9 +66,10 @@ def test_center_on():
 
     # The absolute tolerance parameter: atol=1e-04
     # TorF = np.isclose(a,b,atol=1e-04)
-    TorF = np.isclose(a,b)
-    assert sum(sum(TorF)) == TorF.shape[0]*TorF.shape[1]
-       
+    TorF = np.isclose(a, b)
+    assert sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]
+
+
 """
     # fake some data
     # check center_on function with fake data
@@ -80,4 +82,3 @@ def test_center_on():
     else:
         warnings.warn(f'randval <= 0.5 {randval}')
 """
-

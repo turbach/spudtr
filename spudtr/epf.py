@@ -46,7 +46,7 @@ def _hdf_read_epochs(epochs_f, h5_group):
     """
 
     if h5_group is None:
-        raise ValueError('You have to give h5_group key')
+        raise ValueError("You have to give h5_group key")
     else:
         epochs_df = pd.read_hdf(epochs_f, h5_group)
 
@@ -63,20 +63,20 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
 
     # epochs_df must be a Pandas DataFrame.
     if not isinstance(epochs_df, pd.DataFrame):
-            raise ValueError('epochs_df must be a Pandas DataFrame.')
+        raise ValueError("epochs_df must be a Pandas DataFrame.")
 
     # eeg_streams must be a list of strings
     if not isinstance(eeg_streams, list) or not all(
-            isinstance(item, str) for item in eeg_streams
+        isinstance(item, str) for item in eeg_streams
     ):
-        raise ValueError('eeg_streams should be a list of strings.')
+        raise ValueError("eeg_streams should be a list of strings.")
 
     # all channels must be present as epochs_df columns
     missing_channels = set(eeg_streams) - set(epochs_df.columns)
     if missing_channels:
         raise ValueError(
-           'eeg_streams should all be present in the epochs dataframe, '
-           f'the following are missing: {missing_channels}'
+            "eeg_streams should all be present in the epochs dataframe, "
+            f"the following are missing: {missing_channels}"
         )
 
     # epoch_id and time must be the columns in the epochs_df
@@ -86,19 +86,16 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
     names = list(epochs_df.index.names) + list(epochs_df.columns)
     deduped_names = list(OrderedDict.fromkeys(names))
     if deduped_names != names:
-        raise ValueError('Duplicate column names not allowed.')
+        raise ValueError("Duplicate column names not allowed.")
 
     # check values of epoch_id in every time group are the same, and unique in each time group
     # make our own copy so we are immune to modification to original table
     # epoch_id = "Epoch_idx"
     # time = "Time"
-    table = (
-            epochs_df.copy().reset_index().set_index(epoch_id).sort_index()
-        )
+    table = epochs_df.copy().reset_index().set_index(epoch_id).sort_index()
     assert table.index.names == [epoch_id]
 
     snapshots = table.groupby([time])
-
 
     # check that snapshots across epochs have equal index by transitivity
     prev_group = None
@@ -106,19 +103,19 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
         if prev_group is not None:
             if not prev_group.index.equals(cur_group.index):
                 raise ValueError(
-                   f'Snapshot {idx} differs from '
-                   f'previous snapshot in {epoch_id} index:\n'
-                   f'Current snapshot\'s indices:\n'
-                   f'{cur_group.index}\n'
-                   f'Previous snapshot\'s indices:\n'
-                   f'{prev_group.index}'
+                    f"Snapshot {idx} differs from "
+                    f"previous snapshot in {epoch_id} index:\n"
+                    f"Current snapshot's indices:\n"
+                    f"{cur_group.index}\n"
+                    f"Previous snapshot's indices:\n"
+                    f"{prev_group.index}"
                 )
         prev_group = cur_group
 
     if not prev_group.index.is_unique:
         dupes = prev_group.index.filter(lambda x: len(x) > 1)
         raise ValueError(
-           f'Duplicate values of epoch_id in each time group not allowed:\n{dupes}'
+            f"Duplicate values of epoch_id in each time group not allowed:\n{dupes}"
         )
 
 
@@ -181,13 +178,11 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     # np.isclose(a,b,atol=1e-05)  #most true, but some false
 
     # The absolute tolerance parameter: atol=1e-04
-    TorF = np.isclose(a,b,atol=1e-04)
-    if (sum(sum(TorF)) == TorF.shape[0]*TorF.shape[1]):
-        print('center_on is correct')
+    TorF = np.isclose(a, b, atol=1e-04)
+    if sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]:
+        print("center_on is correct")
     else:
-        raise ValueError(
-            f'center_on is not successful with atol=1e-04'
-        )
+        raise ValueError(f"center_on is not successful with atol=1e-04")
 
     _validate_epochs_df(epochs_df_tmp)
     return epochs_df_tmp
