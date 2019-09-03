@@ -23,17 +23,31 @@ def test_hdf_read_epochs(_f, h5_group):
 
 # test one file
 def test_epochs_QC():
-    _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
-    epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
-    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
+    epochs_df, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+
+    eeg_streams = ["channel0", "channel1", "channel2", "channel3", "channel4"]
     epf._epochs_QC(epochs_df, eeg_streams)
 
 
 def test_center_on():
-    _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
-    epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
-    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    start, stop = -50, 300
+    epochs_df, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+
+    eeg_streams = ["channel0", "channel1", "channel2", "channel3", "channel4"]
+    start, stop = 30, 60
     epochs_df_centeron = epf.center_eeg(epochs_df, eeg_streams, start, stop)
 
     # after center on, the mean inside interval should be zero
@@ -51,7 +65,8 @@ def test_center_on():
     # np.isclose(a,b,atol=1e-05)  #most true, but some false
 
     # The absolute tolerance parameter: atol=1e-04
-    TorF = np.isclose(a, b, atol=1e-04)
+    # TorF = np.isclose(a,b,atol=1e-04)
+    TorF = np.isclose(a, b)
     assert sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]
 
 
