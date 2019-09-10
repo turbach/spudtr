@@ -15,6 +15,11 @@
 # center on entire prestimulus interval ... don't include 0
 # BASELINE_START, BASELINE_STOP = DOWNSAMPLED_EPOCH_START, -1
 
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import logging as LOGGER
+
 
 def get_logger(logger_name):
     """ build a standard output and file logger
@@ -68,10 +73,10 @@ def add_roi_columns(epochs_df, rois):
 
     LOGGER.info(f'add_roi_columns {rois}')
     for roi, chans in rois.items():
-        df[roi] = df[chans].mean(axis=1)  # average across chans columns
+        epochs_df[roi] = epochs_df[chans].mean(axis=1)  # average across chans columns
         # LOGGER.info('\nNew ROI head\n{0}'.format(df[chans + [roi]].head()))
         # LOGGER.info('\nNew ROI tail\n{0}'.format(df[chans + [roi]].tail()))
-    return df
+    return epochs_df
 
 
 # ------------------------------------------------------------
@@ -79,7 +84,7 @@ def add_roi_columns(epochs_df, rois):
 # ------------------------------------------------------------
 def tag_peak_to_peak_excursions(epochs_df, eeg_streams, crit_ptp):
 
-    # CRIT_PTP = 150.0
+    # crit_ptp = 150.0
     ptp_codes = []
 
     LOGGER.info(
@@ -89,8 +94,9 @@ def tag_peak_to_peak_excursions(epochs_df, eeg_streams, crit_ptp):
     )
 
     # scan each epoch for peak-to-peak excursions
-    for idx, epoch in epochs_df[eeg_streams].groupby('Epoch_idx'):
-        ptps = epoch.to_numpy().ptp(axis=0).T  # pandas 24 T to keep it wide
+    # for idx, epoch in epochs_df[eeg_streams].groupby('Epoch_idx'):
+    for idx, epoch in epochs_df.groupby('Epoch_idx'):
+        ptps = epoch[eeg_streams].to_numpy().ptp(axis=0).T  # pandas 24 T to keep it wide
         mask = (ptps > crit_ptp).astype('uint8')  # 0's and 1's each channel
         ptp_codes.append((idx, encode_eeg_fail(mask)))
 
@@ -377,3 +383,7 @@ def lowpass_filter_epochs(
         )
     else:
         return filt_epochs_df
+
+def check_epochs_shape(epochs_df):
+    n_samps, n_epochs = epochs_df.shape
+    return n_samps, n_epochs

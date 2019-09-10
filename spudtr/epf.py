@@ -117,6 +117,7 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
         raise ValueError(
             f"Duplicate values of epoch_id in each time group not allowed:\n{dupes}"
         )
+    return epochs_df
 
 
 def center_eeg(epochs_df, eeg_streams, start, stop):
