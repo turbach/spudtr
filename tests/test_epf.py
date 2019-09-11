@@ -21,7 +21,7 @@ def test_hdf_read_epochs(_f, h5_group):
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group)
 
 
-# test one file
+# test by using one file
 def test_epochs_QC():
     _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
@@ -53,6 +53,22 @@ def test_center_on():
     # The absolute tolerance parameter: atol=1e-04
     TorF = np.isclose(a, b, atol=1e-04)
     assert sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]
+
+
+def test_drop_bad_epochs():
+    _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
+    epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
+    epoch_id = "Epoch_idx"
+    time = "Time"
+    art_col = "log_flags"
+
+    epochs_df_good = epf.drop_bad_epochs(epochs_df, art_col, epoch_id, time)
+
+    # get the group of time == 0
+    group = epochs_df.groupby([time]).get_group(0)
+    good_idx = list(group[epoch_id][group[art_col] == 0])
+    epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
+    assert epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
 
 
 """

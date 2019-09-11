@@ -187,3 +187,27 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
 
     _validate_epochs_df(epochs_df_tmp)
     return epochs_df_tmp
+
+
+def drop_bad_epochs(epochs_df, art_col=None, epoch_id=None, time=None):
+    # The function drop epoch_id if art_col is non-zero at time == 0
+    if epoch_id is None:
+        epoch_id = "Epoch_idx"
+
+    if time is None:
+        time = "Time"
+
+    if art_col is None:
+        art_col = "log_flags"
+
+    # get the group of time == 0
+    group = epochs_df.groupby([time]).get_group(0)
+
+    good_idx = list(group[epoch_id][group[art_col] == 0])
+
+    epochs_df_good = epochs_df[epochs_df[epoch_id].isin(good_idx)]
+    # epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
+
+    _validate_epochs_df(epochs_df_good)
+    return epochs_df_good
+
