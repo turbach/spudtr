@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import bottleneck as bn
 from scipy.signal import kaiserord, lfilter, firwin, freqz
-from collections import defaultdict, OrderedDict
 
 
 def _validate_epochs_df(epochs_df, epoch_id=None, time=None):
@@ -84,8 +83,7 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
 
     # check no duplicate column names in index and regular columns
     names = list(epochs_df.index.names) + list(epochs_df.columns)
-    deduped_names = list(OrderedDict.fromkeys(names))
-    if deduped_names != names:
+    if len(names) != len(set(names)):
         raise ValueError("Duplicate column names not allowed.")
 
     # check values of epoch_id in every time group are the same, and unique in each time group
