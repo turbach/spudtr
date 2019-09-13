@@ -86,10 +86,10 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
     if len(names) != len(set(names)):
         raise ValueError("Duplicate column names not allowed.")
 
-    # check values of epoch_id in every time group are the same, and unique in each time group
-    # make our own copy so we are immune to modification to original table
-    # epoch_id = "Epoch_idx"
-    # time = "Time"
+    # check values of epoch_id in every time group are the same, and
+    # unique in each time group make our own copy so we are immune to
+    # modification to original table epoch_id = "Epoch_idx" time =
+    # "Time"
     table = epochs_df.copy().reset_index().set_index(epoch_id).sort_index()
     assert table.index.names == [epoch_id]
 
@@ -113,7 +113,8 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
     if not prev_group.index.is_unique:
         dupes = prev_group.index.filter(lambda x: len(x) > 1)
         raise ValueError(
-            f"Duplicate values of epoch_id in each time group not allowed:\n{dupes}"
+            f"Duplicate values of epoch_id in each"
+            f"time group not allowed:\n{dupes}"
         )
     return epochs_df
 
@@ -203,9 +204,8 @@ def drop_bad_epochs(epochs_df, art_col=None, epoch_id=None, time=None):
 
     good_idx = list(group[epoch_id][group[art_col] == 0])
 
-    epochs_df_good = epochs_df[epochs_df[epoch_id].isin(good_idx)]
+    epochs_df_good = epochs_df[epochs_df[epoch_id].isin(good_idx)].copy()
     # epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
 
     _validate_epochs_df(epochs_df_good)
     return epochs_df_good
-

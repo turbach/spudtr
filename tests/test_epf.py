@@ -63,23 +63,12 @@ def test_drop_bad_epochs():
     art_col = "log_flags"
 
     epochs_df_good = epf.drop_bad_epochs(epochs_df, art_col, epoch_id, time)
+    epochs_df_good['new_col'] = 0
 
     # get the group of time == 0
     group = epochs_df.groupby([time]).get_group(0)
     good_idx = list(group[epoch_id][group[art_col] == 0])
     epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
-    assert epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
-
-
-"""
-    # fake some data
-    # check center_on function with fake data
-    import numpy as np
-    import warnings
-    randval = np.random.random()
-    if randval > 0.5:
-        pdb.set_trace()
-        raise ValueError(f'randval > 0.5 {randval}')
-    else:
-        warnings.warn(f'randval <= 0.5 {randval}')
-"""
+    assert (
+        epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
+    )
