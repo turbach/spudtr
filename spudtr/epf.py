@@ -189,7 +189,30 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
 
 
 def drop_bad_epochs(epochs_df, art_col=None, epoch_id=None, time=None):
-    # The function drop epoch_id if art_col is non-zero at time == 0
+    """Scan epochs data frame and drop epochs coded for exclusion
+
+    Drops epochs with non-zero codes on `art_col` at time stamp == 0
+
+    Parameters
+    ----------
+    epochs_df : pd.DataFrame
+        must have Epoch_idx and Time row index names
+
+    art_col : str
+        column name with QC codes
+
+    epoch_id : str
+        column name for epoch indexes
+
+    time: str
+        column name for time stamps
+
+    Returns
+    -------
+    good_epochs_df : pd.DataFrame
+       subset of the epochs with code 0 on `art_col` at timestamp == 0
+
+    """
     if epoch_id is None:
         epoch_id = "Epoch_idx"
 
@@ -209,3 +232,72 @@ def drop_bad_epochs(epochs_df, art_col=None, epoch_id=None, time=None):
 
     _validate_epochs_df(epochs_df_good)
     return epochs_df_good
+
+
+def re_reference(epochs_df, eeg_streams, rs, ref_type):
+    """math-linked mastoid reference
+
+    Rereference bimastoid: transform specified data channels from A1 common reference to 
+    average of A1 and A2 via ChanX - 0.5*A2
+    Rereference new common: transform specified data channels from A1 common reference to 
+    new common via ChanX - new_common
+    Rereference common average: transform specified data channels from A1 common reference to 
+    average reference via ChanX - 1/nchannels * Sum{i=0}   {nchannels} Chan_i.  
+   
+    Usages
+    ------
+
+    eeg_streams = ['MiPf', 'MiCe', 'MiPa', 'MiOc']
+    rs = ['A2']
+    ref_type = 'bimastoid'
+    re_reference(epochs_df, eeg_streams, rs, ref_type)
+    or
+    re_reference(epochs_df, eeg_streams, 'A2', 'bimastoid')
+
+    rs = ['MiPf']
+    ref_type = 'new_common'
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    rs = ['lle', 'lhz', 'MiPf']
+    ref_type = 'common_average'
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    
+    Parameters
+    ----------
+    
+    eeg_streams : list-like of str
+        the names of colums to transform
+       
+    rs : str or list-like of str
+        name of the stream for bimastoid, new common reference or list
+        of streams for the common average reference
+        
+    type : str = {'bimastoid', 'new_common', 'common_average'}
+    """
+
+    # LOGGER.info(f"bimastoid_reference {a2}")
+
+    _epochs_QC(epochs_df, eeg_streams)
+
+    # rs must be a list of strings for ref_type of 'common_average'
+    if ref_type == 'common_average':
+        if not isinstance(rs, list) or not all(
+              isinstance(item, str) for item in rs
+           ):
+            raise ValueError("rs should be a list of strings.")
+
+
+    if isinstance(rs, list) and len(rs) == 1:
+        rs = ''.join(rs)
+
+    br_epochs_df = epochs_df.copy()
+    if ref_type == 'bimastoid':
+        for col in eeg_streams:     
+            br_epochs_df[col] = epochs_df[col] - epochs_df[rs]/2
+    elif ref_type == 'new_common':
+        for col in eeg_streams:        
+            br_epochs_df[col] = epochs_df[col] - epochs_df[rs]
+    elif ref_type == 'common_average':
+        for col in eeg_streams:
+            br_epochs_df[col] = epochs_df[col] - epochs_df[rs].mean(axis=1)
+
+    return br_epochs_df

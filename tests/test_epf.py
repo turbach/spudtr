@@ -3,6 +3,7 @@ import pytest
 import spudtr.epf as epf
 import spudtr.fake_epochs_data as fake_data
 import numpy as np
+import pandas as pd
 
 import pdb
 
@@ -72,3 +73,24 @@ def test_drop_bad_epochs():
     assert (
         epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
     )
+
+
+def test_re_reference():
+
+    # create a fake data
+    epochs_df = pd.DataFrame(np.array([[0, -3, 1, 2, 3], [0, -2, 4, 5, 6], [0, -1, 7, 8, 9]]),\
+                      columns = ['Epoch_idx', 'Time', 'a', 'b', 'c'])
+
+    eeg_streams = ['b', 'c']
+    rs = ['a']
+    ref_type = 'bimastoid'
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    assert list(br_epochs_df.b) == [1.5, 3.0, 4.5]
+    rs = ['a']
+    ref_type = 'new_common'
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    assert list(br_epochs_df.b) == [1, 1, 1]
+    rs = ['a', 'b']
+    ref_type = 'common_average'
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    assert list(br_epochs_df.b) == [0.5, 0.5, 0.5]
