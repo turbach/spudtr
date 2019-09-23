@@ -242,8 +242,9 @@ def re_reference(epochs_df, eeg_streams, rs, ref_type):
     Rereference new common: transform specified data channels from A1 common reference to 
     new common via ChanX - new_common
     Rereference common average: transform specified data channels from A1 common reference to 
-    average reference via ChanX - 1/nchannels * Sum{i=0}   {nchannels} Chan_i.  
+    average reference via ChanX - 1/nchannels * Sum{i=0}   {nchannels} Chan_i.
    
+
     Usages
     ------
 
@@ -260,10 +261,10 @@ def re_reference(epochs_df, eeg_streams, rs, ref_type):
     rs = ['lle', 'lhz', 'MiPf']
     ref_type = 'common_average'
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
-    
+       
     Parameters
     ----------
-    
+   
     eeg_streams : list-like of str
         the names of colums to transform
        
@@ -278,26 +279,29 @@ def re_reference(epochs_df, eeg_streams, rs, ref_type):
 
     _epochs_QC(epochs_df, eeg_streams)
 
-    # rs must be a list of strings for ref_type of 'common_average'
-    if ref_type == 'common_average':
-        if not isinstance(rs, list) or not all(
-              isinstance(item, str) for item in rs
-           ):
-            raise ValueError("rs should be a list of strings.")
-
+    # rs must be a list of strings with len(rs)>1 for ref_type of 'common_average'
+    if ref_type == "common_average":
+        if not (isinstance(rs, list) and len(rs) > 1) or not all(
+            isinstance(item, str) for item in rs
+        ):
+            raise ValueError(
+                "rs should be a list of strings with length greater than 1."
+            )
 
     if isinstance(rs, list) and len(rs) == 1:
-        rs = ''.join(rs)
+        rs = "".join(rs)
 
     br_epochs_df = epochs_df.copy()
-    if ref_type == 'bimastoid':
-        for col in eeg_streams:     
-            br_epochs_df[col] = epochs_df[col] - epochs_df[rs]/2
-    elif ref_type == 'new_common':
-        for col in eeg_streams:        
-            br_epochs_df[col] = epochs_df[col] - epochs_df[rs]
-    elif ref_type == 'common_average':
-        for col in eeg_streams:
-            br_epochs_df[col] = epochs_df[col] - epochs_df[rs].mean(axis=1)
+    if ref_type == "bimastoid":
+        new_ref = epochs_df[rs] / 2.0
+    elif ref_type == "new_common":
+        new_ref = epochs_df[rs]
+    elif ref_type == "common_average":
+        new_ref = epochs_df[rs].mean(axis=1)
+    else:
+        raise ValueError(f"unknown reference type: ref_type={ref_type}")
+
+    for col in eeg_streams:
+        br_epochs_df[col] = br_epochs_df[col] - new_ref
 
     return br_epochs_df

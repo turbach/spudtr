@@ -64,7 +64,7 @@ def test_drop_bad_epochs():
     art_col = "log_flags"
 
     epochs_df_good = epf.drop_bad_epochs(epochs_df, art_col, epoch_id, time)
-    epochs_df_good['new_col'] = 0
+    epochs_df_good["new_col"] = 0
 
     # get the group of time == 0
     group = epochs_df.groupby([time]).get_group(0)
@@ -78,19 +78,50 @@ def test_drop_bad_epochs():
 def test_re_reference():
 
     # create a fake data
-    epochs_df = pd.DataFrame(np.array([[0, -3, 1, 2, 3], [0, -2, 4, 5, 6], [0, -1, 7, 8, 9]]),\
-                      columns = ['Epoch_idx', 'Time', 'a', 'b', 'c'])
+    epochs_df = pd.DataFrame(
+        np.array([[0, -3, 1, 2, 3], [0, -2, 4, 5, 6], [0, -1, 7, 8, 9]]),
+        columns=["Epoch_idx", "Time", "a", "b", "c"],
+    )
 
-    eeg_streams = ['b', 'c']
-    rs = ['a']
-    ref_type = 'bimastoid'
+    eeg_streams = ["b", "c"]
+
+    rs = ["a"]
+    ref_type = "bimastoid"
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
     assert list(br_epochs_df.b) == [1.5, 3.0, 4.5]
-    rs = ['a']
-    ref_type = 'new_common'
+    rs = ["a"]
+    ref_type = "new_common"
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
     assert list(br_epochs_df.b) == [1, 1, 1]
-    rs = ['a', 'b']
-    ref_type = 'common_average'
+    rs = ["a", "b"]
+    ref_type = "common_average"
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
     assert list(br_epochs_df.b) == [0.5, 0.5, 0.5]
+
+
+@pytest.mark.parametrize(
+    "eeg_streams,rs,ref_type,expected",
+    [
+        (["b", "c"], ["a"], "bimastoid", [1.5, 3.0, 4.5]),
+        (["b", "c"], ["a"], "new_common", [1, 1, 1]),
+        (["b", "c"], ["a", "b"], "common_average", [0.5, 0.5, 0.5]),
+        pytest.param(
+            ["b", "c"],
+            ["a", "b"],
+            "Xcommon_average",
+            [0.5, 0.5, 0.5],
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ],
+)
+def test_re_reference_2(eeg_streams, rs, ref_type, expected):
+
+    # create a fake data
+    epochs_df = pd.DataFrame(
+        np.array([[0, -3, 1, 2, 3], [0, -2, 4, 5, 6], [0, -1, 7, 8, 9]]),
+        columns=["Epoch_idx", "Time", "a", "b", "c"],
+    )
+
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+
+    assert list(br_epochs_df.b) == expected
