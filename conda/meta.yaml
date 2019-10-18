@@ -1,21 +1,30 @@
+{% set version = "0.0.0.dev0" %}
+{% set py_pin = "3.6" %}  # pins for mkpy and fitgrid
+{% set np_pin = "1.16.4" %}
+
 package:
     name: spudtr
-    version: "0.0.0.dev0"
+    version: {{ version }}
 
 source:
-    path: ../
+  # git_url: https://github.com/kutaslab/spudtr.git
+  # git_tag: {{ version }}
+  path: ../
 
 build:
     script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
-    build:
-        - python
+    # build ... all moved to host
+
+    host:
+        - python ={{ py_pin }}  # else cython uses Python 3.7
+        - numpy =={{ np_pin }}
         - Cython
 
     run:
-        - python
-        - pytest
+        - python ={{ py_pin }}
+        - numpy =={{ np_pin }}
         - numpy
         - scipy
         - pandas
