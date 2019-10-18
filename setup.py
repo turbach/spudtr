@@ -40,7 +40,7 @@ setup(
     author_email="turbach@ucsd.edu",
     url="http://kutaslab.ucsd.edu/people/urbach",
     packages=find_packages(),
-    scripts=["scripts/stub"],
+    scripts=["bin/stub"],
     cmdclass={"build_ext": build_ext},
     ext_modules=cythonize(extensions, language_level=3),
 )

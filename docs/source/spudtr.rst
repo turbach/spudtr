@@ -4,14 +4,10 @@ spudtr package
 Submodules
 ----------
 
-spudtr.epf module
------------------
+.. toctree::
 
-.. automodule:: spudtr.epf
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   spudtr.epf
+   spudtr.fake_epochs_data
 
 Module contents
 ---------------
