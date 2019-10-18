@@ -1,3 +1,4 @@
+# spudtr
 language: minimal
 install:
     - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -6,12 +7,14 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
-    - conda env create -f conda/environment.yml
-    - source activate spudtr
+    - conda install conda-build
+    - conda build conda -c defaults -c conda-forge
+    - conda create --name spudtr_env sputdr -c file://$HOME/miniconda/conda-bld -c defaults -c conda-forge 
+    - source activate spudtr_env
+    - conda install black pytest-cov 
     - conda list
     - lscpu
     - python -c 'import numpy; numpy.show_config()'
-    - pip install black
 script:
     - black --check --verbose --line-length=79 .
     - pytest --cov=spudtr
@@ -20,7 +23,6 @@ after_success:
 before_deploy:
     - pip install sphinx sphinx_rtd_theme jupyter nbsphinx nbconvert!=5.4
     - conda install -c conda-forge pandoc
-    - pip install -e . # install spudtr locally so it can be imported in the notebook
     - conda list
     - cd docs
     - sphinx-apidoc -f -o source ../spudtr
