@@ -28,23 +28,24 @@ after_success:
 before_deploy:
     - pip install sphinx sphinx_rtd_theme jupyter nbsphinx nbconvert!=5.4
     - conda install -c conda-forge pandoc
+    - conda install anaconda-client
     - conda list
     - sphinx-apidoc -e -f -o docs/source . ./tests/* ./setup.py
     - make -C docs html
     - touch docs/build/html/.nojekyll
     - chmod +x ./scripts/conda_upload.sh
+    - export ANACONDA_TOKEN
 deploy:
     - provider: pages
       skip_cleanup: true
       github_token: $GITHUB_TOKEN
-      keep-history: true
       on:
-        branch: master
+          branch: master
       target_branch: gh-pages  # that's the default anyway, just to be explicit
       local_dir: docs/build/html
 
     - provider: script
       skip_cleanup: true
-      script: bash ./scripts/conda_upload.sh
+      script: ./scripts/conda_upload.sh
       on:
-        branch: 0.0.0.dev0  # master
+          branch: 0.0.0.dev0  # master

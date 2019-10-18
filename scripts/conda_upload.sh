@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# For TravisCI deploy stage only
+# Intended for TravisCI deploy stage.
+ 
+# For testing, can fake the TravisCI env like so
+#   export TRAVIS="true"
+#   export TRAVIS_BRANCH="X.Y.Z" 
 
 if [[ "$TRAVIS" != "true" ]]
 then
@@ -19,12 +23,24 @@ fi
 
 echo "home: $HOME travis branch: $TRAVIS_BRANCH conda label: $conda_label"
 
-# spudtr is only linux64 
-# echo "Converting conda package..."
+# no conda convert b.c. of compiled C extension ... so only support linux-64 for now
 # conda convert --platform all $HOME/miniconda/conda-bld/linux-64/spudtr-*.tar.bz2 --output-dir conda-build/
 
-echo "Deploying to Anaconda.org..."
-# anaconda -t $ANACONDA_TOKEN upload conda-build/**/spudtr-*.tar.bz2
+if [ ! -f $HOME/miniconda/conda-bld/linux-64/spudtr-*.tar.bz2 ]; 
+then
+    echo "file not found " '$HOME/miniconda/conda-bld/linux-64/spudtr-*.tar.bz2'
+    exit -2
+else
+    ls -l $HOME/miniconda/conda-bld/linux-64/spudtr-*.tar.bz2
+fi
 
-# echo "Successfully deployed to Anaconda.org."
+echo "Deploying to Anaconda.org like so ..."
+echo "anaconda -t $ANACONDA_TOKEN upload $HOME/miniconda/conda-bld/linux-64/spudtr-*.tar.bz2 --label $conda_label"
+if anaconda -t $ANACONDA_TOKEN upload $HOME/miniconda/conda-bld/linux-64/spudtr-*.tar.bz2 --label $conda_label;
+then
+    echo "Successfully deployed to Anaconda.org."
+else
+    echo "Error deploying to Anaconda.org"
+    exit -3
+fi
 exit 0
