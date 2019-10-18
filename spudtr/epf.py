@@ -113,8 +113,7 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
     if not prev_group.index.is_unique:
         dupes = prev_group.index.filter(lambda x: len(x) > 1)
         raise ValueError(
-            f"Duplicate values of epoch_id in each"
-            f"time group not allowed:\n{dupes}"
+            f"Duplicate values of epoch_id in each" f"time group not allowed:\n{dupes}"
         )
     return epochs_df
 

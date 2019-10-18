@@ -70,9 +70,7 @@ def test_drop_bad_epochs():
     group = epochs_df.groupby([time]).get_group(0)
     good_idx = list(group[epoch_id][group[art_col] == 0])
     epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
-    assert (
-        epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
-    )
+    assert epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
 
 
 def test_re_reference():
