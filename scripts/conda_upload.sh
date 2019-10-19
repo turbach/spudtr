@@ -1,13 +1,70 @@
 #!/bin/bash
 
-# Intended for TravisCI deploy stage where there is exactly one file that matches
+# This has some branch switching logic so master branch is uploaded to
+# conda with the label "main" and non-master branches are uploaded
+# with label "latest${TRAVIS_BRANCH} and clobber previous uploads on
+# that branch. This is for round-trip develop, test, upload-to-conda,
+# install-from-conda, test cycle
 #
-# ${CONDA_PREFIX}/conda-bld/linux-65/sputdr-*.tar.bz
- 
-# For testing locally in an active conda env, can fake the TravisCI env like so
-#   export TRAVIS="true"
-#   export TRAVIS_BRANCH="X.Y.Z" 
-#   export ANACONDA_TOKEN="ku-actual-token ..."
+# For use with a .travis.yml deploy script provider after a fresh build 
+# like so
+# 
+# # BEGIN .travis.yml ----------------------------------------
+# 
+# env:
+#     - PACKAGE_NAME: spudtr   # used in deploy script
+# language: minimal
+# before_install:
+#     - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+#     - bash miniconda.sh -b -p $HOME/miniconda
+#     - export PATH="$HOME/miniconda/bin:$PATH"
+#     - hash -r
+#     - conda config --set always_yes yes --set changeps1 no
+#     - conda info -a
+#     - conda install conda-build conda-verify
+# install:
+#     - conda build conda -c defaults -c conda-forge
+#     # package setup here e.g., for instance ...
+#     - conda create --name spudtr_env spudtr -c local -c defaults -c conda-forge
+#     - source activate spudtr_env
+#     - conda install black pytest-cov
+#     - conda list
+#     - lscpu
+#     - python -c 'import numpy; numpy.show_config()'
+#     - export TRAVIS_BRANCH  # for deploy script
+#     - export HOME
+#     - export TRAVIS
+# script:
+#     - black --check --verbose --line-length=79 .
+#     - pytest --cov=spudtr
+# after_success:
+#     - pip install codecov && codecov
+# before_deploy:
+#     - pip install sphinx sphinx_rtd_theme jupyter nbsphinx nbconvert!=5.4
+#     - conda install -c conda-forge pandoc
+#     - conda install anaconda-client
+#     - conda list
+#     - sphinx-apidoc -e -f -o docs/source . ./tests/* ./setup.py
+#     - make -C docs html
+#     - touch docs/build/html/.nojekyll
+#     - export ANACONDA_TOKEN
+# deploy:
+#     # master and working branches are packaged and labeled for conda
+#     - provider: script
+#       skip_cleanup: true
+#       script: bash ./scripts/conda_upload.sh
+#       on:
+#           all_branches: true
+#
+# # END .travis.yml ----------------------------------------
+
+#   NOTE: For testing locally in an active conda env, fake the
+#     TravisCI env like so and make sure there is a unique
+#     package tar.bz2 in the relevant conda-bld dir before converting.
+#
+#     export TRAVIS="true"
+#     export TRAVIS_BRANCH="X.Y.Z" 
+#     export ANACONDA_TOKEN="ku-actual-token ..."
 #
 
 if [ $USER = "travis" ]; then
@@ -31,8 +88,8 @@ then
     conda_label="main"
 else
     # *DO* force non-master braches onto their label so we can conda install latest
-    # for testing. Careful, this means non-master branches badly versioned as X.Y.Z 
-    # clobber main X.Y.Z
+    # for testing. Careful, this means non-master branches labeled like a released
+    # X.Y.Z clobber main X.Y.Z
     FORCE="--force"  # 
     conda_label=latest$TRAVIS_BRANCH
 fi
