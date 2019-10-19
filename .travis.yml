@@ -33,7 +33,6 @@ before_deploy:
     - sphinx-apidoc -e -f -o docs/source . ./tests/* ./setup.py
     - make -C docs html
     - touch docs/build/html/.nojekyll
-    - chmod +x ./scripts/conda_upload.sh
     - export ANACONDA_TOKEN
 deploy:
     - provider: pages
@@ -46,6 +45,6 @@ deploy:
 
     - provider: script
       skip_cleanup: true
-      script: ./scripts/conda_upload.sh
+      script: bash ./scripts/conda_upload.sh
       on:
           branch: 0.0.0.dev0  # master
