@@ -9,7 +9,7 @@ before_install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
-    - conda install conda-build
+    - conda install conda-build conda-verify
 install:
     - conda build conda -c defaults -c conda-forge
     # - conda create --name spudtr_env spudtr -c file://$HOME/miniconda/conda-bld -c defaults -c conda-forge
