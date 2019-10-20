@@ -6,6 +6,9 @@
 \#*\#
 .\#*
 
+# conda build files
+tmp-conda-builds/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

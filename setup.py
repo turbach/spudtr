@@ -6,41 +6,36 @@ from Cython.Build import cythonize
 from pathlib import Path
 import numpy as np
 import re
+from spudtr import get_ver
 
 extensions = [
     Extension("_spudtr", ["src/_spudtr.pyx"], include_dirs=[np.get_include()])
 ]
 
-# single source versioning with a bit of error checking
-def get_ver():
-    with open(Path(__file__).parent / "spudtr/__init__.py", "r") as stream:
-        pf_ver = re.search(
-            r".*__version__.*=.*[\"\'](?P<ver_str>\d+\.\d+\.\d+\S*)[\'\"].*",
-            stream.read(),
+# fetch spudtr/__version__
+__version__ = get_ver()
+
+# enforce conda meta.yaml semantic version is the same
+jinja_version = f'{{% set version = "{__version__}" %}}'
+meta_yaml_f = Path("./conda/meta.yaml")
+with open(meta_yaml_f) as f:
+    if not re.match(r"^" + jinja_version, f.read()):
+        fail_msg = (
+            "conda/meta.yaml must start with a jinja variable line exactly like this: "
+            f"{jinja_version}"
         )
-
-    if pf_ver is None:
-        msg = f"""
-        spudtr __init__.py must have an X.Y.Z semantic version, e.g.,
-
-        __version__ = '0.0.0'
-        __version__ = '0.0.0.dev0.0'
-
-        """
-        raise ValueError(msg)
-    else:
-        return pf_ver["ver_str"]
+        raise Exception(fail_msg)
 
 
 setup(
     name="spudtr",
-    version=get_ver(),
+    version=__version__,
     description="pandas dataframe function transforms",
     author="Thomas P. Urbach",
     author_email="turbach@ucsd.edu",
     url="http://kutaslab.ucsd.edu/people/urbach",
     packages=find_packages(),
-    scripts=["scripts/stub"],
+    scripts=["bin/stub"],
     cmdclass={"build_ext": build_ext},
     ext_modules=cythonize(extensions, language_level=3),
 )
