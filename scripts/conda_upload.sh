@@ -1,5 +1,11 @@
-# spudtr conda uploader. Runs but doesn't attempt the upload unless on
-# master branch with a major.minor.patch version and a set $ANACONDA_TOKEN
+# Anaconda Cloud package uploader.
+# 
+# Runs but doesn't attempt the upload unless 
+# 
+#  * the package version from __init__.py and meta.yaml is {% version = "Major.Minor.Patch"}
+# 
+#  * the current build is on a branch named vMajor.Minor.Patch, which TravisCI believes it to
+#    be when the build is triggered by a gihub release tagged as vMajor.Minor.Patch
 
 # some guarding ...
 if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
@@ -31,52 +37,53 @@ if (( $n_tarballs != 1 )); then
     exit -3
 fi
 
-# version string from spudtr/__init__.py and the conda meta.yaml {% version = any_stringr %}
-version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-[v]\{0,1\}\(.\+\)-.*/\1/p"`
+# entire version string from __init__.py and the conda meta.yaml {% version = any_stringr %}
+version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
 
-# extract the major.minor.patch of version
+# just the numeric major.minor.patch portion of version, possibly empty
 mmp=`echo $version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
-# toggle whether this is a release version
-if [[ "${version}" = "$mmp" ]]; then
-    is_release_ver="true"
+# Are we building a release version according to the convention that
+# releases are tagged vMajor.Minor.Release?
+#
+# * if $version = $mmp then version is a strict numeric
+#   Major.Minor.Patch, not further decorated, e.g., with .dev this or
+#   rc that
+# 
+# * the github release tag, e.g., v0.0.0 shows up in the Travis build
+#   as the branch name so $TRAVIS_BRANCH = v$mmp enforces the
+#   vMajor.Minor.Patch release tag convention for conda uploads.
+if [[ "${version}" = "$mmp" && $TRAVIS_BRANCH = v$mmp ]]; then
+    is_release="true"
 else
-    is_release_ver="false"
+    is_release="false"
 fi
 
+# POSIX trick sets $ANACONDA_TOKEN if unset or empty string 
+ANACONDA_TOKEN=${ANACONDA_TOKEN:-[not_set]}
+conda_cmd="anaconda --token $ANACONDA_TOKEN upload ${tarball}"
+
 # thus far ...
-echo "travis branch: $TRAVIS_BRANCH"
+echo "conda meta.yaml version: $version"
 echo "package name: $PACKAGE_NAME"
 echo "conda-bld: ${bld_prefix}/conda-bld/linux-64"
 echo "tarball: $tarball"
-echo "conda meta.yaml version: $version"
-echo "is_release_ver: $is_release_ver"
-echo "Anaconda.org upload command ..."
-
-conda_cmd="anaconda --token $ANACONDA_TOKEN upload ${tarball}"
+echo "travis branch: $TRAVIS_BRANCH"
+echo "is_release: $is_release"
 echo "conda upload command: ${conda_cmd}"
 
-# POSIX trick sets an unset or empty string $ANACONDA_TOKEN to a default string "[not_set]"
-ANACONDA_TOKEN=${ANACONDA_TOKEN:-[not_set]}
-
-# if there is (some) token and branch is master with version string major.minor.patch
+# if the token is in the ENV and this is a release/tagged commit or equivalent
 #    attempt the upload 
 # else
-#     status report and exit happily
-if [[ $ANACONDA_TOKEN != "[not_set]" && $TRAVIS_BRANCH = "master" ]]; then
+#    skip the upload and exit happy
+if [[ $ANACONDA_TOKEN != "[not_set]" && is_release = "true" ]]; then
 
-    # require major.minor.patch version strings for conda upload
-    if [[ $is_release_ver = "false" ]]; then
-	echo "Version string error $PACKAGE_NAME ${version}: on the master branch, the version string must be major.minor.patch"
-	exit -4
-    fi
-
-    echo "Attempting upload to Anconda Cloud $PACKAGE_NAME$ $version"
+    echo "uploading to Anconda Cloud: $PACKAGE_NAME$ $version ..."
     if ${conda_cmd}; then
-	echo "OK"
+    	echo "OK"
     else
-	echo "Failed"
-	exit -5
+    	echo "Failed"
+    	exit -5
     fi
 else
     echo "$PACKAGE_NAME $TRAVIS_BRANCH $version conda_upload.sh dry run ... OK"

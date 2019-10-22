@@ -32,9 +32,7 @@ before_deploy:
     - make -C docs html
     - touch docs/build/html/.nojekyll
 deploy:
-    # convert and upload to Anaconda Cloud. Script routes uploads like so
-    #  * master branch goes to --channel kutaslab/spudtr/main
-    #  * other branches go to --channel kutaslab/spudtr/latest$TRAVIS_BRANCH
+    # upload github releases to Anaconda Cloud
     - provider: script
       skip_cleanup: true
       script: bash ./scripts/conda_upload.sh
