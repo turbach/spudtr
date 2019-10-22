@@ -9,7 +9,8 @@ fi
 
 # intended for TravisCI deploy but can be tricked into running locally
 if [[ "$TRAVIS" != "true" || -z "$TRAVIS_BRANCH" || -z "${PACKAGE_NAME}" ]]; then
-    echo "conda_upload.sh is meant to run on TravisCI, if you know what you are doing, fake it locally like so:"
+    echo "conda_upload.sh is meant to run on TravisCI"
+    echo "if you know what you are doing, fake it locally like so:"
     echo 'export PACKAGE_NAME="spudtr"; export TRAVIS="true"; export TRAVIS_BRANCH="a_branch_name"' 
     exit -2
 fi
@@ -58,8 +59,10 @@ echo "conda upload command: ${conda_cmd}"
 # POSIX trick sets an unset or empty string $ANACONDA_TOKEN to a default string "[not_set]"
 ANACONDA_TOKEN=${ANACONDA_TOKEN:-[not_set]}
 
-# attempt the upload if there is token and branch is master with version string major.minor.patch
-# else, status report and exit happily
+# if there is (some) token and branch is master with version string major.minor.patch
+#    attempt the upload 
+# else
+#     status report and exit happily
 if [[ $ANACONDA_TOKEN != "[not_set]" && $TRAVIS_BRANCH = "master" ]]; then
 
     # require major.minor.patch version strings for conda upload
@@ -76,6 +79,6 @@ if [[ $ANACONDA_TOKEN != "[not_set]" && $TRAVIS_BRANCH = "master" ]]; then
 	exit -5
     fi
 else
-    echo "$PACKAGE_NAME $TRAVIS_BRANCH $version conda_upload.sh dry run OK"
+    echo "$PACKAGE_NAME $TRAVIS_BRANCH $version conda_upload.sh dry run ... OK"
 fi
 exit 0
