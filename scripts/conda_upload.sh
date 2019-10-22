@@ -1,171 +1,81 @@
-# Notes
-#   turbach 10/20/19
-#
+# spudtr conda uploader. Runs but doesn't attempt the upload unless on
+# master branch with a major.minor.patch version and a set $ANACONDA_TOKEN
 
-# * A bash script for use with a github repo and a .travis.yml deploy
-#   script provider, example below. Requires several environment
-#   variables (in caps) including a current $ANACONDA_TOKEN for the
-#   destination channel.
-#
-# * This does a little git branch switching so master branch is uploaded
-#   to conda with the label "main" and non-master branches are
-#   uploaded with label "latest${TRAVIS_BRANCH} and clobber previous
-#   uploads on that branch. This is for round-trip develop, test,
-#   upload-to-conda, install-from-conda, test cycle. See Anaconda
-#   Cloud docs for more on labels.
-#
-# * The package version that automagically appears on conda comes from the
-#   conda meta.yaml variable
-# 
-#     {% version = "..." %} 
-#
-#   embedded in the conda-build output tar.bz2 + the git commit short
-#   hash NOT the git branch name.
-# 
-# * For local testing in an active conda env, fake the TravisCI env
-#   like so and make sure there is a unique package tar.bz2 in the
-#   relevant conda-bld dir before converting.
-#
-#    export TRAVIS="true"
-#    export TRAVIS_BRANCH="X.Y.Z" 
-#    export ANACONDA_TOKEN="an-actual-token"
-#    export PACKAGE_NAME="an-actual-name"
-#
-#  * Example .travis.yml for a linux-64 package
-# 
-#    # BEGIN .travis.yml ----------------------------------------
-#    # spudtr requires a current GIT_TOKEN and ANACONDA_TOKEN on TravisCI kutaslab/spudtr
-#    env:
-#        - PACKAGE_NAME: spudtr   # for the conda_upload.sh deploy script
-#    language: minimal
-#    before_install:
-#        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-#        - bash miniconda.sh -b -p $HOME/miniconda
-#        - export PATH="$HOME/miniconda/bin:$PATH"
-#        - hash -r
-#        - conda config --set always_yes yes --set changeps1 no
-#        - conda info -a
-#        - conda install conda-build conda-verify
-#    install:
-#        - conda build conda -c defaults -c conda-forge
-#        - conda create --name spudtr_env spudtr -c local -c defaults -c conda-forge
-#        - source activate spudtr_env  # so tests run in env as installed by conda
-#        - conda install black pytest-cov
-#        - conda list
-#        - lscpu
-#        - python -c 'import numpy; numpy.show_config()'
-#    script:
-#        - black --check --verbose --line-length=79 .
-#        - pytest --cov=spudtr
-#    after_success:
-#        - pip install codecov && codecov
-#    before_deploy:
-#        - pip install sphinx sphinx_rtd_theme jupyter nbsphinx nbconvert!=5.4
-#        - conda install -c conda-forge pandoc
-#        - conda install anaconda-client
-#        - conda list
-#        - sphinx-apidoc -e -f -o docs/source . ./tests/* ./setup.py
-#        - make -C docs html
-#        - touch docs/build/html/.nojekyll
-#    deploy:
-#        # convert and upload to Anaconda Cloud. Script routes uploads like so
-#        #  * master branch goes to --channel somechan/spudtr/main
-#        #  * other branches go to --channel somechan/spudtr/latest$TRAVIS_BRANCH
-#        - provider: script
-#          skip_cleanup: true
-#          script: bash ./scripts/conda_upload.sh
-#          on:
-#              all_branches: true
-#   
-#        # only master branch refreshes the docs
-#        - provider: pages
-#          skip_cleanup: true
-#          github_token: $GITHUB_TOKEN
-#          on:
-#              branch: master
-#          target_branch: gh-pages  # that's the default anyway, just to be explicit
-#          local_dir: docs/build/html
-# # END .travis.yml ----------------------------------------
+# some guarding ...
+if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+    echo "activate a conda env before running conda_upload.sh"
+    exit -1
+fi
 
-# set parent of conda-bld, the else is only local user for testing in active conda env
+# intended for TravisCI deploy but can be tricked into running locally
+if [[ "$TRAVIS" != "true" || -z "$TRAVIS_BRANCH" || -z "${PACKAGE_NAME}" ]]; then
+    echo "conda_upload.sh is meant to run on TravisCI, if you know what you are doing, fake it locally like so:"
+    echo 'export PACKAGE_NAME="spudtr"; export TRAVIS="true"; export TRAVIS_BRANCH="a_branch_name"' 
+    exit -2
+fi
+
+# set parent of conda-bld, the else isn't needed for travis, simplifies local testing
 if [ $USER = "travis" ]; then
     bld_prefix="/home/travis/miniconda"  # from the .travis.yml
 else
     bld_prefix=${CONDA_PREFIX}
 fi
 
-# enforce some version number requirements before uploading to conda
+# on travis there should be a single linux-64 package tarball. insist
 tarball=`/bin/ls -1 ${bld_prefix}/conda-bld/linux-64/${PACKAGE_NAME}-*-*.tar.bz2`
-
-# version is the package and conda meta.yaml {% version = any_stringr %}
-version=`echo $tarball | sed -n "s/.*\(${PACKAGE_NAME}-.\+\)-.*/\1/p"`
-
-# empty unless version is major.minor.patch
-release=`echo $tarball | sed -n "s/.*\(${PACKAGE_NAME}-\([0-9]\+\.\)\{1,2\}[0-9]\+\)-.*/\1/p"`
-
-# discourage casual misuse
-if [ "$TRAVIS" != "true" ]; then
-    echo "This script meant to run on TravisCI, see notes to run locally."
-    exit -1
+n_tarballs=`echo "${tarball}" | wc -w`
+if (( $n_tarballs != 1 )); then
+    echo "found $n_tarballs package tarballs there must be exactly 1"
+    echo "$tarball"
+    exit -3
 fi
 
-# switch conda label, upload behavior and enforce versioning
-if [ $TRAVIS_BRANCH = "master" ]; 
-then
-    # versioning: whitelist major.minor.patch on master branch
-    if [[ "$version" != "$release" ]]; then
-	echo "$PACKAGE_NAME development error: the github master branch version ${version} should be major.minor.patch"
-	exit -2
-    fi
+# version string from spudtr/__init__.py and the conda meta.yaml {% version = any_stringr %}
+version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-[v]\{0,1\}\(.\+\)-.*/\1/p"`
 
-    # do *NOT* force master onto main, we want conda upload to fail on
-    # version collisions
-    FORCE="" 
-    conda_label="main"
+# extract the major.minor.patch of version
+mmp=`echo $version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
+# toggle whether this is a release version
+if [[ "${version}" = "$mmp" ]]; then
+    is_release_ver="true"
 else
-    # versioning: blacklist major.minor.patch on non-master branches
-    if [[ "$version" == "$release" ]]; then
-	echo "$PACKAGE_NAME development error: development branch $TRAVIS_BRANCH is using a release version number: ${version}"
-	exit -3
-    fi
-	
-    # *DO* force non-master branches to overwrite existing labels so
-    # we can test conda install from Anaconda Cloud with the latest
-    # development version
-    FORCE="--force" 
-    conda_label=latest$TRAVIS_BRANCH
+    is_release_ver="false"
 fi
 
-
-# force convert even though compiled C extension ... whatever works cross-platform works
-rm -f -r ./tmp-conda-builds
-mkdir -p ./tmp-conda-builds/linux-64
-cp ${bld_prefix}/conda-bld/linux-64/${PACKAGE_NAME}-*.tar.bz2 ./tmp-conda-builds/linux-64
-conda convert --platform all ${bld_prefix}/conda-bld/linux-64/${PACKAGE_NAME}-*.tar.bz2 --output-dir ./tmp-conda-builds --force
-/bin/ls -l ./tmp-conda-builds/**/${PACKAGE_NAME}-*.tar.bz2
-
-
-# so what have we here ...
-echo "conda_upload.sh"
+# thus far ...
 echo "travis branch: $TRAVIS_BRANCH"
 echo "package name: $PACKAGE_NAME"
 echo "conda-bld: ${bld_prefix}/conda-bld/linux-64"
-echo "conda version: $version"
-echo "release: $release"
-echo "upload destination label: $conda_label"
-echo "upload force flag: $FORCE"
+echo "tarball: $tarball"
+echo "conda meta.yaml version: $version"
+echo "is_release_ver: $is_release_ver"
+echo "Anaconda.org upload command ..."
 
-echo "Deploying to Anaconda.org like so ..."
-conda_cmd="anaconda --token $ANACONDA_TOKEN upload ./tmp-conda-builds/**/${PACKAGE_NAME}-*.tar.bz2 --label $conda_label --register ${FORCE}"
-echo ${conda_cmd}
+conda_cmd="anaconda --token $ANACONDA_TOKEN upload ${tarball}"
+echo "conda upload command: ${conda_cmd}"
 
-if ${conda_cmd};
-then
-    echo "Successfully deployed to Anaconda.org."
+# POSIX trick sets an unset or empty string $ANACONDA_TOKEN to a default string "[not_set]"
+ANACONDA_TOKEN=${ANACONDA_TOKEN:-[not_set]}
+
+# attempt the upload if there is token and branch is master with version string major.minor.patch
+# else, status report and exit happily
+if [[ $ANACONDA_TOKEN != "[not_set]" && $TRAVIS_BRANCH = "master" ]]; then
+
+    # require major.minor.patch version strings for conda upload
+    if [[ $is_release_ver = "false" ]]; then
+	echo "Version string error $PACKAGE_NAME ${version}: on the master branch, the version string must be major.minor.patch"
+	exit -4
+    fi
+
+    echo "Attempting upload to Anconda Cloud $PACKAGE_NAME$ $version"
+    if ${conda_cmd}; then
+	echo "OK"
+    else
+	echo "Failed"
+	exit -5
+    fi
 else
-    echo "Error deploying to Anaconda.org"
-    exit -4
+    echo "$PACKAGE_NAME $TRAVIS_BRANCH $version conda_upload.sh dry run OK"
 fi
 exit 0
-
