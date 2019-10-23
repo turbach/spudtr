@@ -13,6 +13,7 @@ source:
 
 build:
     script: python setup.py install --single-version-externally-managed --record=record.txt
+    string: {{ GIT_BUILD_STR }}
 
 requirements:
     # build ... all moved to host
