@@ -8,8 +8,6 @@ package:
 
 source:
   # path: ../
-  # git_url: https://github.com/kutaslab/spudtr.git
-  # git_tag: {{ version }}
   git_url: ../   # for GIT_X env vars are defined
 
 build:
