@@ -76,7 +76,7 @@ echo "conda upload command: ${conda_cmd}"
 #    attempt the upload 
 # else
 #    skip the upload and exit happy
-if [[ $ANACONDA_TOKEN != "[not_set]" && is_release = "true" ]]; then
+if [[ $ANACONDA_TOKEN != "[not_set]" && $is_release = "true" ]]; then
 
     echo "uploading to Anconda Cloud: $PACKAGE_NAME$ $version ..."
     if ${conda_cmd}; then
