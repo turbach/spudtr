@@ -1,19 +1,19 @@
-# spudtr requires a current GIT_TOKEN and ANACONDA_TOKEN on TravisCI kutaslab/spudtr
+# spudtr requires a current GIT_TOKEN on TravisCI kutaslab/spudtr
 env:
     - PACKAGE_NAME: spudtr   # for the conda_upload.sh deploy script
 language: minimal
 before_install:
     - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
+    - source $HOME/miniconda/etc/profile.d/conda.sh && conda activate
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
-    - conda install conda-build conda-verify
 install:
+    - conda install -q conda-build conda-verify
     - conda build conda -c defaults -c conda-forge
     - conda create --name spudtr_env spudtr -c local -c defaults -c conda-forge
-    - source activate spudtr_env  # so tests run in env as installed by conda
+    - conda activate spudtr_env  # so tests run in env as installed by conda
     - conda install black pytest-cov
     - conda list
     - lscpu
@@ -32,7 +32,7 @@ before_deploy:
     - make -C docs html
     - touch docs/build/html/.nojekyll
 deploy:
-    # upload github releases to Anaconda Cloud
+    # upload github vN.N.N releases to Anaconda Cloud with TravisCI
     - provider: script
       skip_cleanup: true
       script: bash ./scripts/conda_upload.sh

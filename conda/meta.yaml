@@ -8,15 +8,14 @@ package:
 
 source:
   # path: ../
-  git_url: ../   # for GIT_X env vars are defined
+  git_url: ../  # to enable GIT_X_Y env vars
 
 build:
-    script: python setup.py install --single-version-externally-managed --record=record.txt
-    string: {{ environ.get('GIT_BUILD_STR', '') }}
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  string: {{ environ.get('GIT_BUILD_STR', "g_notags") }}
 
 requirements:
     # build ... all moved to host
-
     host:
         - python ={{ py_pin }}  # else cython uses Python 3.7
         - numpy =={{ np_pin }}

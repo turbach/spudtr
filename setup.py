@@ -1,18 +1,19 @@
 # to work in development mode use:  pip install -e .
 
-from setuptools import find_packages, setup, Extension
-from Cython.Distutils import build_ext
-from Cython.Build import cythonize
+# from Cython.Distutils import build_ext
+# from Cython.Build import cythonize
+# import numpy as np
+
+from setuptools import find_packages, setup  # , Extension
 from pathlib import Path
-import numpy as np
 import re
 from spudtr import get_ver
 
-extensions = [
-    Extension("_spudtr", ["src/_spudtr.pyx"], include_dirs=[np.get_include()])
-]
+# extensions = [
+#      Extension("_spudtr", ["src/_spudtr.pyx"], include_dirs=[np.get_include()])
+# ]
 
-# fetch spudtr/__version__
+# spudtr/__version__
 __version__ = get_ver()
 
 # enforce conda meta.yaml semantic version is the same
@@ -36,6 +37,6 @@ setup(
     url="http://kutaslab.ucsd.edu/people/urbach",
     packages=find_packages(),
     scripts=["bin/stub"],
-    cmdclass={"build_ext": build_ext},
-    ext_modules=cythonize(extensions, language_level=3),
+    #    cmdclass={"build_ext": build_ext},
+    #    ext_modules=cythonize(extensions, language_level=3),
 )
