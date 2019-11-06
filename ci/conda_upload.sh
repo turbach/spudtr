@@ -16,8 +16,6 @@ fi
 # intended for TravisCI deploy but can be tricked into running locally
 if [[ "$TRAVIS" != "true" || -z "$TRAVIS_BRANCH" || -z "${PACKAGE_NAME}" ]]; then
     echo "conda_upload.sh is meant to run on TravisCI"
-    echo "if you know what you are doing, fake it locally like so:"
-    echo 'export PACKAGE_NAME="spudtr"; export TRAVIS="true"; export TRAVIS_BRANCH="a_branch_name"' 
     exit -2
 fi
 

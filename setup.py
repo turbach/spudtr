@@ -13,10 +13,9 @@ from spudtr import get_ver
 #      Extension("_spudtr", ["src/_spudtr.pyx"], include_dirs=[np.get_include()])
 # ]
 
-# spudtr/__version__
 __version__ = get_ver()
 
-# enforce conda meta.yaml semantic version is the same
+# enforce conda meta.yaml and __init__.py version are the same
 jinja_version = f'{{% set version = "{__version__}" %}}'
 meta_yaml_f = Path("./conda/meta.yaml")
 with open(meta_yaml_f) as f:
@@ -27,16 +26,25 @@ with open(meta_yaml_f) as f:
         )
         raise Exception(fail_msg)
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name="spudtr",
     version=__version__,
-    description="pandas dataframe function transforms",
+    description="some pandas utility dataframe transforms",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Thomas P. Urbach",
     author_email="turbach@ucsd.edu",
-    url="http://kutaslab.ucsd.edu/people/urbach",
+    url="https://github.com/kutaslab/spudtr",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD License",
+        "Intended Audience :: Science/Research",
+    ],
     packages=find_packages(),
-    scripts=["bin/stub"],
+    #    scripts=["bin/stub"],
     #    cmdclass={"build_ext": build_ext},
     #    ext_modules=cythonize(extensions, language_level=3),
 )
