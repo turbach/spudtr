@@ -37,7 +37,9 @@ import pandas as pd
 """
 
 
-def _generate(n_epochs, n_samples, n_categories, n_channels, time, epoch_id, seed=None):
+def _generate(
+    n_epochs, n_samples, n_categories, n_channels, time, epoch_id, seed=None
+):
     """Return Pandas DataFrame with fake EEG data, and a list of channels."""
 
     if seed is not None:
@@ -59,7 +61,8 @@ def _generate(n_epochs, n_samples, n_categories, n_channels, time, epoch_id, see
 
     channels = [f"channel{i}" for i in range(n_channels)]
     eeg = {
-        channel: np.random.normal(loc=0, scale=30, size=total) for channel in channels
+        channel: np.random.normal(loc=0, scale=30, size=total)
+        for channel in channels
     }
 
     data = {**indices, **predictors, **eeg}
