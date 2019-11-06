@@ -80,7 +80,9 @@ def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
 
          show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
          """
-    taps = _design_firwin_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
+    taps = _design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
     fig1 = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
     fig2 = _impz(taps, a=1)
 
@@ -109,13 +111,25 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     ax2.plot((w / np.pi) * nyq_rate, abs(h))
     cutoff_hz = np.atleast_1d(cutoff_hz)
     if cutoff_hz.size == 1:
-        ax2.axvline(cutoff_hz + width_hz / 2, linestyle="--", linewidth=1, color="r")
-        ax2.axvline(cutoff_hz - width_hz / 2, linestyle="--", linewidth=1, color="r")
+        ax2.axvline(
+            cutoff_hz + width_hz / 2, linestyle="--", linewidth=1, color="r"
+        )
+        ax2.axvline(
+            cutoff_hz - width_hz / 2, linestyle="--", linewidth=1, color="r"
+        )
     else:
-        ax2.axvline(cutoff_hz[0] + width_hz / 2, linestyle="--", linewidth=1, color="r")
-        ax2.axvline(cutoff_hz[0] - width_hz / 2, linestyle="--", linewidth=1, color="r")
-        ax2.axvline(cutoff_hz[1] + width_hz / 2, linestyle="--", linewidth=1, color="r")
-        ax2.axvline(cutoff_hz[1] - width_hz / 2, linestyle="--", linewidth=1, color="r")
+        ax2.axvline(
+            cutoff_hz[0] + width_hz / 2, linestyle="--", linewidth=1, color="r"
+        )
+        ax2.axvline(
+            cutoff_hz[0] - width_hz / 2, linestyle="--", linewidth=1, color="r"
+        )
+        ax2.axvline(
+            cutoff_hz[1] + width_hz / 2, linestyle="--", linewidth=1, color="r"
+        )
+        ax2.axvline(
+            cutoff_hz[1] - width_hz / 2, linestyle="--", linewidth=1, color="r"
+        )
 
     # ax2.plot((w/np.pi)*nyq_rate, h_dB)
     ax2.set_ylabel("Gain")
@@ -152,7 +166,9 @@ def _impz(b, a=1):
     return fig
 
 
-def _design_firwin_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
+def _design_firwin_filter(
+    cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+):
     """
     FIRLS at https://scipy-cookbook.readthedocs.io/items/FIRFilter.html
 
@@ -198,31 +214,55 @@ def _design_firwin_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
     if ftype.lower() == "lowpass":
         if window.lower() == "kaiser":
             taps = firwin(
-                N, cutoff_hz, window=("kaiser", beta), pass_zero="lowpass", fs=sfreq
+                N,
+                cutoff_hz,
+                window=("kaiser", beta),
+                pass_zero="lowpass",
+                fs=sfreq,
             )
         else:
-            taps = firwin(N, cutoff_hz, window=window, pass_zero="lowpass", fs=sfreq)
+            taps = firwin(
+                N, cutoff_hz, window=window, pass_zero="lowpass", fs=sfreq
+            )
     elif ftype.lower() == "highpass":
         if window.lower() == "kaiser":
             taps = firwin(
-                N, cutoff_hz, window=("kaiser", beta), pass_zero="highpass", fs=sfreq
+                N,
+                cutoff_hz,
+                window=("kaiser", beta),
+                pass_zero="highpass",
+                fs=sfreq,
             )
         else:
-            taps = firwin(N, cutoff_hz, window=window, pass_zero="highpass", fs=sfreq)
+            taps = firwin(
+                N, cutoff_hz, window=window, pass_zero="highpass", fs=sfreq
+            )
     elif ftype.lower() == "bandpass":
         if window.lower() == "kaiser":
             taps = firwin(
-                N, cutoff_hz, window=("kaiser", beta), pass_zero="bandpass", fs=sfreq
+                N,
+                cutoff_hz,
+                window=("kaiser", beta),
+                pass_zero="bandpass",
+                fs=sfreq,
             )
         else:
-            taps = firwin(N, cutoff_hz, window=window, pass_zero="bandpass", fs=sfreq)
+            taps = firwin(
+                N, cutoff_hz, window=window, pass_zero="bandpass", fs=sfreq
+            )
     elif ftype.lower() == "bandstop":
         if window.lower() == "kaiser":
             taps = firwin(
-                N, cutoff_hz, window=("kaiser", beta), pass_zero="bandstop", fs=sfreq
+                N,
+                cutoff_hz,
+                window=("kaiser", beta),
+                pass_zero="bandstop",
+                fs=sfreq,
             )
         else:
-            taps = firwin(N, cutoff_hz, window=window, pass_zero="bandstop", fs=sfreq)
+            taps = firwin(
+                N, cutoff_hz, window=window, pass_zero="bandstop", fs=sfreq
+            )
 
     return taps
 
@@ -275,7 +315,9 @@ def epochs_filters(
 ):
 
     # build and apply the filter
-    taps = _design_firwin_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
+    taps = _design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
     filt_epochs_df = _apply_firwin_filter(epochs_df, eeg_streams, taps)
 
     # optionally drop corrupted data
@@ -284,14 +326,20 @@ def epochs_filters(
         half_width = int(np.floor(N / 2))
         # times = filt_epochs_df.index.unique("Time")
         times = filt_epochs_df.Time.unique()
-        start_good = times[half_width]  # == first good sample b.c. 0-base index
+        start_good = times[
+            half_width
+        ]  # == first good sample b.c. 0-base index
         stop_good = times[-(half_width + 1)]  # last good sample, 0-base index
-        return filt_epochs_df.query("Time >= @start_good and Time <= @stop_good")
+        return filt_epochs_df.query(
+            "Time >= @start_good and Time <= @stop_good"
+        )
     else:
         return filt_epochs_df
 
 
-def _sins_test_data(freq_list, amplitude_list, sampling_freq=None, duration=None):
+def _sins_test_data(
+    freq_list, amplitude_list, sampling_freq=None, duration=None
+):
     """
     creat a noisy signal to test the filter
     usage:
@@ -305,7 +353,9 @@ def _sins_test_data(freq_list, amplitude_list, sampling_freq=None, duration=None
     if duration is None:
         duration = 1.5
     t = np.arange(0.0, duration, 1 / sampling_freq)
-    x_noise = 0.1 * np.sin(2 * np.pi * 60 * t) + 0.2 * np.random.normal(size=len(t))
+    x_noise = 0.1 * np.sin(2 * np.pi * 60 * t) + 0.2 * np.random.normal(
+        size=len(t)
+    )
     # x = x_noise
     x = 0.0
     for i in range(len(freq_list)):
