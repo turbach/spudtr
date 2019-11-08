@@ -14,16 +14,20 @@ def suggest_epoch_length(sfreq, ripple_db, width_hz):
     """
     Parameters
     ----------
-    sfreq: sampling frequency
-    ripple_db: ripple in dB
-    width_hz: width of transition region in hz
+    sfreq : float
+        sampling frequency, i.e. 250.0
+    ripple_db : float
+        ripple in dB
+    width_hz : float
+        width of transition region in hz
 
-    Usage:
-    -----
-    sfreq = 250
-    ripple_db = 60
-    width_hz = 4
-    suggest_epoch_length(sfreq, ripple_db, width_hz)
+    Examples
+    --------
+    >>> sfreq = 250
+    >>> ripple_db = 60
+    >>> width_hz = 4
+    >>> suggest_epoch_length(sfreq, ripple_db, width_hz)
+    your epoch length should be  230  points, or  0.92  seconds at least.
     """
 
     # Nyquist frequency
@@ -48,38 +52,32 @@ def suggest_epoch_length(sfreq, ripple_db, width_hz):
 def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
 
     """
-         Parameters
-         ----------
-         cutoff_hz : float
-                cutoff frequency in Hz, e.g., 5.0, 30.0
+    Parameters
+    ----------
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
 
-         width_hz : float
-                transition band width start to stop in Hz
+    Examples
+    --------
+    >>> cutoff_hz = 10.0
+    >>> width_hz = 5.0
+    >>> ripple_db = 60.0
+    >>> sfreq = 250
+    >>> ftype = 'lowpass'
+    >>> window = 'hamming'
+    >>> show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
+    """
 
-         ripple_db : float
-                attenuation in the stop band, in dB, e.g., 24.0, 60.0
-
-         sfreq : float
-                sampling frequency, e.g., 250.0, 500.0
-
-         ftype : string
-            filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-
-         window : string
-             window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
-
-
-         Usage:
-         -----
-         cutoff_hz = 10
-         width_hz = 5
-         ripple_db = 60
-         sfreq = 250
-         ftype = 'lowpass'
-         window = 'hamming'
-
-         show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
-         """
     taps = _design_firwin_filter(
         cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
     )
@@ -87,8 +85,31 @@ def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
     fig2 = _impz(taps, a=1)
 
 
-# Plot frequency and phase response
 def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
+
+    """ Plot the frequency and phase response of a digital filter.
+
+    Parameters
+    ----------
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    b : array_like
+        numerator of a linear filter
+    a : array_like
+        denominator of a linear filter
+
+    Returns
+    -------
+    fig : `~.figure.Figure`
+    """
     w, h = signal.freqz(b, a)
     h_dB = 20 * log10(abs(h))
 
@@ -131,19 +152,30 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
             cutoff_hz[1] - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
 
-    # ax2.plot((w/np.pi)*nyq_rate, h_dB)
     ax2.set_ylabel("Gain")
     ax2.set_xlabel("Frequency (Hz)")
     ax2.set_title(r"Frequency Response")
     # ax2.set_ylim(-0.05, 1.05)
-    ax2.set_xlim(-0.05, 40)
-    # ax2.grid(True)
+    ax2.set_xlim(-0.05, 50)
     ax2.grid(linestyle="--")
     return fig
 
 
-# Plot step and impulse response
 def _impz(b, a=1):
+
+    """ Plot step and impulse response.
+
+    Parameters
+    ----------
+    b : array_like
+        numerator of a linear filter
+    a : array_like
+        denominator of a linear filter
+
+    Returns
+    -------
+    fig : `~.figure.Figure`
+    """
     l = len(b)
     impulse = repeat(0.0, l)
     impulse[0] = 1.0
@@ -189,6 +221,11 @@ def _design_firwin_filter(
 
     ftype : string
         filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
+    Returns
+    -------
+    taps : ndarray
+        Coefficients of FIR filter.
 
     """
 
@@ -270,9 +307,21 @@ def _design_firwin_filter(
 def _apply_firwin_filter(df, columns, taps):
     """apply the FIRLS filtering
 
-    filtfilt() mangles data coming and going, doubles the order so
-    instead we forward pass with lfilter() and compensate for the delay
+    Parameters
+    ----------
+    df : pd.DataFrame
+        must have Epoch_idx and Time row index names
 
+    columns: list of str
+        column names to apply the filter
+
+    taps : ndarray
+        Coefficients of FIR filter.
+
+    Returns
+    -------
+    filt_df : pd.DataFrame
+        filtered df.
     """
 
     # assert len(taps) % 2 == 1  # enforce odd number of taps
@@ -313,6 +362,82 @@ def epochs_filters(
     sfreq,
     trim_edges,
 ):
+    """apply the FIRLS filtering for eeg data
+
+    Parameters
+    ----------
+    epochs_df : pd.DataFrame
+        must have Epoch_idx and Time row index names
+
+    eeg_streams: list of str
+        column names to apply the transform
+
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+
+    width_hz : float
+        transition band width start to stop in Hz
+
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+
+    trim_edges : bool
+        'True' trim edges, 'False' not trim edges
+
+    Returns
+    -------
+    pd.DataFrame
+        filtered epochs_df.
+
+    Examples
+    --------
+    >>> ftype = "bandpass"
+    >>> window = "kaiser"
+    >>> cutoff_hz = [18, 35]
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+
+    >>> filt_test_df = epochs_filters(
+        epochs_df, 
+        eeg_streams,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=False
+    )
+
+    >>> ftype = "lowpass"
+    >>> window = "hamming"
+    >>> cutoff_hz = 10
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+
+    >>> filt_test_df = epochs_filters(
+        epochs_df, 
+        eeg_streams,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=True
+    )
+    """
 
     # build and apply the filter
     taps = _design_firwin_filter(
@@ -340,12 +465,28 @@ def epochs_filters(
 def _sins_test_data(
     freq_list, amplitude_list, sampling_freq=None, duration=None
 ):
-    """
-    creat a noisy signal to test the filter
-    usage:
-    freq_list = [10,23,70]
-    amplitude_list = [1, 0.2, 0.3]
-    t,y = sins_test_data(freq_list, amplitude_list)
+    """creat a noisy signal to test the filter
+
+    Parameters
+    ----------
+    freq_list : float, list
+    amplitude_list : float, list
+    sampling_freq : float, optional
+        sampling frequency, default is 250.0
+    duration : float, optional
+        signal duration, default is 1.5 seconds
+
+    Returns
+    -------
+    t,x : float
+        time and values of a noisy signal  
+
+    Examples
+    --------
+    >>> freq_list = [10.0, 25.0, 45.0]
+    >>> amplitude_list = [1.0, 0.2, 0.3]
+    >>> t,y = _sins_test_data(freq_list, amplitude_list)
+
     """
     assert len(freq_list) == len(amplitude_list)
     if sampling_freq is None:
