@@ -286,3 +286,24 @@ def test_bandstop_filter():
     a = max(abs(ya - yb))
     TorF = np.isclose(a, 0, atol=1e-03)
     assert TorF == True
+
+
+def test_suggest_epoch_length():
+
+    sfreq = 250
+    ripple_db = 60
+    width_hz = 4
+    N = filters.suggest_epoch_length(sfreq, ripple_db, width_hz)
+    assert N == 230
+
+
+def test_show_filter():
+
+    cutoff_hz = 10.0
+    width_hz = 5.0
+    ripple_db = 60.0
+    sfreq = 250
+    ftype = "lowpass"
+    window = "hamming"
+    filters.show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
+    assert "h" in window
