@@ -137,7 +137,7 @@ def test_lowpass_filter():
     testdata = pd.DataFrame({"fakedata": y})
 
     ftype = "lowpass"
-    window = "kaiser"
+    window = "hamming"
     cutoff_hz = 12.5
     width_hz = 5
     ripple_db = 60
@@ -197,6 +197,86 @@ def test_bandpass_filter():
 
     freq_list = [30]
     amplitude_list = [1.0]
+    t, y1 = filters._sins_test_data(freq_list, amplitude_list)
+
+    i1 = int(len(y1) / 2) - 20
+    i2 = int(len(y1) / 2) + 20
+    ya = y1[i1:i2]
+    yb = y_filt[i1:i2]
+    a = max(abs(ya - yb))
+    TorF = np.isclose(a, 0, atol=1e-03)
+    assert TorF == True
+
+
+def test_highpass_filter():
+
+    # creat a fakedata to show the filter
+    freq_list = [10, 30]
+    amplitude_list = [1.0, 1.0]
+    t, y = filters._sins_test_data(freq_list, amplitude_list)
+    testdata = pd.DataFrame({"fakedata": y})
+
+    ftype = "highpass"
+    window = "blackman"
+    cutoff_hz = 20
+    width_hz = 5
+    ripple_db = 60
+    sfreq = 250
+
+    filt_test_df = filters.epochs_filters(
+        testdata,
+        ["fakedata"],
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=False,
+    )
+    y_filt = filt_test_df["fakedata"]
+    freq_list = [30]
+    amplitude_list = [1.0]
+    t, y1 = filters._sins_test_data(freq_list, amplitude_list)
+    i1 = int(len(y1) / 2) - 20
+    i2 = int(len(y1) / 2) + 20
+    ya = y1[i1:i2]
+    yb = y_filt[i1:i2]
+    a = max(abs(ya - yb))
+    TorF = np.isclose(a, 0, atol=1e-02)
+    assert TorF == True
+
+
+def test_bandstop_filter():
+
+    # creat a fakedata to show the filter
+    freq_list = [10, 25, 45]
+    amplitude_list = [1.0, 1.0, 1.0]
+    t, y = filters._sins_test_data(freq_list, amplitude_list)
+    testdata = pd.DataFrame({"fakedata": y})
+
+    ftype = "bandstop"
+    window = "hann"
+    cutoff_hz = [18, 35]
+    width_hz = 5
+    ripple_db = 60
+    sfreq = 250
+
+    filt_test_df = filters.epochs_filters(
+        testdata,
+        ["fakedata"],
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=False,
+    )
+    y_filt = filt_test_df["fakedata"]
+
+    freq_list = [10, 45]
+    amplitude_list = [1.0, 1.0]
     t, y1 = filters._sins_test_data(freq_list, amplitude_list)
 
     i1 = int(len(y1) / 2) - 20
