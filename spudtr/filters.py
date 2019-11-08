@@ -40,13 +40,16 @@ def suggest_epoch_length(sfreq, ripple_db, width_hz):
     # The parameters returned by this function are generally used for the window method with firwin.
     N, beta = kaiserord(ripple_db, width)
 
+    N = N + 2
+
     print(
         "your epoch length should be ",
-        N + 2,
+        N,
         " points, or ",
-        (N + 2) / sfreq,
+        N / sfreq,
         " seconds at least. ",
     )
+    return N
 
 
 def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
