@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 from scipy import signal, fftpack
 from pylab import *
