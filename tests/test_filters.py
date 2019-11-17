@@ -18,17 +18,21 @@ def test_suggest_epoch_length():
     N = filters.suggest_epoch_length(sfreq, ripple_db, width_hz)
     assert N == 230
 
+
 def test_show_filter():
     cutoff_hz = 10.0
     width_hz = 5.0
     ripple_db = 60.0
     sfreq = 250
-    ftype = 'lowpass'
-    window = 'hamming'
+    ftype = "lowpass"
+    window = "hamming"
     filters.show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
     assert sfreq == 250
 
-@pytest.mark.parametrize('window_type', ('kaiser','hamming','hann','blackman'))
+
+@pytest.mark.parametrize(
+    "window_type", ("kaiser", "hamming", "hann", "blackman")
+)
 def test_epochs_filters(window_type):
     # creat a fakedata to show the filter
     freq_list = [10, 30]
@@ -37,7 +41,7 @@ def test_epochs_filters(window_type):
     testdata = pd.DataFrame({"fakedata": y})
 
     ftype = "lowpass"
-    #window = "hamming"
+    # window = "hamming"
     cutoff_hz = 12.5
     width_hz = 5
     ripple_db = 60
@@ -47,7 +51,7 @@ def test_epochs_filters(window_type):
         testdata,
         ["fakedata"],
         ftype,
-        #window = window_type,
+        # window = window_type,
         window_type,
         cutoff_hz,
         width_hz,
