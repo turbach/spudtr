@@ -30,7 +30,9 @@ def test_show_filter():
     assert sfreq == 250
 
 
-@pytest.mark.parametrize("window_type", ("kaiser", "hamming", "hann", "blackman"))
+@pytest.mark.parametrize(
+    "window_type", ("kaiser", "hamming", "hann", "blackman")
+)
 def test_epochs_filters(window_type):
     # creat a fakedata to show the filter
     freq_list = [10, 30]
