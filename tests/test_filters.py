@@ -30,9 +30,7 @@ def test_show_filter():
     assert sfreq == 250
 
 
-@pytest.mark.parametrize(
-    "window_type", ("kaiser", "hamming", "hann", "blackman")
-)
+@pytest.mark.parametrize("window_type", ("kaiser", "hamming", "hann", "blackman"))
 def test_epochs_filters(window_type):
     # creat a fakedata to show the filter
     freq_list = [10, 30]
@@ -70,3 +68,18 @@ def test_epochs_filters(window_type):
     a = max(abs(ya - yb))
     TorF = np.isclose(a, 0, atol=1e-01)
     assert TorF == True
+
+
+def test_mfreqz():
+    cutoff_hz = 10.0
+    width_hz = 5.0
+    ripple_db = 60.0
+    sfreq = 250
+    ftype = "lowpass"
+    window = "hamming"
+
+    taps = filters._design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+    fig1 = filters._mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
+    assert len(taps) == 183
