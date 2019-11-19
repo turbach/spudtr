@@ -85,3 +85,64 @@ def test_mfreqz():
     )
     fig1 = filters._mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
     assert len(taps) == 183
+
+
+def test_impz():
+    cutoff_hz = 10.0
+    width_hz = 5.0
+    ripple_db = 60.0
+    sfreq = 250
+    ftype = "lowpass"
+    window = "hamming"
+
+    taps = filters._design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+    fig = filters._impz(taps, a=1)
+    assert len(taps) == 183
+
+
+def test_design_firwin_filter():
+    ftype = "highpass"
+    window = "blackman"
+    cutoff_hz = 20
+    width_hz = 5
+    ripple_db = 60
+    sfreq = 250
+    # build and apply the filter
+    taps = filters._design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+    assert len(taps) == 183
+
+
+def test_apply_firwin_filter():
+    # creat a fakedata to show the filter
+    freq_list = [10, 25, 45]
+    amplitude_list = [1.0, 1.0, 1.0]
+    t, y = filters._sins_test_data(freq_list, amplitude_list)
+    testdata = pd.DataFrame({"fakedata": y})
+
+    ftype = "bandstop"
+    window = "hann"
+    cutoff_hz = [18, 35]
+    width_hz = 5
+    ripple_db = 60
+    sfreq = 250
+
+    epochs_df = testdata
+    eeg_streams = ["fakedata"]
+    # build and apply the filter
+    taps = filters._design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+    filt_epochs_df = filters._apply_firwin_filter(epochs_df, eeg_streams, taps)
+    assert len(taps) == 183
+
+
+def test_sins_test_data():
+    # creat a fakedata to show the filter
+    freq_list = [10, 30]
+    amplitude_list = [1.0, 1.0]
+    t, y = filters._sins_test_data(freq_list, amplitude_list)
+    assert len(t) == 375
