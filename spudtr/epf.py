@@ -2,7 +2,8 @@
 import numpy as np
 import pandas as pd
 import bottleneck as bn
-from scipy.signal import kaiserord, lfilter, firwin, freqz
+
+# from scipy.signal import kaiserord, lfilter, firwin, freqz
 
 
 def _validate_epochs_df(epochs_df, epoch_id=None, time=None):
@@ -11,6 +12,12 @@ def _validate_epochs_df(epochs_df, epoch_id=None, time=None):
     Parameters
     ----------
     epochs_df : pd.DataFrame
+
+    epoch_id : str or None, optional
+        column name for epoch indexes
+
+    time: str or None, optional
+        column name for time stamps
 
     """
 
@@ -54,6 +61,27 @@ def _hdf_read_epochs(epochs_f, h5_group):
 
 
 def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
+    """Quality control for epochs_df
+
+    Parameter
+    ---------
+    epochs_df : pd.DataFrame
+
+    eeg_streams: list of str
+        column names
+        
+    epoch_id : str or None, optional
+        column name for epoch indexes
+
+    time: str or None, optional
+        column name for time stamps
+
+    Return
+    ------
+    df : pd.DataFrame
+       pass the quality control
+
+    """
     if epoch_id is None:
         epoch_id = "Epoch_idx"
 
@@ -110,8 +138,16 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
                 )
         prev_group = cur_group
 
+    def list_duplicates(seq):
+        seen = set()
+        seen_add = seen.add
+        # adds all elements it doesn't know yet to seen and all other to seen_twice
+        seen_twice = set(x for x in seq if x in seen or seen_add(x))
+        # turn the set into a list (as requested)
+        return list(seen_twice)
+
     if not prev_group.index.is_unique:
-        dupes = prev_group.index.filter(lambda x: len(x) > 1)
+        dupes = list_duplicates(list(prev_group.index))
         raise ValueError(
             f"Duplicate values of epoch_id in each"
             f"time group not allowed:\n{dupes}"
@@ -132,6 +168,11 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
 
     start, stop : int,  start < stop
         basline interval Time values, stop is inclusive
+
+    Return
+    ------
+    df : pd.DataFrame
+       after center on
 
     """
 
@@ -198,13 +239,13 @@ def drop_bad_epochs(epochs_df, art_col=None, epoch_id=None, time=None):
     epochs_df : pd.DataFrame
         must have Epoch_idx and Time row index names
 
-    art_col : str
+    art_col : str or None, optional
         column name with QC codes
 
-    epoch_id : str
+    epoch_id : str or None, optional
         column name for epoch indexes
 
-    time: str
+    time: str or None, optional
         column name for time stamps
 
     Returns
@@ -243,27 +284,11 @@ def re_reference(epochs_df, eeg_streams, rs, ref_type):
     new common via ChanX - new_common
     Rereference common average: transform specified data channels from A1 common reference to 
     average reference via ChanX - 1/nchannels * Sum{i=0}   {nchannels} Chan_i.
-   
 
-    Usages
-    ------
-
-    eeg_streams = ['MiPf', 'MiCe', 'MiPa', 'MiOc']
-    rs = ['A2']
-    ref_type = 'bimastoid'
-    re_reference(epochs_df, eeg_streams, rs, ref_type)
-    or
-    re_reference(epochs_df, eeg_streams, 'A2', 'bimastoid')
-
-    rs = ['MiPf']
-    ref_type = 'new_common'
-    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
-    rs = ['lle', 'lhz', 'MiPf']
-    ref_type = 'common_average'
-    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
-       
     Parameters
     ----------
+    epochs_df : pd.DataFrame
+        must have Epoch_idx and Time row index names
    
     eeg_streams : list-like of str
         the names of colums to transform
@@ -273,6 +298,29 @@ def re_reference(epochs_df, eeg_streams, rs, ref_type):
         of streams for the common average reference
         
     type : str = {'bimastoid', 'new_common', 'common_average'}
+
+    Returns
+    -------
+    br_epochs_df : pd.DataFrame
+   
+    Examples
+    --------
+
+    >>> eeg_streams = ['MiPf', 'MiCe', 'MiPa', 'MiOc']
+    >>> rs = ['A2']
+    >>> ref_type = 'bimastoid'
+    >>> re_reference(epochs_df, eeg_streams, rs, ref_type)
+    or
+    re_reference(epochs_df, eeg_streams, 'A2', 'bimastoid')
+
+    >>> rs = ['MiPf']
+    >>> ref_type = 'new_common'
+    >>> br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+
+    >>> rs = ['lle', 'lhz', 'MiPf']
+    >>> ref_type = 'common_average'
+    >>> br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+       
     """
 
     # LOGGER.info(f"bimastoid_reference {a2}")
