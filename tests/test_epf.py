@@ -1,8 +1,12 @@
 from pathlib import Path
 import pytest
+
 import spudtr.epf as epf
 import spudtr.fake_epochs_data as fake_data
-import spudtr.filters as filters
+
+# import epf as epf
+# import fake_epochs_data as fake_data
+
 import numpy as np
 import pandas as pd
 
@@ -19,8 +23,28 @@ TEST_DATA_DIR = Path(__file__).parent / "data"
         ["sub000wr.epochs.h5", "wr"],
     ],
 )
-def test_hdf_read_epochs(_f, h5_group):
+def test__hdf_read_epochs(_f, h5_group):
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group)
+    with pytest.raises(ValueError) as excinfo:
+        epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group=None)
+    assert "You have to give h5_group key" in str(excinfo.value)
+
+
+def test__validate_epochs_df():
+
+    epochs_df, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+    epf._validate_epochs_df(epochs_df)
+
+    with pytest.raises(ValueError) as excinfo:
+        epf._validate_epochs_df(epochs_df, epoch_id="Epoch_idx", time="T")
+    assert "time column T not found" in str(excinfo.value)
 
 
 # test by using one file
@@ -29,6 +53,81 @@ def test_epochs_QC():
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
     eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
     epf._epochs_QC(epochs_df, eeg_streams)
+
+
+def test_epochs_QC_fails():
+    _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
+    epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
+    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
+
+    with pytest.raises(ValueError) as excinfo:
+        epochs_df1 = [1, 2]
+        epf._epochs_QC(epochs_df1, eeg_streams)
+    assert "epochs_df must be a Pandas DataFrame." in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        eeg_streams1 = set(eeg_streams)
+        epf._epochs_QC(epochs_df, eeg_streams1)
+    assert "eeg_streams should be a list of strings." in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        eeg_streams1 = ["A"]
+        epf._epochs_QC(epochs_df, eeg_streams1)
+    assert "eeg_streams should all be present in the epochs dataframe," in str(
+        excinfo.value
+    )
+
+
+def test_raises_error_on_duplicate_channels():
+
+    epochs_table, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+    dupe_channel = channels[0]
+    dupe_column = epochs_table[dupe_channel]
+    bad_epochs_table = pd.concat([epochs_table, dupe_column], axis=1)
+
+    with pytest.raises(ValueError) as excinfo:
+        epf._epochs_QC(bad_epochs_table, channels)
+    assert "Duplicate column names" in str(excinfo.value)
+
+
+def test_epochs_unequal_snapshots():
+
+    epochs_table, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+
+    epochs_table.drop(epochs_table.index[42], inplace=True)
+    with pytest.raises(ValueError) as excinfo:
+        epf._epochs_QC(epochs_table, channels)
+    assert "differs from previous snapshot" in str(excinfo.value)
+
+
+def test_Duplicate_values_of_epoch_id():
+    epochs_table, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+    epochs_table.loc[epochs_table["Epoch_idx"] == 16, ["Epoch_idx"]] = 18
+
+    with pytest.raises(ValueError) as excinfo:
+        epf._epochs_QC(epochs_table, channels)
+    assert "Duplicate values of epoch_id" in str(excinfo.value)
 
 
 def test_center_on():
@@ -57,6 +156,20 @@ def test_center_on():
     assert sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]
 
 
+def test_center_eeg_start_stop_time():
+    epochs_df, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=32,
+        time="Time",
+        epoch_id="Epoch_idx",
+    )
+    start, stop = -999, 999
+    eeg_streams = ["channel0", "channel1"]
+    epf.center_eeg(epochs_df, eeg_streams, start, stop)
+
+
 def test_drop_bad_epochs():
     _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
@@ -74,6 +187,7 @@ def test_drop_bad_epochs():
     assert (
         epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
     )
+    epochs_df_good = epf.drop_bad_epochs(epochs_df)
 
 
 def test_re_reference():
@@ -98,6 +212,11 @@ def test_re_reference():
     ref_type = "common_average"
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
     assert list(br_epochs_df.b) == [0.5, 0.5, 0.5]
+
+    with pytest.raises(ValueError) as excinfo:
+        rs1 = set(rs)
+        br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs1, ref_type)
+    assert "rs should be a list of strings" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
