@@ -135,25 +135,10 @@ def test_center_on():
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
     eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
     start, stop = -50, 300
-    epochs_df_centeron = epf.center_eeg(epochs_df, eeg_streams, start, stop)
 
-    # after center on, the mean inside interval should be zero
-    qstr = f"{start} <= Time and Time < {stop}"
-    after_mean = epochs_df_centeron.groupby(["Epoch_idx"]).apply(
-        lambda x: x.query(qstr)[eeg_streams].mean(axis=0)
-    )
-
-    # a is afer_mean numpy array, and b is zero array same size as a
-
-    a = after_mean.values
-    b = np.zeros(after_mean.shape)
-
-    # np.isclose(a,b)   #all false
-    # np.isclose(a,b,atol=1e-05)  #most true, but some false
-
-    # The absolute tolerance parameter: atol=1e-04
-    TorF = np.isclose(a, b, atol=1e-04)
-    assert sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]
+    with pytest.raises(ValueError) as excinfo:
+        epf.center_eeg(epochs_df, eeg_streams, start, stop, atol=1e-6)
+    assert "center_on is not successful" in str(excinfo.value)
 
 
 def test_center_eeg_start_stop_time():
@@ -167,7 +152,7 @@ def test_center_eeg_start_stop_time():
     )
     start, stop = -999, 999
     eeg_streams = ["channel0", "channel1"]
-    epf.center_eeg(epochs_df, eeg_streams, start, stop)
+    epf.center_eeg(epochs_df, eeg_streams, start, stop, atol=1e-04)
 
 
 def test_drop_bad_epochs():
