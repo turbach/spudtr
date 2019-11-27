@@ -155,7 +155,7 @@ def _epochs_QC(epochs_df, eeg_streams, epoch_id=None, time=None):
     return epochs_df
 
 
-def center_eeg(epochs_df, eeg_streams, start, stop):
+def center_eeg(epochs_df, eeg_streams, start, stop, atol=1e-04):
     """center (a.k.a. "baseline") EEG amplitude on mean from start to stop
 
     Parameters
@@ -168,6 +168,9 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
 
     start, stop : int,  start < stop
         basline interval Time values, stop is inclusive
+
+    atol: The absolute tolerance parameter
+        after center on, the mean inside interval should be zero with atol.
 
     Return
     ------
@@ -219,11 +222,11 @@ def center_eeg(epochs_df, eeg_streams, start, stop):
     # np.isclose(a,b,atol=1e-05)  #most true, but some false
 
     # The absolute tolerance parameter: atol=1e-04
-    TorF = np.isclose(a, b, atol=1e-04)
+    TorF = np.isclose(a, b, atol)
     if sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]:
         print("center_on is correct")
     else:
-        raise ValueError(f"center_on is not successful with atol=1e-04")
+        raise ValueError("center_on is not successful with atol.")
 
     _validate_epochs_df(epochs_df_tmp)
     return epochs_df_tmp
