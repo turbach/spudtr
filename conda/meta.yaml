@@ -1,4 +1,4 @@
-{% set version = "0.0.1" %}
+{% set version = "0.0.2" %}
 {% set py_pin = "3.6" %}  # pins for mkpy and fitgrid
 {% set np_pin = "1.16.4" %}
 
@@ -23,14 +23,17 @@ build:
 requirements:
     # build ... all moved to host
     host:
+        - mkl  # should be default on anaconda
+        - blas =1.0  # anaconda mkl
         - python ={{ py_pin }}  # else cython uses Python 3.7
         - numpy =={{ np_pin }}
+        - numpy-base =={{ np_pin }}
         - Cython
 
     run:
         - python ={{ py_pin }}
-        - numpy =={{ np_pin }}
-        - numpy
+        - numpy =={{ np_pin }}  # these to pull from anaconda for mkl
+        - numpy-base =={{ np_pin }}
         - scipy
         - pandas
         - matplotlib

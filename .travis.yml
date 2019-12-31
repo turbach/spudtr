@@ -29,6 +29,7 @@ deploy:
       skip_cleanup: true
       script: bash ./ci/conda_upload.sh
       on:
+          # safe to use all branches for testing b.c. conda uploads can be deleted
           # all_branches: true  # for testing
           tags: true
           condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$  # restrict to release tags
