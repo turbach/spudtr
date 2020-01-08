@@ -50,7 +50,7 @@ mmp=`echo $version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 #   vMajor.Minor.Patch release tag convention for conda uploads.
 if [[ "${version}" = "$mmp" && $TRAVIS_BRANCH = v$mmp ]]; then
     is_release=""
-    label_param="main"
+    label_param="--label main"
     conda install anaconda-client
 else
     is_release="false"
@@ -87,7 +87,8 @@ echo "$(ls ./**/${PACKAGE_NAME}*.tar.bz2)"
 #    attempt the upload 
 # else
 #    skip the upload and exit happy
-if [[ $ANACONDA_TOKEN != "[not_set]" && $is_release = "true" ]]; then
+#if [[ $ANACONDA_TOKEN != "[not_set]" && $is_release = "true" ]]; then
+if [[ $ANACONDA_TOKEN != "[not_set]" ]]; then
 
     echo "uploading to Anconda Cloud: $PACKAGE_NAME$ $version ..."
     if ${conda_cmd}; then
