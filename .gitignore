@@ -6,6 +6,10 @@
 \#*\#
 .\#*
 
+# sphinx-api generates these
+docs/source/
+
+
 # conda build files
 tmp-conda-builds/
 

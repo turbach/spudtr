@@ -1,7 +1,0 @@
-spudtr.epf module
-=================
-
-.. automodule:: spudtr.epf
-    :members:
-    :undoc-members:
-    :show-inheritance:

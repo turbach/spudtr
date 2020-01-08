@@ -68,6 +68,7 @@ conda convert --platform all linux-64/${PACKAGE_NAME}*tar.bz2
 ANACONDA_TOKEN=${ANACONDA_TOKEN:-[not_set]}
 #conda_cmd="anaconda --token $ANACONDA_TOKEN upload ${tarball} ${label_param}"
 conda_cmd="anaconda --token $ANACONDA_TOKEN upload ./**/${PACKAGE_NAME}*.tar.bz2 ${label_param}"
+conda_cmd=${conda_cmd}" -d \"Recommended installation:\n\n\`\`\`conda install spudtr=${mmp} -c kutaslab\`\`\`\n\n\""
 
 # thus far ...
 echo "conda meta.yaml version: $version"
@@ -81,7 +82,6 @@ echo "conda_label: ${label_param}"
 echo "conda upload command: ${conda_cmd}"
 echo "platforms:"
 echo "$(ls ./**/${PACKAGE_NAME}*.tar.bz2)"
-
 
 # if the token is in the ENV and this is a release/tagged commit or equivalent
 #    attempt the upload 

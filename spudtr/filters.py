@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from scipy import signal, fftpack
-from pylab import *
 
 import logging as LOGGER
 from scipy.signal import kaiserord, firwin, freqz, lfilter
@@ -114,7 +113,7 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     fig : `~.figure.Figure`
     """
     w, h = signal.freqz(b, a)
-    h_dB = 20 * log10(abs(h))
+    h_dB = 20 * np.log10(abs(h))
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
     # make a little extra space between the subplots
@@ -126,7 +125,7 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     ax1.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
     ax1.set_title(r"Frequency and Phase response")
     ax1b = ax1.twinx()
-    h_Phase = unwrap(arctan2(imag(h), real(h)))
+    h_Phase = np.unwrap(np.arctan2(np.imag(h), np.real(h)))
     ax1b.plot(w / max(w), h_Phase, "g")
     ax1b.set_ylabel("Phase (radians)", color="g")
     ax1.grid(linestyle="--")
@@ -180,9 +179,9 @@ def _impz(b, a=1):
     fig : `~.figure.Figure`
     """
     l = len(b)
-    impulse = repeat(0.0, l)
+    impulse = np.repeat(0.0, l)
     impulse[0] = 1.0
-    x = arange(0, l)
+    x = np.arange(0, l)
     response = signal.lfilter(b, a, impulse)
     fig, (ax1, ax2) = plt.subplots(2, 1)
     # make a little extra space between the subplots
@@ -193,7 +192,7 @@ def _impz(b, a=1):
     ax1.set_xlabel(r"n (samples)")
     ax1.set_title(r"Impulse response")
 
-    step = cumsum(response)
+    step = np.cumsum(response)
     ax2.stem(x, step, use_line_collection=True)
     ax2.set_ylabel("Amplitude")
     ax2.set_xlabel(r"n (samples)")

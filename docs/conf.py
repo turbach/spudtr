@@ -20,7 +20,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../"))
 
 from spudtr import get_ver
 
@@ -58,7 +58,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "spudtr"
-copyright = "2019, Thomas P. Urbach"
+copyright = "2019-2020, Thomas P. Urbach"
 author = "Thomas P. Urbach"
 
 # The version info for the project you're documenting, acts as replacement for
