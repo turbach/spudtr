@@ -21,11 +21,15 @@ spudtr
 
 .. toctree::
    :maxdepth: 5
+   :glob:
 
    introduction
+
+   notebooks
 
    dataframe_format
 
    reference
+
 
 
