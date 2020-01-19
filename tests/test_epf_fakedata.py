@@ -28,8 +28,8 @@ def test_epochs_QC():
         n_samples=100,
         n_categories=2,
         n_channels=32,
-        time="Time",
-        epoch_id="Epoch_idx",
+        time=epf.TIME,
+        epoch_id=epf.EPOCH_ID,
     )
 
     eeg_streams = ["channel0", "channel1", "channel2", "channel3", "channel4"]
@@ -42,8 +42,8 @@ def test_center_on():
         n_samples=100,
         n_categories=2,
         n_channels=32,
-        time="Time",
-        epoch_id="Epoch_idx",
+        time=epf.TIME,
+        epoch_id=epf.EPOCH_ID,
     )
 
     eeg_streams = ["channel0", "channel1", "channel2", "channel3", "channel4"]
@@ -51,8 +51,8 @@ def test_center_on():
     epochs_df_centeron = epf.center_eeg(epochs_df, eeg_streams, start, stop)
 
     # after center on, the mean inside interval should be zero
-    qstr = f"{start} <= Time and Time < {stop}"
-    after_mean = epochs_df_centeron.groupby(["Epoch_idx"]).apply(
+    qstr = f"{start} <= {epf.TIME} and {epf.TIME} < {stop}"
+    after_mean = epochs_df_centeron.groupby([epf.EPOCH_ID]).apply(
         lambda x: x.query(qstr)[eeg_streams].mean(axis=0)
     )
 
@@ -80,5 +80,5 @@ def test_center_on():
         pdb.set_trace()
         raise ValueError(f'randval > 0.5 {randval}')
     else:
-        warnings.warn(f'randval <= 0.5 {randval}')
+        warnings.warn(f'randval <= 0.5 {randval})'
 """

@@ -4,6 +4,7 @@ import re
 # single source the python package version with a bit of error checking
 __version__ = "0.0.5.dev0"
 
+
 def get_ver():
     pf_ver = re.search(r"(?P<ver_str>\d+\.\d+\.\d+\S*)", __version__)
 
