@@ -53,7 +53,6 @@ if [[ "${version}" = "$mmp" && $TRAVIS_BRANCH = v$mmp ]]; then
     label_param="--label main"
     conda install anaconda-client
 
-
 else
     is_release="false"
     label_param="--label pre-release"

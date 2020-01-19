@@ -2,12 +2,7 @@ from pathlib import Path
 import re
 
 # single source the python package version with a bit of error checking
-<<<<<<< HEAD
-__version__ = "0.0.4"
-=======
-__version__ = "0.0.3"
->>>>>>> 0.0.5.dev0
-
+__version__ = "0.0.5.dev0"
 
 def get_ver():
     pf_ver = re.search(r"(?P<ver_str>\d+\.\d+\.\d+\S*)", __version__)
