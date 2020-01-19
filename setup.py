@@ -43,7 +43,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Intended Audience :: Science/Research",
     ],
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests"]),
     #    scripts=["bin/stub"],
     #    cmdclass={"build_ext": build_ext},
     #    ext_modules=cythonize(extensions, language_level=3),
