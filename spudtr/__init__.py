@@ -2,7 +2,11 @@ from pathlib import Path
 import re
 
 # single source the python package version with a bit of error checking
+<<<<<<< HEAD
 __version__ = "0.0.4"
+=======
+__version__ = "0.0.3"
+>>>>>>> 0.0.5.dev0
 
 
 def get_ver():

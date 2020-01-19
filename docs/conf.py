@@ -20,7 +20,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../"))
 
 from spudtr import get_ver
 
@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
+    "nbsphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,7 +59,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "spudtr"
-copyright = "2019, Thomas P. Urbach"
+copyright = "2019-2020, Thomas P. Urbach"
 author = "Thomas P. Urbach"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -82,7 +83,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns = ['build', '_build', '**.ipynb_checkpoints']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
