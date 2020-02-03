@@ -88,29 +88,29 @@ def test__validate_epochs_df(_epoch_id, _time):
 def test_epochs_QC():
     _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
-    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    epf._epochs_QC(epochs_df, eeg_streams, time="time_ms")
+    data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
+    epf._epochs_QC(epochs_df, data_streams, time="time_ms")
 
 
 def test_epochs_QC_fails():
     _f1, h5_group1 = "sub000wr.epochs.h5", "wr"
     epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f1, h5_group1)
-    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
+    data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
 
     with pytest.raises(ValueError) as excinfo:
         epochs_df1 = [1, 2]
-        epf._epochs_QC(epochs_df1, eeg_streams)
+        epf._epochs_QC(epochs_df1, data_streams)
     assert "epochs_df must be a Pandas DataFrame." in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
-        eeg_streams1 = set(eeg_streams)
-        epf._epochs_QC(epochs_df, eeg_streams1)
-    assert "eeg_streams should be a list of strings." in str(excinfo.value)
+        data_streams1 = set(data_streams)
+        epf._epochs_QC(epochs_df, data_streams1)
+    assert "data_streams should be a list of strings." in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
-        eeg_streams1 = ["A"]
-        epf._epochs_QC(epochs_df, eeg_streams1)
-    assert "eeg_streams should all be present in the epochs dataframe," in str(
+        data_streams1 = ["A"]
+        epf._epochs_QC(epochs_df, data_streams1)
+    assert "data_streams should all be present in the epochs dataframe," in str(
         excinfo.value
     )
 
@@ -165,6 +165,46 @@ def test_Duplicate_values_of_epoch_id():
     with pytest.raises(ValueError) as excinfo:
         epf._epochs_QC(epochs_table, channels)
     assert "Duplicate values of epoch_id" in str(excinfo.value)
+
+
+
+@pytest.mark.parametrize(
+    "data_streams",
+    [
+        ["channel0", "channel1"],
+        pytest.param("channel_xfail", marks=pytest.mark.xfail(strict=True)),
+        pytest.param("[channel_xfail]", marks=pytest.mark.xfail(strict=True)),
+    ]
+)
+@pytest.mark.parametrize(
+    "_epoch_id", 
+    [
+        "epoch_id",
+        pytest.param("epoch_id_xfail", marks=pytest.mark.xfail(strict=True)),
+    ]
+)
+@pytest.mark.parametrize(
+    "_time", 
+    [
+        "time",
+        pytest.param("time_xfail", marks=pytest.mark.xfail(strict=True)),
+    ]
+)
+def test_check_epochs(data_streams, _epoch_id, _time):
+    """test UI wrapper for epochs QC"""
+
+    # build default fake data
+    epochs_table, channels = fake_data._generate(
+        n_epochs=10,
+        n_samples=100,
+        n_categories=2,
+        n_channels=2,
+        time=TIME,
+        epoch_id=EPOCH_ID,
+    )
+
+    # some succeed, some xfail
+    epf.check_epochs(epochs_table, data_streams, _epoch_id, _time)
 
 
 def test_center_on():
@@ -224,29 +264,29 @@ def test_re_reference():
 
     eeg_streams = ["b", "c"]
 
-    rs = ["a"]
-    ref_type = "bimastoid"
-    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    ref = ["a"]
+    ref_type = "linked_pair"
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, ref_type)
     assert list(br_epochs_df.b) == [1.5, 3.0, 4.5]
-    rs = ["a"]
+    ref = ["a"]
     ref_type = "new_common"
-    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, ref_type)
     assert list(br_epochs_df.b) == [1, 1, 1]
-    rs = ["a", "b"]
+    ref = ["a", "b"]
     ref_type = "common_average"
-    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, ref_type)
     assert list(br_epochs_df.b) == [0.5, 0.5, 0.5]
 
     with pytest.raises(ValueError) as excinfo:
-        rs1 = set(rs)
-        br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs1, ref_type)
-    assert "rs should be a list of strings" in str(excinfo.value)
+        ref1 = set(ref)
+        br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref1, ref_type)
+    assert "ref should be a list of strings" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
-    "eeg_streams,rs,ref_type,expected",
+    "eeg_streams,ref,ref_type,expected",
     [
-        (["b", "c"], ["a"], "bimastoid", [1.5, 3.0, 4.5]),
+        (["b", "c"], ["a"], "linked_pair", [1.5, 3.0, 4.5]),
         (["b", "c"], ["a"], "new_common", [1, 1, 1]),
         (["b", "c"], ["a", "b"], "common_average", [0.5, 0.5, 0.5]),
         pytest.param(
@@ -258,7 +298,7 @@ def test_re_reference():
         ),
     ],
 )
-def test_re_reference_2(eeg_streams, rs, ref_type, expected):
+def test_re_reference_2(eeg_streams, ref, ref_type, expected):
 
     # create a fake data
     epochs_df = pd.DataFrame(
@@ -266,6 +306,6 @@ def test_re_reference_2(eeg_streams, rs, ref_type, expected):
         columns=[EPOCH_ID, TIME, "a", "b", "c"],
     )
 
-    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, ref_type)
 
     assert list(br_epochs_df.b) == expected

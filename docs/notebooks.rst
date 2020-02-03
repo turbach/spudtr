@@ -1,6 +1,13 @@
 =================
-Jupyter Notebooks
+User Guide
 =================
+
+
+Loading Data
+------------
+
+   load_data
+
 
 Epochs utilities (epf)
 ----------------------

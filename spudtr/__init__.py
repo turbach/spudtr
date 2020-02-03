@@ -1,6 +1,8 @@
 from pathlib import Path
 import re
 
+DATA_DIR = Path(__file__).parents[1] / "tests/data"
+
 # single source the python package version with a bit of error checking
 __version__ = "0.0.5.dev0"
 

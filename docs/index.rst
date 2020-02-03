@@ -25,9 +25,7 @@ spudtr
 
    introduction
 
-   notebooks
-
-   dataframe_format
+   user_guide/*
 
    reference
 

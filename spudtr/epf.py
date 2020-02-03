@@ -1,4 +1,5 @@
 """utilities for epoched EEG data in a pandas.DataFrame """
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import bottleneck as bn
@@ -54,44 +55,52 @@ def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
     return epochs_df
 
 
-def _epochs_QC(epochs_df, eeg_streams, epoch_id=EPOCH_ID, time=TIME):
-    """Quality control for epochs_df
+def check_epochs(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
+    """check epochs data are in spudtr format
 
     Parameter
     ---------
     epochs_df : pd.DataFrame
 
-    eeg_streams: list of str
-        column names
+    data_streams: list of str
+        the columns containing data
         
-    epoch_id : str or None, optional
-        column name for epoch indexes
+    epoch_id : str (default="epoch_id")
+        column name for the epoch index
 
-    time: str or None, optional
-        column name for time stamps
+    time: str (default="time")
+        column name for the time stamps
 
-    Return
+
+    Raises
     ------
-    df : pd.DataFrame
-       pass the quality control
+    Exception 
+       diagnostic for what went wrong
 
     """
+
+    _ = _epochs_QC(epochs_df, data_streams, epoch_id=epoch_id, time=time)
+
+
+def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
+    """Quality control for spudtr format epochs, returns epochs_df on success"""
+
     # epochs_df must be a Pandas DataFrame.
     if not isinstance(epochs_df, pd.DataFrame):
         raise ValueError("epochs_df must be a Pandas DataFrame.")
 
-    # eeg_streams must be a list of strings
-    if not isinstance(eeg_streams, list) or not all(
-        isinstance(item, str) for item in eeg_streams
+    # data_streams must be a list of strings
+    if not isinstance(data_streams, list) or not all(
+        isinstance(item, str) for item in data_streams
     ):
-        raise ValueError("eeg_streams should be a list of strings.")
+        raise ValueError("data_streams should be a list of strings.")
 
     # all channels must be present as epochs_df columns
-    missing_channels = set(eeg_streams) - set(epochs_df.columns)
+    missing_channels = set(data_streams) - set(epochs_df.columns)
     if missing_channels:
         raise ValueError(
-            "eeg_streams should all be present in the epochs dataframe, "
-            f"the following are missing: {missing_channels}"
+            "data_streams should all be present in the epochs dataframe, "
+            f"the following are missing: {list(missing_channels)}"
         )
 
     # epoch_id and time must be the columns in the epochs_df
@@ -273,16 +282,15 @@ def drop_bad_epochs(epochs_df, bad_col, epoch_id=EPOCH_ID, time=EPOCH_ID):
 
 
 def re_reference(
-    epochs_df, eeg_streams, rs, ref_type, epoch_id=EPOCH_ID, time=TIME
+    epochs_df, eeg_streams, ref, ref_type, epoch_id=EPOCH_ID, time=TIME
 ):
-    """math-linked mastoid reference
+    """Convert EEG data recorded with a common reference to a different reference
 
-    Rereference bimastoid: transform specified data channels from A1 common reference to 
-    average of A1 and A2 via ChanX - 0.5*A2
-    Rereference new common: transform specified data channels from A1 common reference to 
-    new common via ChanX - new_common
-    Rereference common average: transform specified data channels from A1 common reference to 
-    average reference via ChanX - 1/nchannels * Sum{i=0}   {nchannels} Chan_i.
+    .. warning::
+
+       These transforms are intended for use with common reference EEG
+       data. Use with other types of data are at your own risk.
+
 
     Parameters
     ----------
@@ -292,59 +300,90 @@ def re_reference(
     eeg_streams : list-like of str
         the names of colums to transform
        
-    rs : str or list-like of str
-        name of the stream for bimastoid, new common reference or list
-        of streams for the common average reference
+    ref : str or list-like of str
+        name of the 2nd stream for a linked pair, the new common
+        reference, or the complete list of streams to use for a common
+        average reference
         
-    type : str = {'bimastoid', 'new_common', 'common_average'}
+    type : str = {'linked_pair', 'new_common', 'common_average'}
 
     Returns
     -------
     br_epochs_df : pd.DataFrame
+
+    Note
+    ----
+
+    `linked_pair`
+       Transforms the EEG data to a "linked" pair reference:
+
+       .. math::
+          EEG_{\\text{re-referenced}} = EEG - (0.5 \\times EEG_{ref})
+
+       May be used to switch from an A1 left mastoid common reference to a
+       common linked A1, A2 mastoid reference ("bimastoid").
+
+    `new_common`
+        Transforms EEG to a different common reference location:
+    
+        .. math::
+           EEG_{\\text{re-referenced}} = EEG - EEG_{ref}
+
+        May be used switch from an A1 common reference to a vertex or
+        nose-tip reference.
+
+    `common_average`
+        Transforms EEG to a common average reference of :math:`N` EEG reference streams
+
+        .. math::
+           EEG_{\\text{re-referenced}} = EEG - \\frac{\\sum_{i=0}^{i=N}{EEG_{ref[i]}}}{N}
+
+
    
     Examples
     --------
 
+    Switch from A1 reference to linked-mastoids
+
     >>> eeg_streams = ['MiPf', 'MiCe', 'MiPa', 'MiOc']
-    >>> rs = ['A2']
-    >>> ref_type = 'bimastoid'
-    >>> re_reference(epochs_df, eeg_streams, rs, ref_type)
-    or
-    re_reference(epochs_df, eeg_streams, 'A2', 'bimastoid')
+    >>> re_reference(epochs_df, eeg_streams, 'A2', 'linked_pair')
 
-    >>> rs = ['MiPf']
-    >>> ref_type = 'new_common'
-    >>> br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
+    
+    Switch to a vertex reference, MiCe
 
-    >>> rs = ['lle', 'lhz', 'MiPf']
-    >>> ref_type = 'common_average'
-    >>> br_epochs_df = epf.re_reference(epochs_df, eeg_streams, rs, ref_type)
-       
+    >>> eeg_streams = ['MiPf', 'MiCe', 'MiPa', 'MiOc']  
+    >>> br_epochs_df = epf.re_reference(epochs_df, eeg_streams, 'MiCe', "new_common")
+
+
+    Switch to a common average reference (typically all available EEG data streams)
+
+    >>> eeg_streams = ['MiPf', 'MiCe', 'MiPa', 'MiOc']  
+    >>> ref = eeg_streams
+    >>> br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, "common_average")
+
     """
-
-    # LOGGER.info(f"bimastoid_reference {a2}")
 
     _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
 
-    # rs must be a list of strings with len(rs)>1 for ref_type of 'common_average'
+    # ref must be a list of strings with len(ref)>1 for ref_type of 'common_average'
     if ref_type == "common_average":
-        if not (isinstance(rs, list) and len(rs) > 1) or not all(
-            isinstance(item, str) for item in rs
+        if not (isinstance(ref, list) and len(ref) > 1) or not all(
+            isinstance(item, str) for item in ref
         ):
             raise ValueError(
-                "rs should be a list of strings with length greater than 1."
+                "ref should be a list of strings with length greater than 1."
             )
 
-    if isinstance(rs, list) and len(rs) == 1:
-        rs = "".join(rs)
+    if isinstance(ref, list) and len(ref) == 1:
+        ref = "".join(ref)
 
     br_epochs_df = epochs_df.copy()
-    if ref_type == "bimastoid":
-        new_ref = epochs_df[rs] / 2.0
+    if ref_type == "linked_pair":
+        new_ref = epochs_df[ref] / 2.0
     elif ref_type == "new_common":
-        new_ref = epochs_df[rs]
+        new_ref = epochs_df[ref]
     elif ref_type == "common_average":
-        new_ref = epochs_df[rs].mean(axis=1)
+        new_ref = epochs_df[ref].mean(axis=1)
     else:
         raise ValueError(f"unknown reference type: ref_type={ref_type}")
 
