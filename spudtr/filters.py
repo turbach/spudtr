@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from scipy import signal, fftpack
+
 from pylab import *
 
 import logging as LOGGER
@@ -504,6 +505,6 @@ def _sins_test_data(
     x = 0.0
     for i in range(len(freq_list)):
         x += amplitude_list[i] * np.sin(2 * np.pi * freq_list[i] * t)
-    fig, ax = plt.subplots(figsize=(18, 4))
+    fig, ax = plt.subplots(figsize=(16, 4))
     ax.plot(t, x)
     return t, x
