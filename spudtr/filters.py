@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +9,7 @@ import logging as LOGGER
 from scipy.signal import kaiserord, firwin, freqz, lfilter
 
 
-def suggest_epoch_length(sfreq, ripple_db, width_hz):
+def _suggest_epoch_length(sfreq, ripple_db, width_hz):
 
     """
     Parameters
@@ -63,11 +64,22 @@ def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
     ripple_db : float
         attenuation in the stop band, in dB, e.g., 24.0, 60.0
     sfreq : float
-        sampling frequency, e.g., 250.0, 500.0
+        sampling frequency per second, e.g., 250.0, 500.0
     ftype : string
         filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
     window : string
         window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    Returns
+    -------
+    freq_phase : matplotlib.Figure
+       plots frequency and phase response
+    imp_resp: matplotlib.Figure
+       plots impulse and step response
+    s_edge : float
+       number of seconds distorted at edge boundaries
+    n_edge : int
+       number of samples distorted at edge boundaries
 
     Examples
     --------
@@ -83,8 +95,19 @@ def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
     taps = _design_firwin_filter(
         cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
     )
-    fig1 = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
-    fig2 = _impz(taps, a=1)
+
+    # this many samples are lost to edge distortion (worst case)
+    n_edge = int(np.floor(len(taps) / 2.))
+    s_edge = n_edge / sfreq 
+    print(
+        f"Filter length={len(taps)} distorts the first and last"
+        f" {s_edge:.4f}  seconds of each epoch"
+        f" (= {n_edge} samples at {sfreq} samples / s)"
+    )
+
+    freq_phase = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
+    imp_step = _impz(taps, a=1)
+    return freq_phase, imp_step, s_edge, n_edge
 
 
 def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
@@ -115,51 +138,52 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     w, h = signal.freqz(b, a)
     h_dB = 20 * np.log10(abs(h))
 
-    fig, (ax1, ax2) = plt.subplots(2, 1)
+    fig, (ax_fp, ax_imp) = plt.subplots(2, 1)
     # make a little extra space between the subplots
     fig.subplots_adjust(hspace=0.6)
 
-    ax1.plot(w / max(w), h_dB, "b")
-    ax1.set_ylim(-150, 5)
-    ax1.set_ylabel("Magnitude (db)", color="b")
-    ax1.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
-    ax1.set_title(r"Frequency and Phase response")
-    ax1b = ax1.twinx()
+    ax_imp.plot(w / max(w), h_dB, "b")
+    ax_imp.set_ylim(-150, 5)
+    ax_imp.set_ylabel("Magnitude (db)", color="b")
+    ax_imp.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
+    ax_imp.set_title(r"Frequency and Phase response")
+    ax_impb = ax_imp.twinx()
     h_Phase = np.unwrap(np.arctan2(np.imag(h), np.real(h)))
-    ax1b.plot(w / max(w), h_Phase, "g")
-    ax1b.set_ylabel("Phase (radians)", color="g")
-    ax1.grid(linestyle="--")
+    ax_impb.plot(w / max(w), h_Phase, "g")
+    ax_impb.set_ylabel("Phase (radians)", color="g")
+    ax_imp.grid(linestyle="--")
 
-    nyq_rate = sfreq / 2
-    ax2.plot((w / np.pi) * nyq_rate, abs(h))
+
+    nyq_rate = sfreq / 2.
+    ax_fp.plot((w / np.pi) * nyq_rate, abs(h))
     cutoff_hz = np.atleast_1d(cutoff_hz)
     if cutoff_hz.size == 1:
-        ax2.axvline(
+        ax_fp.axvline(
             cutoff_hz + width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax2.axvline(
+        ax_fp.axvline(
             cutoff_hz - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
     else:
-        ax2.axvline(
+        ax_fp.axvline(
             cutoff_hz[0] + width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax2.axvline(
+        ax_fp.axvline(
             cutoff_hz[0] - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax2.axvline(
+        ax_fp.axvline(
             cutoff_hz[1] + width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax2.axvline(
+        ax_fp.axvline(
             cutoff_hz[1] - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
 
-    ax2.set_ylabel("Gain")
-    ax2.set_xlabel("Frequency (Hz)")
-    ax2.set_title(r"Frequency Response")
-    # ax2.set_ylim(-0.05, 1.05)
-    ax2.set_xlim(-0.05, 50)
-    ax2.grid(linestyle="--")
+    ax_fp.set_ylabel("Gain")
+    ax_fp.set_xlabel("Frequency (Hz)")
+    ax_fp.set_title(r"Frequency Response")
+    # ax_fp.set_ylim(-0.05, 1.05)
+    ax_fp.set_xlim(-0.05, 50)
+    ax_fp.grid(linestyle="--")
     return fig
 
 
@@ -231,13 +255,7 @@ def _design_firwin_filter(
 
     """
 
-    # LOGGER.info(
-    #    f"""
-    # Buildiing firls filter: cutoff_hz={cutoff_hz}, width_hz={width_hz}, ripple_db={ripple_db}, sfreq={sfreq}
-    # """
-    # )
-
-    # Nyquist frequency
+     # Nyquist frequency
     nyq_rate = sfreq / 2.0
 
     # transition band width in normalizied frequency
@@ -307,12 +325,12 @@ def _design_firwin_filter(
 
 
 def _apply_firwin_filter(df, columns, taps):
-    """apply the FIRLS filtering
+    """apply and phase compensate the FIRLS filtering to each column
 
     Parameters
     ----------
     df : pd.DataFrame
-        must have Epoch_idx and Time row index names
+        data columns 
 
     columns: list of str
         column names to apply the filter
@@ -324,6 +342,7 @@ def _apply_firwin_filter(df, columns, taps):
     -------
     filt_df : pd.DataFrame
         filtered df.
+
     """
 
     # assert len(taps) % 2 == 1  # enforce odd number of taps
@@ -353,9 +372,9 @@ def _apply_firwin_filter(df, columns, taps):
     return filt_df
 
 
-def epochs_filters(
-    epochs_df,
-    eeg_streams,
+def fir_filter_dt(
+    dt,
+    col_names,
     ftype,
     window,
     cutoff_hz,
@@ -364,14 +383,19 @@ def epochs_filters(
     sfreq,
     trim_edges,
 ):
-    """apply the FIRLS filtering for eeg data
+    """apply FIRLS filtering to columns of synchronized discrete time series
+
+    Note
+    ----
+    The `trim_edges` option crops the head and tail of the entire data frame, not 
+    just the selected columns.
 
     Parameters
     ----------
-    epochs_df : pd.DataFrame
-        must have Epoch_idx and Time row index names
+    dt : pd.DataFrame or np.ndarray with named dtypes
+        regularly sampled time-series data table: time (row) x data (columns)
 
-    eeg_streams: list of str
+    col_names: list of str
         column names to apply the transform
 
     ftype : string
@@ -397,8 +421,8 @@ def epochs_filters(
 
     Returns
     -------
-    pd.DataFrame
-        filtered epochs_df.
+    dt : 
+        data table with filtered data columns, the same type object as input
 
     Examples
     --------
@@ -409,9 +433,9 @@ def epochs_filters(
     >>> ripple_db = 60
     >>> sfreq = 250
 
-    >>> filt_test_df = epochs_filters(
-        epochs_df, 
-        eeg_streams,
+    >>> filt_test_dt = epochs_filters(
+        dt,
+        col_names,
         ftype,
         window,
         cutoff_hz,
@@ -428,9 +452,9 @@ def epochs_filters(
     >>> ripple_db = 60
     >>> sfreq = 250
 
-    >>> filt_test_df = epochs_filters(
-        epochs_df, 
-        eeg_streams,
+    >>> filt_test_dt = epochs_filters(
+        dt,
+        col_names,
         ftype,
         window,
         cutoff_hz,
@@ -445,23 +469,15 @@ def epochs_filters(
     taps = _design_firwin_filter(
         cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
     )
-    filt_epochs_df = _apply_firwin_filter(epochs_df, eeg_streams, taps)
+    filt_dt = _apply_firwin_filter(dt, col_names, taps)
 
-    # optionally drop corrupted data
+    # optionally drop distorted edges
     if trim_edges:
-        N = len(taps)
-        half_width = int(np.floor(N / 2))
-        # times = filt_epochs_df.index.unique("Time")
-        times = filt_epochs_df.Time.unique()
-        start_good = times[
-            half_width
-        ]  # == first good sample b.c. 0-base index
-        stop_good = times[-(half_width + 1)]  # last good sample, 0-base index
-        return filt_epochs_df.query(
-            "Time >= @start_good and Time <= @stop_good"
-        )
-    else:
-        return filt_epochs_df
+        delay = len(taps)
+        half_delay = int(np.floor(delay / 2))
+        filt_dt = filt_dt.iloc[half_delay:-half_delay, :]
+
+    return filt_dt
 
 
 def _sins_test_data(

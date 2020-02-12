@@ -1,15 +1,5 @@
-from pathlib import Path
-import pytest
-
-# import spudtr.epf as epf
-import spudtr.fake_epochs_data as fake_data
 from spudtr.epf import EPOCH_ID, TIME
-
-# import epf as epf
-# import fake_epochs_data as fake_data
-
-import numpy as np
-import pandas as pd
+import spudtr.fake_epochs_data as fake_data
 
 
 def test__generate():

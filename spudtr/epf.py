@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import bottleneck as bn
 
+from spudtr import _design_firwin_filter, _apply_firwin_filter
+
 # from scipy.signal import kaiserord, lfilter, firwin, freqz
 
 EPOCH_ID = "epoch_id"  # default epoch ID column
@@ -209,51 +211,39 @@ def center_eeg(
     qstr = f"{start} <= {time} and {time} < {stop}"
     epochs_df_tmp = epochs_df.copy()
     epochs_df_tmp[eeg_streams] = epochs_df.groupby([epoch_id]).apply(
-        lambda x: x[eeg_streams] - x.query(qstr)[eeg_streams].mean(axis=0)
+        lambda x: x[eeg_streams]
+        - x.query(qstr)[eeg_streams].mean(axis=0).astype("f8")
     )
 
-    # TO DO: for each epoch and each eeg stream, check that the mean amplitude
-    # (start, stop) interval is 0 (to within rounding error).
-
-    # check with numpy is close epochs_df[eeg_streams].query(qstr)
-
     # after center on, the mean inside interval should be zero
-
     after_mean = epochs_df_tmp.groupby([epoch_id]).apply(
         lambda x: x.query(qstr)[eeg_streams].mean(axis=0)
     )
 
-    # a is afer_mean numpy array, and b is zero array same size as a
-
-    a = after_mean.values
-    b = np.zeros(after_mean.shape)
-
-    # np.isclose(a,b)   #all false
-    # np.isclose(a,b,atol=1e-05)  #most true, but some false
-
-    # The absolute tolerance parameter: atol=1e-04
-    TorF = np.isclose(a, b, atol)
-    if sum(sum(TorF)) == TorF.shape[0] * TorF.shape[1]:
-        print("center_on is correct")
+    # for test files True for 1e-4, False for < 1e-5
+    if np.allclose(0, after_mean, atol=atol):
+        print("center_eeg is correct")
     else:
-        raise ValueError("center_on is not successful with atol.")
+        raise ValueError(f"center_on is not successful with atol={atol}")
 
     _validate_epochs_df(epochs_df_tmp, epoch_id=epoch_id, time=time)
     return epochs_df_tmp
 
 
-# def drop_bad_epochs(epochs_df, bad_col=None, epoch_id=None, time=None):
-def drop_bad_epochs(epochs_df, bad_col, epoch_id=EPOCH_ID, time=EPOCH_ID):
-    """Scan epochs data frame and drop epochs coded for exclusion
+def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
+    """Simple filter to exclude previously tagged epochs
 
-    Drops epochs tagged with a non-zero QC code on `bad_col` at time stamp == 0
+    Quality All epochs tagged with a non-zero quality code on `bads_column` at
+    the time stamp == 0 are excluded.
+
+    ..
 
     Parameters
     ----------
     epochs_df : pd.DataFrame
         must have Epoch_idx and Time row index names
 
-    bad_col : str 
+    bads_column : str
         column name with QC codes: non-zero == drop
 
     epoch_id : str or None, optional
@@ -265,14 +255,14 @@ def drop_bad_epochs(epochs_df, bad_col, epoch_id=EPOCH_ID, time=EPOCH_ID):
     Returns
     -------
     good_epochs_df : pd.DataFrame
-       subset of the epochs with code 0 on `bad_col` at timestamp == 0
+       subset of the epochs with code 0 on `bads_column` at timestamp == 0
 
     """
 
     # get the group of time == 0
     group = epochs_df.groupby([time]).get_group(0)
 
-    good_idx = list(group[epoch_id][group[bad_col] == 0])
+    good_idx = list(group[epoch_id][group[bads_column] == 0])
 
     epochs_df_good = epochs_df[epochs_df[epoch_id].isin(good_idx)].copy()
     # epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
@@ -391,3 +381,136 @@ def re_reference(
         br_epochs_df[col] = br_epochs_df[col] - new_ref
 
     return br_epochs_df
+
+
+def firfilter_epochs(
+    epochs_df,
+    eeg_streams,
+    ftype,
+    window,
+    cutoff_hz,
+    width_hz,
+    ripple_db,
+    sfreq,
+    trim_edges,
+    epoch_id=EPOCH_ID,
+    time=TIME
+):
+    """apply FIRLS filtering to spudtr format epoched data
+
+    Parameters
+    ----------
+    epochs_df : pd.DataFrame
+        must have Epoch_idx and Time row index names
+
+    eeg_streams: list of str
+        column names to apply the transform
+
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+
+    width_hz : float
+        transition band width start to stop in Hz
+
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+
+    trim_edges : bool
+        True trim edges, False not trim edges
+
+    epoch_id : str or None, optional
+        column name for epoch indexes
+
+    time: str or None, optional
+        column name for time stamps
+
+
+    Returns
+    -------
+    pd.DataFrame
+        filtered epochs_df
+
+    Examples
+    --------
+    >>> ftype = "bandpass"
+    >>> window = "kaiser"
+    >>> cutoff_hz = [18, 35]
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+    >>> epoch_id = "epoch_id"
+    >>> time = "time_ms"
+
+    >>> filt_test_df = epochs_filters(
+        epochs_df, 
+        eeg_streams,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=False
+        epoch_id=epoch_id
+        time=time
+    )
+
+    >>> ftype = "lowpass"
+    >>> window = "hamming"
+    >>> cutoff_hz = 10
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+    >>> epoch_id = "day"
+    >>> time = "hour"
+
+    >>> filt_test_df = epochs_filters(
+        epochs_df,
+        eeg_streams,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=True
+        epoch_id=epoch_id
+        time=time
+    )
+    """
+
+    # it is crucial to enforce the spudtr format because trimming
+    # needs to know about epoch boundaries and/or times
+    _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
+
+    # build and apply the filter
+    taps = _design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+    filt_epochs_df = _apply_firwin_filter(epochs_df, eeg_streams, taps)
+
+    # optionally drop corrupted data
+    if trim_edges:
+        N = len(taps)
+        half_width = int(np.floor(N / 2))
+        # times = filt_epochs_df.index.unique("Time")
+        times = filt_epochs_df[time].unique()
+        start_good = times[
+            half_width
+        ]  # == first good sample b.c. 0-base index
+        stop_good = times[-(half_width + 1)]  # last good sample, 0-base index
+        return filt_epochs_df.query(
+            "Time >= @start_good and Time <= @stop_good"
+        )
+    else:
+        return filt_epochs_df
+

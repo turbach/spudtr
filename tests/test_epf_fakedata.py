@@ -1,24 +1,14 @@
-from pathlib import Path
 import pytest
-import spudtr.epf as epf
 import spudtr.fake_epochs_data as fake_data
 import numpy as np
-
-import pdb
-
-TEST_DATA_DIR = Path(__file__).parent / "data"
+from spudtr import epf, DATA_DIR, P3_F, P5_F, WR_F
 
 
 @pytest.mark.parametrize(
-    "_f,h5_group",
-    [
-        ["sub000p3.epochs.h5", "p3"],
-        ["sub000p5.epochs.h5", "p5"],
-        ["sub000wr.epochs.h5", "wr"],
-    ],
+    "_f,h5_group", [[P3_F, "p3"], [P5_F, "p5"], [WR_F, "wr"]]
 )
 def test_hdf_read_epochs(_f, h5_group):
-    epochs_df = epf._hdf_read_epochs(TEST_DATA_DIR / _f, h5_group)
+    epf._hdf_read_epochs(DATA_DIR / _f, h5_group)
 
 
 # test one file
