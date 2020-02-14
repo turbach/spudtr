@@ -44,6 +44,7 @@ setup(
         "Intended Audience :: Science/Research",
     ],
     packages=find_packages(exclude=["tests"]),
+    package_data={"spudtr": ["data/gh_*"]},
     #    scripts=["bin/stub"],
     #    cmdclass={"build_ext": build_ext},
     #    ext_modules=cythonize(extensions, language_level=3),

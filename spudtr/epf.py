@@ -35,8 +35,8 @@ def _validate_epochs_df(epochs_df, epoch_id=EPOCH_ID, time=TIME):
 def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
     """read tabular hdf5 epochs file, return as pd.DataFrame
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     epochs_f : str
         name of the recorded epochs file to load
 
@@ -61,8 +61,8 @@ def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
 def check_epochs(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     """check epochs data are in spudtr format
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     epochs_df : pd.DataFrame
 
     data_streams: list of str
