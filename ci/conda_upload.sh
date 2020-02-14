@@ -52,6 +52,7 @@ if [[ "${version}" = "$mmp" && $TRAVIS_BRANCH = v$mmp ]]; then
     is_release="true"
     label_param="--label main"
     conda install anaconda-client
+
 else
     is_release="false"
     label_param="--label pre-release"
@@ -82,12 +83,13 @@ echo "conda upload command: ${conda_cmd}"
 echo "platforms:"
 echo "$(ls ./**/${PACKAGE_NAME}*.tar.bz2)"
 
-
 # if the token is in the ENV and this is a release/tagged commit or equivalent
 #    attempt the upload 
 # else
 #    skip the upload and exit happy
 if [[ $ANACONDA_TOKEN != "[not_set]" && $is_release = "true" ]]; then
+
+    conda install anaconda-client
 
     echo "uploading to Anconda Cloud: $PACKAGE_NAME$ $version ..."
     if ${conda_cmd}; then

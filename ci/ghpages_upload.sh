@@ -8,7 +8,8 @@
 pip install sphinx sphinx_rtd_theme jupyter nbsphinx nbconvert!=5.4
 conda install -c conda-forge pandoc
 conda list
-sphinx-apidoc -e -f -o ../docs/api-source . ../tests/* ../setup.py
+# moved to Makefile
+# sphinx-apidoc -e -f -o ../docs/api-source . ../tests/* ../setup.py
 make -C docs html
 touch docs/build/html/.nojekyll
 
