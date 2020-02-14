@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 
-DATA_DIR = Path(__file__).parents[1] / "tests/data"
+DATA_DIR = Path(__file__).parents[0] / "data"
 
 # EEG files for testing and docs in DATA_DIR
 P3_F = "gh_sub000p3.epochs.h5"
