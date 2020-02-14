@@ -57,7 +57,7 @@ def test_fir_filter_dt(window_type):
         trim_edges=False,
     )
     assert isinstance(filt_test_df, pd.DataFrame)
-    assert filt_test_df.columns.tolist() == ['fakedata']
+    assert filt_test_df.columns.tolist() == ["fakedata"]
 
     y_filt = filt_test_df["fakedata"]
     freq_list = [10]
@@ -88,13 +88,39 @@ def test_fir_filter_dt(window_type):
     assert filt_test_df.shape == (193, 2)
 
 
-def test_fir_filter_ndarray():
+@pytest.mark.parametrize(
+    "_ndim, _ncol",
+    [
+        (1, 1),  # 1-D vector
+        (2, 1),  # 2-D table, 1 column
+        (2, 2),  # 2-D table, 2 columns
+        pytest.param(
+            3, 3, marks=pytest.mark.xfail(strict=True)
+        ),  # 3-D should fail
+    ],
+)
+@pytest.mark.parametrize("_trim_edges", [True, False])
+def test_fir_filter_ndarray(_trim_edges, _ndim, _ncol):
     # test filtering on np.ndarray
     freq_list = [10]
     amplitude_list = [1.0]
+
     t, y = filters._sins_test_data(freq_list, amplitude_list)
 
-    testdata = y.astype(np.dtype([('fakedata', float)]))
+    # propagate the test data to _ndim columns
+    cols = np.ones(_ndim)
+    dt = np.dtype([(f"fakedata_{i}", float) for i in range(_ndim)])
+
+    if _ndim == 1:
+        testdata = y.astype(dt)
+
+    if _ndim > 1:
+        # + cols does np.broadcast voodoo to replicate y
+        testdata = (y.reshape(len(y), 1) + cols).astype(dt)
+
+        if _ndim == 3:
+            shape_2d = testdata.shape
+            testdata = np.tile(testdata, _ncol).reshape(shape_2d + (_ndim,))
 
     ftype = "lowpass"
     window_type = "kaiser"
@@ -105,7 +131,30 @@ def test_fir_filter_ndarray():
 
     filt_test_df = filters.fir_filter_dt(
         testdata,
-        ["fakedata"],
+        ["fakedata_0"],  # this always exists regardless of _ndim
+        ftype,
+        window_type,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=_trim_edges,
+    )
+    assert isinstance(filt_test_df, np.ndarray)
+    assert filt_test_df.dtype.names == dt.names
+
+
+@pytest.mark.xfail(strict=True)
+def test_fir_filter_bad_obj():
+
+    ftype, cutoff_hz, width_hz, ripple_db = "lowpass", 12.5, 5, 60
+    window_type = "kaiser"
+    sfreq = 250
+
+    testdata = list(range(5))
+    filters.fir_filter_dt(
+        testdata,
+        ["silly_rabbit_lists_dont_have_columns"],
         ftype,
         window_type,
         cutoff_hz,
@@ -114,8 +163,6 @@ def test_fir_filter_ndarray():
         sfreq,
         trim_edges=False,
     )
-    assert isinstance(filt_test_df, np.ndarray)
-    assert filt_test_df.dtype.names == ('fakedata', )
 
 
 def test_mfreqz():
@@ -233,9 +280,12 @@ def test_apply_firwin_filter():
     assert len(taps) == 183
 
 
-def test_sins_test_data():
+@pytest.mark.parametrize("_show_plot", [True, False])
+def test_sins_test_data(_show_plot):
     # creat a fakedata to show the filter
     freq_list = [10, 30]
     amplitude_list = [1.0, 1.0]
-    t, y = filters._sins_test_data(freq_list, amplitude_list)
+    t, y = filters._sins_test_data(
+        freq_list, amplitude_list, show_plot=_show_plot
+    )
     assert len(t) == 375

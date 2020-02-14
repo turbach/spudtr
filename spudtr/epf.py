@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import bottleneck as bn
 
-from spudtr import _design_firwin_filter, _apply_firwin_filter
+from spudtr.filters import _design_firwin_filter, _apply_firwin_filter
+
 
 # from scipy.signal import kaiserord, lfilter, firwin, freqz
 
@@ -167,13 +168,13 @@ def center_eeg(
     Parameters
     ----------
     epochs_df : pd.DataFrame
-        must have Epoch_idx and Time row index names
+        must have epoch_id and time columns
 
     eeg_streams: list of str
         column names to apply the transform
 
     start, stop : int,  start < stop
-        basline interval Time values, stop is inclusive
+        basline interval time values, stop is inclusive
 
     atol: The absolute tolerance parameter
         after center on, the mean inside interval should be zero with atol.
@@ -198,7 +199,6 @@ def center_eeg(
     # _validate_epochs_df(epochs_df)
     _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
 
-    #  times = epochs_df.index.unique("Time")
     times = epochs_df[time].unique()  # Qin added
     if not start >= times[0]:
         start = times[0]
@@ -241,7 +241,7 @@ def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
     Parameters
     ----------
     epochs_df : pd.DataFrame
-        must have Epoch_idx and Time row index names
+        must have epoch_id and time row index names
 
     bads_column : str
         column name with QC codes: non-zero == drop
@@ -383,9 +383,9 @@ def re_reference(
     return br_epochs_df
 
 
-def firfilter_epochs(
+def fir_filter_epochs(
     epochs_df,
-    eeg_streams,
+    data_columns,
     ftype,
     window,
     cutoff_hz,
@@ -394,16 +394,16 @@ def firfilter_epochs(
     sfreq,
     trim_edges,
     epoch_id=EPOCH_ID,
-    time=TIME
+    time=TIME,
 ):
     """apply FIRLS filtering to spudtr format epoched data
 
     Parameters
     ----------
-    epochs_df : pd.DataFrame
-        must have Epoch_idx and Time row index names
+    epochs_df : pd.DataFrame 
+        must be a spudtr format epochs dataframe with epoch_id, time columns
 
-    eeg_streams: list of str
+    data_columns: list of str
         column names to apply the transform
 
     ftype : string
@@ -452,7 +452,7 @@ def firfilter_epochs(
 
     >>> filt_test_df = epochs_filters(
         epochs_df, 
-        eeg_streams,
+        data_columns,
         ftype,
         window,
         cutoff_hz,
@@ -475,7 +475,7 @@ def firfilter_epochs(
 
     >>> filt_test_df = epochs_filters(
         epochs_df,
-        eeg_streams,
+        data_columns,
         ftype,
         window,
         cutoff_hz,
@@ -490,27 +490,29 @@ def firfilter_epochs(
 
     # it is crucial to enforce the spudtr format because trimming
     # needs to know about epoch boundaries and/or times
-    _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
+    _epochs_QC(epochs_df, data_columns, epoch_id=epoch_id, time=time)
 
     # build and apply the filter
     taps = _design_firwin_filter(
         cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
     )
-    filt_epochs_df = _apply_firwin_filter(epochs_df, eeg_streams, taps)
 
-    # optionally drop corrupted data
+    filt_epochs_df = _apply_firwin_filter(epochs_df, data_columns, taps)
+
+    # this trims edges in *each epoch* within the column as intended
     if trim_edges:
         N = len(taps)
-        half_width = int(np.floor(N / 2))
+        half_delay = int(np.floor(N / 2))
         # times = filt_epochs_df.index.unique("Time")
         times = filt_epochs_df[time].unique()
-        start_good = times[
-            half_width
-        ]  # == first good sample b.c. 0-base index
-        stop_good = times[-(half_width + 1)]  # last good sample, 0-base index
-        return filt_epochs_df.query(
-            "Time >= @start_good and Time <= @stop_good"
-        )
-    else:
-        return filt_epochs_df
+        n_epoch_ids = len(filt_epochs_df[epoch_id].unique())
 
+        # unique times must be in sequence across the epochs ...
+        assert all(np.tile(times, n_epoch_ids) == filt_epochs_df[time])
+
+        start_good = times[half_delay]  # == first good sample
+        stop_good = times[-(half_delay + 1)]  # last good sample
+        qstr = f"{time} >= @start_good and {time} <= @stop_good"
+        filt_epochs_df = filt_epochs_df.query(qstr)
+
+    return filt_epochs_df

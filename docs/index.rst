@@ -25,6 +25,7 @@ spudtr
 
    introduction
 
+
    user_guide/*
 
    reference

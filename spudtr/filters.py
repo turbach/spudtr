@@ -97,8 +97,8 @@ def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
     )
 
     # this many samples are lost to edge distortion (worst case)
-    n_edge = int(np.floor(len(taps) / 2.))
-    s_edge = n_edge / sfreq 
+    n_edge = int(np.floor(len(taps) / 2.0))
+    s_edge = n_edge / sfreq
     print(
         f"Filter length={len(taps)} distorts the first and last"
         f" {s_edge:.4f}  seconds of each epoch"
@@ -138,52 +138,55 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     w, h = signal.freqz(b, a)
     h_dB = 20 * np.log10(abs(h))
 
-    fig, (ax_fp, ax_imp) = plt.subplots(2, 1)
+    fig, (ax_freq, ax_freq_phase) = plt.subplots(2, 1)
     # make a little extra space between the subplots
     fig.subplots_adjust(hspace=0.6)
 
-    ax_imp.plot(w / max(w), h_dB, "b")
-    ax_imp.set_ylim(-150, 5)
-    ax_imp.set_ylabel("Magnitude (db)", color="b")
-    ax_imp.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
-    ax_imp.set_title(r"Frequency and Phase response")
-    ax_impb = ax_imp.twinx()
-    h_Phase = np.unwrap(np.arctan2(np.imag(h), np.real(h)))
-    ax_impb.plot(w / max(w), h_Phase, "g")
-    ax_impb.set_ylabel("Phase (radians)", color="g")
-    ax_imp.grid(linestyle="--")
-
-
-    nyq_rate = sfreq / 2.
-    ax_fp.plot((w / np.pi) * nyq_rate, abs(h))
+    # frequency response plot
+    nyq_rate = sfreq / 2.0
+    ax_freq.plot((w / np.pi) * nyq_rate, abs(h))
     cutoff_hz = np.atleast_1d(cutoff_hz)
     if cutoff_hz.size == 1:
-        ax_fp.axvline(
+        ax_freq.axvline(
             cutoff_hz + width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax_fp.axvline(
+        ax_freq.axvline(
             cutoff_hz - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
     else:
-        ax_fp.axvline(
+        ax_freq.axvline(
             cutoff_hz[0] + width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax_fp.axvline(
+        ax_freq.axvline(
             cutoff_hz[0] - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax_fp.axvline(
+        ax_freq.axvline(
             cutoff_hz[1] + width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
-        ax_fp.axvline(
+        ax_freq.axvline(
             cutoff_hz[1] - width_hz / 2, linestyle="--", linewidth=1, color="r"
         )
 
-    ax_fp.set_ylabel("Gain")
-    ax_fp.set_xlabel("Frequency (Hz)")
-    ax_fp.set_title(r"Frequency Response")
-    # ax_fp.set_ylim(-0.05, 1.05)
-    ax_fp.set_xlim(-0.05, 50)
-    ax_fp.grid(linestyle="--")
+    ax_freq.set_ylabel("Gain")
+    ax_freq.set_xlabel("Frequency (Hz)")
+    ax_freq.set_title(r"Frequency Response")
+
+    # ax_freq.set_xlim(-0.05, 50)
+    ax_freq.set_xlim(0, nyq_rate)
+    ax_freq.grid(linestyle="--")
+
+    # frequency-phase plot
+    ax_freq_phase.plot(w / max(w), h_dB, "b")
+    ax_freq_phase.set_ylim(-150, 5)
+    ax_freq_phase.set_ylabel("Magnitude (db)", color="b")
+    ax_freq_phase.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
+    ax_freq_phase.set_title(r"Frequency and Phase response")
+    ax_freq_phaseb = ax_freq_phase.twinx()
+    h_Phase = np.unwrap(np.arctan2(np.imag(h), np.real(h)))
+    ax_freq_phaseb.plot(w / max(w), h_Phase, "g")
+    ax_freq_phaseb.set_ylabel("Phase (radians)", color="g")
+    ax_freq_phase.grid(linestyle="--")
+
     return fig
 
 
@@ -255,7 +258,7 @@ def _design_firwin_filter(
 
     """
 
-     # Nyquist frequency
+    # Nyquist frequency
     nyq_rate = sfreq / 2.0
 
     # transition band width in normalizied frequency
@@ -465,6 +468,16 @@ def fir_filter_dt(
     )
     """
 
+    # modicum of guarding
+    if isinstance(dt, pd.DataFrame):
+        pass
+    elif isinstance(dt, np.ndarray):
+        if dt.ndim not in [1, 2]:
+            msg = "numpy ndarray must be 1-D (vector) or 2-D (table)"
+            raise Exception(msg)
+    else:
+        raise TypeError("dt must be pandas.DataFrame or np.ndarray")
+
     # build and apply the filter
     taps = _design_firwin_filter(
         cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
@@ -475,22 +488,39 @@ def fir_filter_dt(
     if trim_edges:
         delay = len(taps)
         half_delay = int(np.floor(delay / 2))
-        filt_dt = filt_dt.iloc[half_delay:-half_delay, :]
+
+        if isinstance(filt_dt, pd.DataFrame):
+            filt_dt = filt_dt.iloc[half_delay:-half_delay, :]
+
+        if isinstance(filt_dt, np.ndarray):
+
+            if filt_dt.ndim == 1:
+                filt_dt = filt_dt[half_delay:-half_delay]
+
+            if filt_dt.ndim == 2:
+                filt_dt = filt_dt[half_delay:-half_delay, :]
 
     return filt_dt
 
 
 def _sins_test_data(
-    freq_list, amplitude_list, sampling_freq=None, duration=None
+    freq_list,
+    amplitude_list,
+    sampling_freq=None,
+    duration=None,
+    show_plot=False,
 ):
     """creat a noisy signal to test the filter
 
     Parameters
     ----------
     freq_list : float, list
+
     amplitude_list : float, list
+
     sampling_freq : float, optional
         sampling frequency, default is 250.0
+
     duration : float, optional
         signal duration, default is 1.5 seconds
 
@@ -519,6 +549,9 @@ def _sins_test_data(
     x = 0.0
     for i in range(len(freq_list)):
         x += amplitude_list[i] * np.sin(2 * np.pi * freq_list[i] * t)
-    fig, ax = plt.subplots(figsize=(18, 4))
-    ax.plot(t, x)
+
+    if show_plot:
+        fig, ax = plt.subplots(figsize=(18, 4))
+        ax.plot(t, x)
+
     return t, x
