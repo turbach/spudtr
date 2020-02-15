@@ -15,20 +15,36 @@
         :align: center
         :alt: Under Development
 
+
 ======
 spudtr
 ======
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
    :glob:
 
    introduction
 
-
    user_guide/*
 
    reference
+
+   contributors
+
+
+
+==============
+|BSD 3-Clause|
+==============
+
+
+.. |BSD 3-Clause| image:: https://img.shields.io/badge/License-BSD%203--Clause-blue.svg
+    :alt: BSD 3-Clause
+    :target: https://opensource.org/licenses/BSD-3-Clause
+
+
+
 
 
 
