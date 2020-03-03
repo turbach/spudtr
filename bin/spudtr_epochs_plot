@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+import numpy as np
+import pandas as pd
+import mne
+import argparse
+import yaml
+from collections import OrderedDict
+
+def streams2mne_digmont(cap, eeg_streams):
+
+    missing_streams = set(eeg_streams)-set(cap['stream'])
+    if missing_streams:
+        raise ValueError(f"eeg_streams not found in cap: {missing_streams}")
+
+    df = cap.set_index('stream').loc[eeg_streams, :].reset_index()
+    ch_names = df.stream.to_list()
+    pos = df[['x', 'y', 'z']].values
+    dig_ch_pos = OrderedDict(zip(ch_names, pos))
+    montage = mne.channels.make_dig_montage(
+        ch_pos=dig_ch_pos,
+        coord_frame='head'
+    )
+    return montage
+
+def create_parser():
+    parser = argparse.ArgumentParser()
+
+    g = parser.add_argument_group('Device Targets')
+    g.add_argument(
+        '--epochs-h5',
+        dest='epochs_h5f'
+    )
+    g.add_argument(
+        '--epochs-key',
+        dest='epochs_key',
+    )
+    g.add_argument(
+        '--config-yml',
+        dest='config_yml',
+        type=argparse.FileType(mode='r'),
+    )
+    return parser
+
+
+def parse_args(parser):
+    args = parser.parse_args()
+    for a in ["epochs_h5f", "epochs_key", "config_yml"]:
+        if getattr(args, a) is None:
+            raise ValueError(f"missing argument {a}")
+    return args
+
+
+def load_data():
+
+    # parse command line arguments
+    args = parse_args(create_parser())
+    epochs_df = pd.read_hdf(args.epochs_h5f, key=args.epochs_key)
+    # load YAML config data
+    config_data = yaml.load(args.config_yml, Loader=yaml.SafeLoader)
+    return epochs_df, config_data
+
+epochs_df, config_data = load_data()
+
+eeg_streams = config_data['eeg_streams']
+time = config_data['time']
+epoch_id = config_data['epoch_id']
+sfreq = config_data['sfreq']
+
+cap26 = pd.read_csv("/home/qiz001/zq/epochs_images/cap26.csv")
+montage = streams2mne_digmont(cap26, eeg_streams)
+montage.plot(kind='topomap', show_names=True);
+
+# create mne epochs from EpochsArray and show them
+info = mne.create_info(
+    montage.ch_names, sfreq=sfreq, ch_types="eeg", montage=montage
+)
+
+epochs_data = []
+n_epochs_begin = 0
+n_epochs_end = 100
+#n_epochs_end = max(epochs_df[epoch_id])
+n_epochs = n_epochs_end - n_epochs_begin
+for epoch_i in range(n_epochs_begin,n_epochs_end):
+    epoch1 = epochs_df[info['ch_names']][epochs_df.epoch_id == epoch_i].to_numpy()
+    epochs_data.append(epoch1.T)
+#import pdb; pdb.set_trace()
+
+"""
+e_codes = epochs_df.query(f"{time}==0").log_evcodes.values
+np.unique(e_codes[0:n_epochs])
+
+event_dict = {'auditory/left': 10, 'auditory/right': 11, 'visual/left': 20,
+              'visual/right': 21, 'smiley': 1040}
+
+events = np.array(
+    [np.arange(n_epochs), np.ones(n_epochs), e_codes[n_epochs_begin:n_epochs_end]]
+).T.astype(int)
+epochs = mne.EpochsArray(epochs_data, info=info, events=events, event_id=event_dict)
+"""
+epochs = mne.EpochsArray(epochs_data, info=info)
+picks = mne.pick_types(info, meg=False, eeg=True, misc=False)
+epochs.plot(picks=picks, scalings="auto", show=True, block=True, n_epochs=10);
