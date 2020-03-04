@@ -1,0 +1,9 @@
+---
+eeg_streams: ['MiPf', 'MiCe', 'MiPa', 'MiOc']
+
+epoch_id: "epoch_id"
+time: "time_ms"
+sfreq: 500
+
+
+events: ["log_events", "patsy_event"]

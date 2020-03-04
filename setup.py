@@ -45,7 +45,7 @@ setup(
     ],
     packages=find_packages(exclude=["tests"]),
     package_data={"spudtr": ["data/gh_*"]},
-    #    scripts=["bin/stub"],
+        scripts=["bin/spudtr_epochs_plot"],
     #    cmdclass={"build_ext": build_ext},
     #    ext_modules=cythonize(extensions, language_level=3),
 )

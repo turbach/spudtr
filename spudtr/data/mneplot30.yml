@@ -1,0 +1,40 @@
+---
+eeg_streams: [
+    "lle",
+    "lhz",
+    "MiPf",
+    "LLPf",
+    "RLPf",
+    "LMPf",
+    "RMPf",
+    "LDFr",
+    "RDFr",
+    "LLFr",
+    "RLFr",
+    "LMFr",
+    "RMFr",
+    "LMCe",
+    "RMCe",
+    "MiCe",
+    "MiPa",
+    "LDCe",
+    "RDCe",
+    "LDPa",
+    "RDPa",
+    "LMOc",
+    "RMOc",
+    "LLTe",
+    "RLTe",
+    "LLOc",
+    "RLOc",
+    "MiOc",
+    "rle",
+    "rhz",
+]
+
+epoch_id: "epoch_id"
+time: "match_time"
+sfreq: 500
+
+
+events: ["log_events", "patsy_event"]
