@@ -41,6 +41,7 @@ requirements:
         - pytables
         - pyarrow
         - patsy
+        - mne
 
 test:
     imports:
