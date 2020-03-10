@@ -38,45 +38,74 @@ def _categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
 
     Multiple categories fully crossed like so: "~ 0 +  a:b" and "~ 0 + a:b:c"
     
-
     Parameters
     ----------
+    epochs_df : pandas.DataFrame
+       spudtr format epochs data with ``epoch_id``, ``time`` columns
+
     categories : str or list of str
         column name(s) with string or pd.Categorical values 
 
-    epochs_df : pandas.DataFrame
-       spudtr format epoch_id, time data
+    epoch_id : 
+        name of the column with the unique integer epoch ids
+
+    time : str
+        name of the column with the epoch time stamps
+
+    time_stamp : int
+        value of the time point a which to look up the category levels
 
 
+    Returns:
+    mne_event_id : dict
 
-    Example
-    -------
+       MNE Python event_id dictionary where each item is ``label:
+       event_code``.  The ``label`` is the column name from the patsy
+       full rank fully crossed design matrix (incidence matrix) for
+       the categories. The ``event_code`` is the 1-based column index
+       in the design matrix.
 
-    For categorical columns: levels
+    mne_events : np.array, shape=(number_of_epochs, 3) there is one
+       row for each epoch in ``epochs_df``. Each row is ``[epoch_id,
+       0, mne_event_code]`` where ``mne_event_code`` is the newly
+       constructed event code derived from the ``patsy`` design matrix
+       column
+        
+
+    Suppose at the specified time stamp the epochs_df categorical columns
+    ``a`` and ``b`` have have the following levels:
 
         a: a1, a2
         b: b1, b2, b3
 
 
-    If categories="a"  then
+    Example
+    -------
 
-        epoch_id = {
+        _categories2eventid(epochs_df, categories="a", epoch_id, time, time_stamp)
+
+        event_id = {
             "a[a1]": 1,
             "a[a2]": 2
         }
 
-    If categories="b"  then
 
-        epoch_id = {
+    Example
+    -------
+        _categories2eventid(epochs_df, categories="b", epoch_id, time, time_stamp)
+
+        event_id = {
             "b[b1]": 1,
             "b[b2]": 2,
             "b[b3]": 3
-    }
+        }
 
 
-    If categories=["a", "b"] then
+    Example
+    -------
+        _categories2eventid(epochs_df, categories=["a", "b"], epoch_id, time, time_stamp)
 
-        epoch_id = {
+        event_id = {
             'a[a1]:b[b1]': 1,
             'a[a2]:b[b1]': 2,
             'a[a1]:b[b2]': 3,
@@ -91,7 +120,7 @@ def _categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
     if isinstance(categories, str):
         categories = [categories]
 
-    # _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME)
+    # check spudtr epochs format
     _ = _epochs_QC(epochs_df, categories, epoch_id=epoch_id, time=time)
 
     if time_stamp not in epochs_df[time].unique():
@@ -99,7 +128,9 @@ def _categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
             f"time_stamp {time_stamp} not found in epochs_df['{time}']"
         )
 
-    # row slicing preserves the original row index which is handy for events array
+    # slice the epoch row at the specified time_stamp, e.g., time==0
+    # the category columns at this row are used to build the new
+    # event_id dictionary
     events_df = epochs_df[epochs_df[time] == time_stamp]
 
     # ensure dm is a full rank indicator matrix n columns = product of
@@ -125,7 +156,11 @@ def _categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
 
     # mne array: n-events x 3
     mne_events = np.stack(
-        [events_df.index.to_numpy(), np.zeros(len(events_df)), dm_col_code],
+        [
+            events_df["epoch_id"].to_numpy(),
+            np.zeros(len(events_df)),
+            dm_col_code,
+        ],
         axis=1,
     ).astype("int")
 
