@@ -41,6 +41,8 @@ requirements:
         - pytables
         - pyarrow
         - patsy
+        - requests
+        - zipfile
         - mne
 
 test:
