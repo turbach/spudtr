@@ -61,7 +61,7 @@ if [[ "${version}" = "$mmp" ]]; then
     fi
 
     # a github release tagged vM.N.P uploads to /main
-    if [[ $TRAVIS_BRANCH = v"mmp" ]]; then
+    if [[ $TRAVIS_BRANCH = v"$mmp" ]]; then
 	label="main"
     fi
 fi
