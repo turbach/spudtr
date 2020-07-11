@@ -199,61 +199,55 @@ def test_check_epochs(data_streams, _epoch_id, _time):
     epf.check_epochs(epochs_table, data_streams, _epoch_id, _time)
 
 
-@pytest.mark.parametrize(
-    "_atol", [None, 1e-4, pytest.param(1e-6, marks=pytest.mark.xfail())]
-)
-@pytest.mark.parametrize(
-    "_f,_key,_start,_stop",
-    [(WR_F, "wr", -50, 300), (P3_F, "p3", -100, -4), (P5_F, "p5", -10, -4)],
-)
-def test_center_on(_f, _key, _start, _stop, _atol):
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f, _key)
-    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    start, stop = -50, 300
-
-    if _atol is None:
-        # test default atol
-        epf.center_eeg(epochs_df, eeg_streams, start, stop, time="time_ms")
-    else:
-        # test explicit atol
-        epf.center_eeg(
-            epochs_df, eeg_streams, start, stop, time="time_ms", atol=_atol
-        )
-
-
-@pytest.mark.parametrize(
-    "_f,_key,_start,_stop",
-    [(WR_F, "wr", -50, 300), (P3_F, "p3", -100, -4), (P5_F, "p5", -10, -4)],
-)
-def test_center_on_atol(_f, _key, _start, _stop):
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f, _key)
-    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    start, stop = -50, 300
-
+def test__find_subscript():
+    time = "time"
+    epochs_df = fake_data._get_df()
+    times = epochs_df[time].unique()
+    start = 6
+    stop = 8
     with pytest.raises(ValueError) as excinfo:
-        epf.center_eeg(
-            epochs_df, eeg_streams, start, stop, atol=1e-6, time="time_ms"
-        )
-    assert "center_on is not successful" in str(excinfo.value)
+        istart, istop = epf._find_subscript(times, start, stop)
+    assert "start is too large" in str(excinfo.value)
+    start = -3
+    stop = -1
     with pytest.raises(ValueError) as excinfo:
-        epf.center_eeg(
-            epochs_df, eeg_streams, start, stop, atol=1e-6, time="time_ms"
-        )
-    assert "center_on is not successful" in str(excinfo.value)
+        istart, istop = epf._find_subscript(times, start, stop)
+    assert "stop is too small" in str(excinfo.value)
+    start = 4
+    stop = 2
+    with pytest.raises(ValueError) as excinfo:
+        istart, istop = epf._find_subscript(times, start, stop)
+    assert "Bad rescaling slice" in str(excinfo.value)
 
 
-def test_center_eeg_start_stop_time():
-    epochs_df, channels = fake_data._generate(
-        n_epochs=10,
-        n_samples=100,
-        n_categories=2,
-        n_channels=32,
-        time=TIME,
-        epoch_id=EPOCH_ID,
+def test_center_eeg():
+    # save a copy for demonstration
+    epochs_df = fake_data._get_df()
+    # center two columns in place (for demonstration start and stop are epoch row indexes not times)
+    eeg_streams = ["x", "z"]
+    epoch_id = "epoch_id"
+    time = "time"
+    start = 0
+    stop = 2
+    epf.center_eeg(
+        epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time="time"
     )
-    start, stop = -999, 999
-    eeg_streams = ["channel0", "channel1"]
-    epf.center_eeg(epochs_df, eeg_streams, start, stop, atol=1e-04)
+    # verify centering == 0 and report failures
+    n_times = len(epochs_df[time].unique())
+    n_epochs = len(epochs_df[epoch_id].unique())
+    times = epochs_df[time].unique()
+    istart, istop = epf._find_subscript(times, start, stop)
+    center_idxs = np.array(
+        [
+            np.arange(istart + (i * n_times), istop + (i * n_times))
+            for i in range(n_epochs)
+        ]
+    ).flatten()
+    zero_mns = (
+        epochs_df.iloc[center_idxs, :].groupby(epoch_id)[eeg_streams].mean()
+    )
+
+    assert np.allclose(0, zero_mns)
 
 
 def test_drop_bad_epochs():

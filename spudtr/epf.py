@@ -154,15 +154,34 @@ def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     return epochs_df
 
 
+def _find_subscript(times, start, stop):
+    istart = np.where(times >= start)[0]
+    if len(istart) == 0:
+        raise ValueError(
+            "start is too large (%s), it exceeds the largest "
+            "time value" % (start,)
+        )
+    istart = int(istart[0])
+
+    istop = np.where(times <= stop)[0]
+    if len(istop) == 0:
+        raise ValueError(
+            "stop is too small (%s), it is smaller than the "
+            "smallest time value" % (stop,)
+        )
+    istop = int(istop[-1])
+    if istart >= istop:
+        raise ValueError(
+            "Bad rescaling slice (%s:%s) from time values %s, %s"
+            % (istart, istop, start, stop)
+        )
+    return istart, istop
+
+
 def center_eeg(
-    epochs_df,
-    eeg_streams,
-    start,
-    stop,
-    atol=1e-04,
-    epoch_id=EPOCH_ID,
-    time=TIME,
+    epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time=TIME
 ):
+
     """center (a.k.a. "baseline") EEG amplitude on mean from start to stop
 
     Parameters
@@ -176,58 +195,31 @@ def center_eeg(
     start, stop : int,  start < stop
         basline interval time values, stop is inclusive
 
-    atol: The absolute tolerance parameter
-        after center on, the mean inside interval should be zero with atol.
-
     epoch_id : str (epf.EPOCH_ID)
         column to use for the epoch index, default if unspecified
 
     time : str (epf.TIME)
         column to use for the time stamp index, default if unspecified
 
-
-    Return
-    ------
-    df : pd.DataFrame
-       after center on
-
     """
 
-    # msg = f"centering on interval {start} {stop}: {eeg_streams}"
-    # LOGGER.info(msg)
+    # calculate the row-index vector to slice the centering intervals
+    n_times = len(epochs_df[time].unique())
+    n_epochs = len(epochs_df[epoch_id].unique())
+    times = epochs_df[time].unique()
+    istart, istop = _find_subscript(times, start, stop)
+    center_idxs = np.array(
+        [
+            np.arange(istart + (i * n_times), istop + (i * n_times))
+            for i in range(n_epochs)
+        ]
+    ).flatten()
 
-    # _validate_epochs_df(epochs_df)
-    _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
+    # use pandas iloc index slicing then groupby epoch_id to compute means
+    mns = epochs_df.iloc[center_idxs, :].groupby(epoch_id)[eeg_streams].mean()
 
-    times = epochs_df[time].unique()  # Qin added
-    if not start >= times[0]:
-        start = times[0]
-    if not stop <= times[-1]:
-        stop = times[-1]
-    assert start >= times[0]
-    assert stop <= times[-1]
-
-    # baseline subtraction ... compact expression, numpy is faster
-    qstr = f"{start} <= {time} and {time} < {stop}"
-    epochs_df_tmp = epochs_df.copy()
-    epochs_df_tmp[eeg_streams] = epochs_df.groupby([epoch_id]).apply(
-        lambda x: x[eeg_streams]
-        - x.query(qstr)[eeg_streams].mean(axis=0).astype("f8")
-    )
-
-    # after center on, the mean inside interval should be zero
-    after_mean = epochs_df_tmp.groupby([epoch_id]).apply(
-        lambda x: x.query(qstr)[eeg_streams].mean(axis=0)
-    )
-
-    # for test files True for 1e-4, False for < 1e-5
-    if np.allclose(0, after_mean, atol=atol):
-        print("center_eeg is correct")
-    else:
-        raise ValueError(f"center_on is not successful with atol={atol}")
-
-    _validate_epochs_df(epochs_df_tmp, epoch_id=epoch_id, time=time)
-    return epochs_df_tmp
+    # inflate the means to the shape of the data and subtract in place, not sure if view() saves memory
+    epochs_df[eeg_streams] -= np.repeat(mns.to_numpy().view(), n_times, axis=0)
 
 
 def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
