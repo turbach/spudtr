@@ -9,6 +9,26 @@ import logging as LOGGER
 from scipy.signal import kaiserord, firwin, freqz, lfilter
 
 
+def _trans_bwidth_ripple(cutoff_hz, sfreq, ftype, window):
+    if ftype.lower() == "lowpass":
+        width_hz = min(max(cutoff_hz * 0.25, 2), cutoff_hz)
+    elif ftype.lower() == "highpass":
+        width_hz = min(max(cutoff_hz * 0.25, 2.0), sfreq / 2.0 - cutoff_hz)
+    elif ftype.lower() == "bandpass" or ftype.lower() == "bandstop":
+        l = min(max(cutoff_hz[0] * 0.25, 2), cutoff_hz[0])
+        h = min(max(cutoff_hz[1] * 0.25, 2.0), sfreq / 2.0 - cutoff_hz[1])
+        width_hz = (l + h) / 2
+
+    if window.lower() == "kaiser" or window.lower() == "hamming":
+        ripple_db = 53
+    elif window.lower() == "hann":
+        ripple_db = 44
+    elif window.lower() == "blackman":
+        ripple_db = 74
+
+    return width_hz, ripple_db
+
+
 def _suggest_epoch_length(sfreq, ripple_db, width_hz):
 
     """
@@ -99,8 +119,94 @@ def show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window):
     # this many samples are lost to edge distortion (worst case)
     n_edge = int(np.floor(len(taps) / 2.0))
     s_edge = n_edge / sfreq
+
+    # print filter information
+    print(f"{ftype} filter")
     print(
-        f"Filter length={len(taps)} distorts the first and last"
+        f"sample rate, fs={sfreq} \n cutoff_hz = {cutoff_hz} \n width of transition, width={width_hz} hz \n ripple_db={ripple_db}"
+    )
+    print(
+        f"FIR filter size: numtaps = {len(taps)}, time = {len(taps)/sfreq} s, delay = {int((len(taps) - 1) / 2)} , delay_time = {len(taps)/(2*sfreq)} s"
+    )
+
+    print(
+        f" Filter length={len(taps)} distorts the first and last"
+        f" {s_edge:.4f}  seconds of each epoch"
+        f" (= {n_edge} samples at {sfreq} samples / s)"
+    )
+
+    freq_phase = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
+    imp_step = _impz(taps, a=1)
+    return freq_phase, imp_step, s_edge, n_edge
+
+
+def filter_show(
+    cutoff_hz, sfreq, ftype, width_hz=None, ripple_db=None, window=None
+):
+
+    """
+    Parameters
+    ----------
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+    sfreq : float
+        sampling frequency per second, e.g., 250.0, 500.0
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    Returns
+    -------
+    freq_phase : matplotlib.Figure
+       plots frequency and phase response
+    imp_resp: matplotlib.Figure
+       plots impulse and step response
+    s_edge : float
+       number of seconds distorted at edge boundaries
+    n_edge : int
+       number of samples distorted at edge boundaries
+
+    Examples
+    --------
+    >>> cutoff_hz = 10.0
+    >>> width_hz = 5.0
+    >>> ripple_db = 60.0
+    >>> sfreq = 250
+    >>> ftype = 'lowpass'
+    >>> window = 'hamming'
+    >>> show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
+    """
+    if window is None:
+        window = "kaiser"
+
+    if width_hz is None or ripple_db is None:
+        width_hz, ripple_db = _trans_bwidth_ripple(
+            cutoff_hz, sfreq, ftype, window
+        )
+
+    taps = _design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+
+    # this many samples are lost to edge distortion (worst case)
+    n_edge = int(np.floor(len(taps) / 2.0))
+    s_edge = n_edge / sfreq
+    # print filter information
+    print(f" {ftype} filter")
+    print(
+        f" sample rate, fs={sfreq} \n cutoff_hz = {cutoff_hz} \n width of transition, width={width_hz} hz \n ripple_db={ripple_db}"
+    )
+    print(
+        f" FIR filter size: numtaps = {len(taps)}, time = {len(taps)/sfreq} s, delay = {int((len(taps) - 1) / 2)} , delay_time = {len(taps)/(2*sfreq)} s"
+    )
+
+    print(
+        f" Filter length={len(taps)} distorts the first and last"
         f" {s_edge:.4f}  seconds of each epoch"
         f" (= {n_edge} samples at {sfreq} samples / s)"
     )
@@ -171,8 +277,8 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     ax_freq.set_xlabel("Frequency (Hz)")
     ax_freq.set_title(r"Frequency Response")
 
-    # ax_freq.set_xlim(-0.05, 50)
-    ax_freq.set_xlim(0, nyq_rate)
+    # ax_freq.set_xlim(0, nyq_rate)
+    ax_freq.set_xlim(-10, nyq_rate / 2)
     ax_freq.grid(linestyle="--")
 
     # frequency-phase plot
@@ -366,11 +472,18 @@ def _apply_firwin_filter(df, columns, taps):
     filt_df = df.copy()
     for column in columns:
 
+        yy = []
+        y = df[column]
+        b = y[0:delay][::-1]
+        e = y[-delay:][::-1]
+        yy = np.append(b, y)
+        yy = np.append(yy, e)
+
         # forward pass
-        filtered_column = lfilter(taps, a, df[column])
+        filtered_column = lfilter(taps, a, yy)
 
         # roll the phase shift by delay back to 0
-        filt_df[column] = np.roll(filtered_column, -delay)
+        filt_df[column] = np.roll(filtered_column, -delay)[delay:-delay]
 
     return filt_df
 
@@ -555,3 +668,142 @@ def _sins_test_data(
         ax.plot(t, x)
 
     return t, x
+
+
+def fir_filter_df(
+    dt,
+    col_names,
+    cutoff_hz,
+    sfreq,
+    ftype,
+    width_hz=None,
+    ripple_db=None,
+    window=None,
+    trim_edges=None,
+):
+
+    """apply FIRLS filtering to columns of synchronized discrete time series
+
+    Note
+    ----
+    The `trim_edges` option crops the head and tail of the entire data frame, not 
+    just the selected columns.
+
+    Parameters
+    ----------
+    dt : pd.DataFrame or np.ndarray with named dtypes
+        regularly sampled time-series data table: time (row) x data (columns)
+
+    col_names: list of str
+        column names to apply the transform
+
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+
+    width_hz : float
+        transition band width start to stop in Hz
+
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+
+    trim_edges : bool
+        'True' trim edges, 'False' not trim edges
+
+    Returns
+    -------
+    dt : 
+        data table with filtered data columns, the same type object as input
+
+    Examples
+    --------
+    >>> ftype = "bandpass"
+    >>> window = "kaiser"
+    >>> cutoff_hz = [18, 35]
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+
+    >>> filt_test_dt = epochs_filters(
+        dt,
+        col_names,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=False
+    )
+
+    >>> ftype = "lowpass"
+    >>> window = "hamming"
+    >>> cutoff_hz = 10
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+
+    >>> filt_test_dt = epochs_filters(
+        dt,
+        col_names,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=True
+    )
+    """
+    if window is None:
+        window = "kaiser"
+
+    if width_hz is None or ripple_db is None:
+        width_hz, ripple_db = _trans_bwidth_ripple(
+            cutoff_hz, sfreq, ftype, window
+        )
+
+    if trim_edges is None:
+        trim_edges = False
+
+    # modicum of guarding
+    if isinstance(dt, pd.DataFrame):
+        pass
+    elif isinstance(dt, np.ndarray):
+        if dt.ndim not in [1, 2]:
+            msg = "numpy ndarray must be 1-D (vector) or 2-D (table)"
+            raise Exception(msg)
+    else:
+        raise TypeError("dt must be pandas.DataFrame or np.ndarray")
+
+    # build and apply the filter
+    taps = _design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+    filt_dt = _apply_firwin_filter(dt, col_names, taps)
+
+    # optionally drop distorted edges
+    if trim_edges:
+        delay = len(taps)
+        half_delay = int(np.floor(delay / 2))
+
+        if isinstance(filt_dt, pd.DataFrame):
+            filt_dt = filt_dt.iloc[half_delay:-half_delay, :]
+
+        if isinstance(filt_dt, np.ndarray):
+
+            if filt_dt.ndim == 1:
+                filt_dt = filt_dt[half_delay:-half_delay]
+
+            if filt_dt.ndim == 2:
+                filt_dt = filt_dt[half_delay:-half_delay, :]
+
+    return filt_dt

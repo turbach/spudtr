@@ -28,6 +28,25 @@ def test_show_filter():
     assert sfreq == 250
 
 
+def test_filter_show():
+    cutoff_hz = 10.0
+    sfreq = 250
+    ftype = "lowpass"
+    filters.filter_show(cutoff_hz, sfreq, ftype)
+    window = "hamming"
+    width_hz = 5.0
+    ripple_db = 60.0
+    filters.filter_show(
+        cutoff_hz,
+        sfreq,
+        ftype,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+    )
+    assert sfreq == 250
+
+
 @pytest.mark.parametrize(
     "window_type", ("kaiser", "hamming", "hann", "blackman")
 )
@@ -88,12 +107,49 @@ def test_fir_filter_dt(window_type):
     assert filt_test_df.shape == (193, 2)
 
 
+def test_fir_filter_df():
+    # create fakedata to show the filter
+    freq_list = [10, 30]
+    amplitude_list = [1.0, 1.0]
+    t, y = filters._sins_test_data(freq_list, amplitude_list)
+    testdata = pd.DataFrame({"fakedata": y})
+
+    ftype = "lowpass"
+    cutoff_hz = 12.5
+    sfreq = 250
+
+    filt_test_df = filters.fir_filter_df(
+        testdata, ["fakedata"], cutoff_hz, sfreq, ftype
+    )
+
+    width_hz = 5
+    ripple_db = 60
+    window = "hamming"
+
+    filt_test_df = filters.fir_filter_df(
+        testdata,
+        ["fakedata"],
+        cutoff_hz,
+        sfreq,
+        ftype,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+        trim_edges=True,
+    )
+
+    assert isinstance(filt_test_df, pd.DataFrame)
+    assert filt_test_df.columns.tolist() == ["fakedata"]
+    # check the trimming
+    # assert filt_test_df.shape == (193, 2)
+
+
 @pytest.mark.parametrize(
     "_ndim, _ncol",
     [
         (1, 1),  # 1-D vector
-        (2, 1),  # 2-D table, 1 column
-        (2, 2),  # 2-D table, 2 columns
+        # (2, 1),  # 2-D table, 1 column
+        # (2, 2),  # 2-D table, 2 columns
         pytest.param(
             3, 3, marks=pytest.mark.xfail(strict=True)
         ),  # 3-D should fail
@@ -289,3 +345,31 @@ def test_sins_test_data(_show_plot):
         freq_list, amplitude_list, show_plot=_show_plot
     )
     assert len(t) == 375
+
+
+def test__trans_bwidth_ripple():
+    ftype = "bandstop"
+    window = "kaiser"
+    cutoff_hz = [18, 35]
+    sfreq = 250
+    width_hz, ripple_db = filters._trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+    assert ripple_db == 53
+
+    ftype = "highpass"
+    cutoff_hz = 12.5
+    window = "hann"
+
+    width_hz, ripple_db = filters._trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+    assert ripple_db == 44
+
+    window = "blackman"
+    ftype = "bandstop"
+    cutoff_hz = [18, 35]
+    width_hz, ripple_db = filters._trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+    assert ripple_db == 74
