@@ -5,9 +5,6 @@ import spudtr.fake_epochs_data as fake_data
 
 from spudtr.epf import EPOCH_ID, TIME
 
-# import epf as epf
-# import fake_epochs_data as fake_data
-
 import numpy as np
 import pandas as pd
 
@@ -335,66 +332,3 @@ def test_re_reference_2(eeg_streams, ref, ref_type, expected):
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, ref_type)
 
     assert list(br_epochs_df.b) == expected
-
-
-@pytest.mark.parametrize(
-    "trim_edges,df_shape", [(False, (252_000, 13)), (True, (190_848, 13))]
-)
-def test_fir_filter_epochs(trim_edges, df_shape):
-
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / P5_F, "p5")
-    assert epochs_df.shape == (252_000, 13)
-
-    epoch_id = "epoch_id"
-    time = "time_ms"
-    eeg_cols = ["MiPf", "MiCe", "MiCe", "MiOc"]
-    epf.check_epochs(
-        epochs_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
-    )
-
-    ftype = "lowpass"
-    window_type = "kaiser"
-    cutoff_hz = 12.5
-    width_hz = 5
-    ripple_db = 60
-    sfreq = 250
-
-    filt_test_df = epf.fir_filter_epochs(
-        epochs_df,
-        eeg_cols,
-        ftype,
-        window_type,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=trim_edges,
-        epoch_id=epoch_id,
-        time=time,
-    )
-    epf.check_epochs(
-        filt_test_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
-    )
-
-    filt_times = filt_test_df[time].unique()
-    if trim_edges is False:
-        assert all(filt_times == epochs_df[time].unique())
-        assert filt_test_df.shape == df_shape
-    else:
-        assert filt_test_df.shape == df_shape
-
-        # slice epochs_df to match the filtered one
-        qstr = f"{time} in @filt_times"
-        epochs_df = epochs_df.query(qstr)
-        assert filt_test_df.shape == df_shape == epochs_df.shape
-
-    # check the filter changed all and only selected columns
-    assert isinstance(filt_test_df, pd.DataFrame)
-    assert all(filt_test_df.columns == epochs_df.columns)
-    for col in epochs_df.columns:
-        if col in eeg_cols:
-            assert not all(epochs_df[col] == filt_test_df[col])
-        else:
-            assert all(epochs_df[col] == filt_test_df[col])
-
-    pass
