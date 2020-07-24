@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pytest
 import spudtr.filters as filters
+import matplotlib.pyplot as plt
 
 
 def test__suggest_epoch_length():
@@ -190,6 +191,19 @@ def test__apply_firwin_filter_data():
     filt_data = filters._apply_firwin_filter_data(y, taps)
     assert len(taps) == 183
 
+    freq_list = [0.2, 3]
+    amplitude_list = [1.0, 1.0]
+    sampling_freq = 250
+    t, y = filters._sins_test_data(freq_list, amplitude_list, sampling_freq)
+
+    ftype = "lowpass"
+    cutoff_hz = 1
+    sfreq = sampling_freq
+
+    with pytest.raises(ValueError) as excinfo:
+        y_filt = filters.fir_filter_data(y, cutoff_hz, sfreq, ftype)
+    assert "The input data is too short" in str(excinfo.value)
+
 
 @pytest.mark.parametrize(
     "window_type", ("kaiser", "hamming", "hann", "blackman")
@@ -259,72 +273,6 @@ def test__trans_bwidth_ripple():
     assert ripple_db == 74
 
 
-def test_filters_effect():
-
-    ftype = "highpass"
-    window = "blackman"
-    cutoff_hz = 20
-    width_hz = 5
-    ripple_db = 60
-    sfreq = 250
-    filters.filters_effect(
-        cutoff_hz,
-        sfreq,
-        ftype,
-        width_hz=width_hz,
-        ripple_db=ripple_db,
-        window=window,
-    )
-
-    # add another test for N is even.
-    ftype = "lowpass"
-    window = "kaiser"
-    width_hz = 4
-    ripple_db = 60
-    sfreq = 250
-    filters.filters_effect(
-        cutoff_hz,
-        sfreq,
-        ftype,
-        width_hz=width_hz,
-        ripple_db=ripple_db,
-        window=window,
-    )
-
-    ftype = "bandpass"
-    window = "kaiser"
-    cutoff_hz = [22, 40]
-    width_hz = 5
-    ripple_db = 60
-    sfreq = 250
-    filters.filters_effect(
-        cutoff_hz,
-        sfreq,
-        ftype,
-        width_hz=width_hz,
-        ripple_db=ripple_db,
-        window=window,
-    )
-
-    ftype = "bandstop"
-    window = "kaiser"
-    cutoff_hz = [18, 35]
-    width_hz = 5
-    ripple_db = 60
-    sfreq = 250
-    filters.filters_effect(
-        cutoff_hz,
-        sfreq,
-        ftype,
-        width_hz=width_hz,
-        ripple_db=ripple_db,
-        window=window,
-    )
-    filters.filters_effect(cutoff_hz, sfreq, ftype)
-    assert sfreq == 250
-
-
-"""
 @pytest.mark.parametrize(
     "ftype,cutoff_hz",
     [
@@ -350,6 +298,17 @@ def test_filters_effect(ftype, cutoff_hz):
         ripple_db=ripple_db,
         window=window,
     )
+    plt.clf()
+    plt.close("all")
+    filters.filters_effect(cutoff_hz, sfreq, ftype)
+
+    ftype = "lowpass"
+    cutoff_hz = 1
+    filters.filters_effect(cutoff_hz, sfreq, ftype)
+    ftype = "highpass"
+    cutoff_hz = 1
+    filters.filters_effect(cutoff_hz, sfreq, ftype)
+    ftype = "bandstop"
+    cutoff_hz = [1, 10]
     filters.filters_effect(cutoff_hz, sfreq, ftype)
     assert sfreq == 250
-"""

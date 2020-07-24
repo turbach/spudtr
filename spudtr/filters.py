@@ -10,6 +10,27 @@ from scipy.signal import kaiserord, firwin, freqz, lfilter
 
 
 def _trans_bwidth_ripple(cutoff_hz, sfreq, ftype, window):
+
+    """
+    Parameters
+    ----------
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    sfreq : float
+        sampling frequency per second, e.g., 250.0, 500.0
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    Returns
+    -------
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB
+    """
+
     if ftype.lower() == "lowpass":
         width_hz = min(max(cutoff_hz * 0.25, 2), cutoff_hz)
     elif ftype.lower() == "highpass":
@@ -79,7 +100,7 @@ def show_filter(
     width_hz=None,
     ripple_db=None,
     window=None,
-    sample_effect=None,
+    sample_effect=True,
 ):
 
     """
@@ -87,16 +108,18 @@ def show_filter(
     ----------
     cutoff_hz : float or 1D array_like
         cutoff frequency in Hz
-    width_hz : float
-        transition band width start to stop in Hz
-    ripple_db : float
-        attenuation in the stop band, in dB, e.g., 24.0, 60.0
     sfreq : float
         sampling frequency per second, e.g., 250.0, 500.0
     ftype : string
         filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-    window : string
+    width_hz : None or float
+        transition band width start to stop in Hz
+    ripple_db : None or float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+    window : None or string
         window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+    sample_effect : True or False
+        sample filter effect
 
     Returns
     -------
@@ -151,9 +174,6 @@ def show_filter(
 
     freq_phase = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
     imp_step = _impz(taps, a=1)
-
-    if sample_effect is None:
-        sample_effect = True
 
     if sample_effect:
         filters_effect(
@@ -464,23 +484,24 @@ def fir_filter_dt(
     col_names: list of str
         column names to apply the transform
 
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-
-    window : string
-        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
-
     cutoff_hz : float or 1D array_like
         cutoff frequency in Hz
 
-    width_hz : float
-        transition band width start to stop in Hz
-
-    ripple_db : float
-        attenuation in the stop band, in dB, e.g., 24.0, 60.0
-
     sfreq : float
         sampling frequency, e.g., 250.0, 500.0
+
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
+    width_hz : None or float
+        transition band width start to stop in Hz
+
+    ripple_db : None or float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+
+    window : None or string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
 
     Returns
     -------
@@ -557,6 +578,28 @@ def fir_filter_data(
     data, cutoff_hz, sfreq, ftype, width_hz=None, ripple_db=None, window=None
 ):
 
+    """
+    Parameters
+    ----------
+    data : 1-D array
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    sfreq : float
+        sampling frequency per second, e.g., 250.0, 500.0
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    Returns
+    -------
+        filt_data : filtered data
+    """
+
     if window is None:
         window = "kaiser"
 
@@ -587,7 +630,7 @@ def _apply_firwin_filter_data(data, taps):
 
     Returns
     -------
-    filt_df : filtered_data
+    filtered_data : filtered data (same size as data)
         filtered array.
 
     """
@@ -621,12 +664,37 @@ def _apply_firwin_filter_data(data, taps):
     # roll the phase shift by delay back to 0
     filtered_data = np.roll(filtered_data, -delay)[delay:-delay]
 
+    if not len(data) == len(filtered_data):
+        raise ValueError("The input data is too short.")
+
     return filtered_data
 
 
 def filters_effect(
     cutoff_hz, sfreq, ftype, width_hz=None, ripple_db=None, window=None
 ):
+
+    """
+    Parameters
+    ----------
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    sfreq : float
+        sampling frequency per second, e.g., 250.0, 500.0
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    Returns
+    -------
+    fig : `~.figure.Figure`
+    -------
+    """
     if window is None:
         window = "kaiser"
 
@@ -636,15 +704,30 @@ def filters_effect(
         )
 
     if ftype.lower() == "lowpass":
-        freq_list = [cutoff_hz - width_hz, cutoff_hz + width_hz]
-        amplitude_list = [1.0, 1.0]
-        t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
-        freq_list = [cutoff_hz - width_hz]
-        amplitude_list = [1.0]
-        t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
+        if cutoff_hz - width_hz <= 0:
+            freq_list = [0.2, cutoff_hz + width_hz]
+            amplitude_list = [1.0, 1.0]
+            t, y = _sins_test_data(
+                freq_list, amplitude_list, sfreq, duration=5
+            )
+            freq_list = [0.2]
+            amplitude_list = [1.0]
+            t, y1 = _sins_test_data(
+                freq_list, amplitude_list, sfreq, duration=5
+            )
+        else:
+            freq_list = [cutoff_hz - width_hz, cutoff_hz + width_hz]
+            amplitude_list = [1.0, 1.0]
+            t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
+            freq_list = [cutoff_hz - width_hz]
+            amplitude_list = [1.0]
+            t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
         y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
     elif ftype.lower() == "highpass":
-        freq_list = [cutoff_hz - width_hz, cutoff_hz + width_hz]
+        if cutoff_hz - width_hz <= 0:
+            freq_list = [0.2, cutoff_hz + width_hz]
+        else:
+            freq_list = [cutoff_hz - width_hz, cutoff_hz + width_hz]
         amplitude_list = [1.0, 1.0]
         t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
         freq_list = [cutoff_hz + width_hz]
@@ -660,16 +743,28 @@ def filters_effect(
         t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
         y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
     elif ftype.lower() == "bandstop":
-        freq_list = [
-            cutoff_hz[0] - width_hz,
-            np.mean(cutoff_hz),
-            cutoff_hz[1] + width_hz,
-        ]
-        amplitude_list = [1.0, 1.0, 1.0]
-        t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
-        freq_list = [cutoff_hz[0] - width_hz, cutoff_hz[1] + width_hz]
-        amplitude_list = [1.0, 1.0]
-        t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
+        if cutoff_hz[0] - width_hz <= 0:
+            freq_list = [0.2, np.mean(cutoff_hz), cutoff_hz[1] + width_hz]
+            amplitude_list = [1.0, 1.0, 1.0]
+            t, y = _sins_test_data(
+                freq_list, amplitude_list, sfreq, duration=5
+            )
+            freq_list = [0.2, cutoff_hz[1] + width_hz]
+            amplitude_list = [1.0, 1.0]
+            t, y1 = _sins_test_data(
+                freq_list, amplitude_list, sfreq, duration=5
+            )
+        else:
+            freq_list = [
+                cutoff_hz[0] - width_hz,
+                np.mean(cutoff_hz),
+                cutoff_hz[1] + width_hz,
+            ]
+            amplitude_list = [1.0, 1.0, 1.0]
+            t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
+            freq_list = [cutoff_hz[0] - width_hz, cutoff_hz[1] + width_hz]
+            amplitude_list = [1.0, 1.0]
+            t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
         y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
 
     fig, ax = plt.subplots(figsize=(16, 4))
