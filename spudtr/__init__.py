@@ -10,7 +10,7 @@ WR_F = "gh_sub000wr.epochs.h5"
 
 
 # single source the python package version with a bit of error checking
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 
 def get_ver():
