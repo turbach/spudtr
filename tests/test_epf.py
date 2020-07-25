@@ -13,22 +13,21 @@ import pandas as pd
 
 
 @pytest.mark.parametrize(
-    "_f,h5_group,_epoch_id,_time",
-    [
-        [P3_F, "p3", EPOCH_ID, TIME],
-        [P5_F, "p5", EPOCH_ID, TIME],
-        [WR_F, "wr", EPOCH_ID, TIME],
-    ],
+    "_f,h5_group", [[P3_F, "p3"], [P5_F, "p5"], [WR_F, "wr"]]
 )
-def test__hdf_read_epochs(_f, h5_group, _epoch_id, _time):
-    epf._hdf_read_epochs(
-        DATA_DIR / _f, h5_group, epoch_id=_epoch_id, time=_time
+def test__hdf_read_epochs(_f, h5_group):
+    epoch_id, time = "epoch_id", "time_ms"
+    epochs_df = epf._hdf_read_epochs(
+        DATA_DIR / _f, h5_group, epoch_id=epoch_id, time=time,
     )
     with pytest.raises(ValueError) as excinfo:
         epf._hdf_read_epochs(
-            DATA_DIR / _f, h5_group=None, epoch_id=_epoch_id, time=_time
+            DATA_DIR / _f, h5_group=None, epoch_id=epoch_id, time=time
         )
     assert "You have to give h5_group key" in str(excinfo.value)
+    _ = epf._epochs_QC(
+        epochs_df, epochs_df.columns.tolist(), epoch_id=epoch_id, time=time
+    )
 
 
 # test default, alternative, and None epoch_id, time
@@ -82,14 +81,14 @@ def test__validate_epochs_df(_epoch_id, _time):
 # test by using one file
 def test_epochs_QC():
     _f1, h5_group1 = WR_F, "wr"
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1)
+    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1, time="time_ms")
     data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
     epf._epochs_QC(epochs_df, data_streams, time="time_ms")
 
 
 def test_epochs_QC_fails():
     _f1, h5_group1 = WR_F, "wr"
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1)
+    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1, time="time_ms")
     data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
 
     with pytest.raises(ValueError) as excinfo:
@@ -147,7 +146,7 @@ def test_epochs_unequal_snapshots():
     assert "differs from previous snapshot" in str(excinfo.value)
 
 
-def test_Duplicate_values_of_epoch_id():
+def test_duplicate_values_of_epoch_id():
     epochs_table, channels = fake_data._generate(
         n_epochs=10,
         n_samples=100,
@@ -221,17 +220,18 @@ def test__find_subscript():
 
 
 def test_center_eeg():
-    # save a copy for demonstration
     epochs_df = fake_data._get_df()
+
+    # save a copy for demonstration
+    # check_epochs_df = epochs_df.copy()
+
     # center two columns in place (for demonstration start and stop are epoch row indexes not times)
     eeg_streams = ["x", "z"]
     epoch_id = "epoch_id"
     time = "time"
     start = 0
     stop = 2
-    epf.center_eeg(
-        epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time="time"
-    )
+
     # verify centering == 0 and report failures
     n_times = len(epochs_df[time].unique())
     n_epochs = len(epochs_df[epoch_id].unique())
@@ -243,22 +243,31 @@ def test_center_eeg():
             for i in range(n_epochs)
         ]
     ).flatten()
-    zero_mns = (
-        epochs_df.iloc[center_idxs, :].groupby(epoch_id)[eeg_streams].mean()
+    centered_epochs_df = epf.center_eeg(
+        epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time="time"
     )
-
+    zero_mns = (
+        centered_epochs_df.iloc[center_idxs, :]
+        .groupby(epoch_id)[eeg_streams]
+        .mean()
+    )
     assert np.allclose(0, zero_mns)
+    epf._epochs_QC(
+        centered_epochs_df, eeg_streams, epoch_id=epoch_id, time=time
+    )
 
 
 def test_drop_bad_epochs():
     _f1, h5_group1 = WR_F, "wr"
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1)
     epoch_id = "epoch_id"
     time = "time_ms"
+    epochs_df = epf._hdf_read_epochs(
+        DATA_DIR / _f1, h5_group1, epoch_id=epoch_id, time=time
+    )
     bads_column = "eeg_artifact"
 
     epochs_df_good = epf.drop_bad_epochs(
-        epochs_df, bads_column, epoch_id, time
+        epochs_df, bads_column, epoch_id=epoch_id, time=time
     )
     epochs_df_good["new_col"] = 0
 
@@ -271,6 +280,12 @@ def test_drop_bad_epochs():
     )
     epochs_df_good = epf.drop_bad_epochs(
         epochs_df, bads_column, epoch_id, time
+    )
+    epf._epochs_QC(
+        epochs_df_good,
+        epochs_df_good.columns.tolist(),
+        epoch_id=epoch_id,
+        time=time,
     )
 
 
@@ -302,6 +317,8 @@ def test_re_reference():
         br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref1, ref_type)
     assert "ref should be a list of strings" in str(excinfo.value)
 
+    epf._epochs_QC(br_epochs_df, eeg_streams, epoch_id=EPOCH_ID, time=TIME)
+
 
 @pytest.mark.parametrize(
     "eeg_streams,ref,ref_type,expected",
@@ -329,6 +346,7 @@ def test_re_reference_2(eeg_streams, ref, ref_type, expected):
     br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, ref_type)
 
     assert list(br_epochs_df.b) == expected
+    epf._epochs_QC(br_epochs_df, eeg_streams, epoch_id=EPOCH_ID, time=TIME)
 
 
 @pytest.mark.parametrize(
@@ -336,11 +354,13 @@ def test_re_reference_2(eeg_streams, ref, ref_type, expected):
 )
 def test_fir_filter_epochs(trim_edges, df_shape):
 
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / P5_F, "p5")
-    assert epochs_df.shape == (252_000, 13)
-
     epoch_id = "epoch_id"
     time = "time_ms"
+    epochs_df = epf._hdf_read_epochs(
+        DATA_DIR / P5_F, "p5", epoch_id=epoch_id, time=time
+    )
+    assert epochs_df.shape == (252_000, 13)
+
     eeg_cols = ["MiPf", "MiCe", "MiCe", "MiOc"]
     epf.check_epochs(
         epochs_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
@@ -390,5 +410,3 @@ def test_fir_filter_epochs(trim_edges, df_shape):
             assert not all(epochs_df[col] == filt_test_df[col])
         else:
             assert all(epochs_df[col] == filt_test_df[col])
-
-    pass

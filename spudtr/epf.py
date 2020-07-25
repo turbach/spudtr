@@ -32,59 +32,6 @@ def _validate_epochs_df(epochs_df, epoch_id=EPOCH_ID, time=TIME):
             raise ValueError(f"{key} column not found: {val}")
 
 
-def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
-    """read tabular hdf5 epochs file, return as pd.DataFrame
-
-    Parameters
-    ----------
-    epochs_f : str
-        name of the recorded epochs file to load
-
-    h5_group : str
-        name of h5 group key
-
-    Return
-    ------
-    df : pd.DataFrame
-        columns in INDEX_NAMES are pd.MultiIndex axis 0
-    """
-
-    if h5_group is None:
-        raise ValueError("You have to give h5_group key")
-    else:
-        epochs_df = pd.read_hdf(epochs_f, h5_group)
-
-    _validate_epochs_df(epochs_df, epoch_id=epoch_id, time=epoch_id)
-    return epochs_df
-
-
-def check_epochs(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
-    """check epochs data are in spudtr format
-
-    Parameters
-    ----------
-    epochs_df : pd.DataFrame
-
-    data_streams: list of str
-        the columns containing data
-        
-    epoch_id : str (default="epoch_id")
-        column name for the epoch index
-
-    time: str (default="time")
-        column name for the time stamps
-
-
-    Raises
-    ------
-    Exception 
-       diagnostic for what went wrong
-
-    """
-
-    _ = _epochs_QC(epochs_df, data_streams, epoch_id=epoch_id, time=time)
-
-
 def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     """Quality control for spudtr format epochs, returns epochs_df on success"""
 
@@ -106,13 +53,13 @@ def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
             f"the following are missing: {list(missing_channels)}"
         )
 
-    # epoch_id and time must be the columns in the epochs_df
-    _validate_epochs_df(epochs_df, epoch_id=epoch_id, time=time)
-
     # check no duplicate column names in index and regular columns
     names = list(epochs_df.index.names) + list(epochs_df.columns)
     if len(names) != len(set(names)):
         raise ValueError("Duplicate column names not allowed.")
+
+    # epoch_id and time must be the columns in the epochs_df
+    _validate_epochs_df(epochs_df, epoch_id=epoch_id, time=time)
 
     # check values of epoch_id in every time group are the same, and
     # unique in each time group. Make our own copy so we are immune to
@@ -154,6 +101,32 @@ def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     return epochs_df
 
 
+def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
+    """read tabular hdf5 epochs file, return as pd.DataFrame
+
+    Parameters
+    ----------
+    epochs_f : str
+        name of the recorded epochs file to load
+
+    h5_group : str
+        name of h5 group key
+
+    Return
+    ------
+    df : pd.DataFrame
+        columns in INDEX_NAMES are pd.MultiIndex axis 0
+    """
+
+    if h5_group is None:
+        raise ValueError("You have to give h5_group key")
+    else:
+        epochs_df = pd.read_hdf(epochs_f, h5_group)
+
+    _validate_epochs_df(epochs_df, epoch_id=epoch_id, time=time)
+    return epochs_df
+
+
 def _find_subscript(times, start, stop):
     istart = np.where(times >= start)[0]
     if len(istart) == 0:
@@ -176,6 +149,38 @@ def _find_subscript(times, start, stop):
             % (istart, istop, start, stop)
         )
     return istart, istop
+
+
+# ------------------------------------------------------------
+# user API
+# ------------------------------------------------------------
+
+
+def check_epochs(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
+    """check epochs data are in spudtr format
+
+    Parameters
+    ----------
+    epochs_df : pd.DataFrame
+
+    data_streams: list of str
+        the columns containing data
+        
+    epoch_id : str (default="epoch_id")
+        column name for the epoch index
+
+    time: str (default="time")
+        column name for the time stamps
+
+
+    Raises
+    ------
+    Exception 
+       diagnostic for what went wrong
+
+    """
+
+    _ = _epochs_QC(epochs_df, data_streams, epoch_id=epoch_id, time=time)
 
 
 def center_eeg(
@@ -201,7 +206,16 @@ def center_eeg(
     time : str (epf.TIME)
         column to use for the time stamp index, default if unspecified
 
+
+    Returns
+    -------
+    centered_epochs_df : pd.DataFrame
+       each epoch and channel time series centered on the [start, stop)
+       interval mean amplitude
+
     """
+
+    _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
 
     # calculate the row-index vector to slice the centering intervals
     n_times = len(epochs_df[time].unique())
@@ -219,7 +233,12 @@ def center_eeg(
     mns = epochs_df.iloc[center_idxs, :].groupby(epoch_id)[eeg_streams].mean()
 
     # inflate the means to the shape of the data and subtract in place, not sure if view() saves memory
-    epochs_df[eeg_streams] -= np.repeat(mns.to_numpy().view(), n_times, axis=0)
+    centered_epochs_df = epochs_df.copy()
+    centered_epochs_df[eeg_streams] -= np.repeat(
+        mns.to_numpy().view(), n_times, axis=0
+    )
+
+    return centered_epochs_df
 
 
 def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
@@ -251,16 +270,17 @@ def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
 
     """
 
+    _epochs_QC(epochs_df, [bads_column], epoch_id=epoch_id, time=time)
+
     # get the group of time == 0
     group = epochs_df.groupby([time]).get_group(0)
 
     good_idx = list(group[epoch_id][group[bads_column] == 0])
 
-    epochs_df_good = epochs_df[epochs_df[epoch_id].isin(good_idx)].copy()
+    good_epochs_df = epochs_df[epochs_df[epoch_id].isin(good_idx)].copy()
     # epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
 
-    _validate_epochs_df(epochs_df_good, epoch_id=epoch_id, time=time)
-    return epochs_df_good
+    return good_epochs_df
 
 
 def re_reference(
@@ -359,7 +379,6 @@ def re_reference(
     if isinstance(ref, list) and len(ref) == 1:
         ref = "".join(ref)
 
-    br_epochs_df = epochs_df.copy()
     if ref_type == "linked_pair":
         new_ref = epochs_df[ref] / 2.0
     elif ref_type == "new_common":
@@ -369,6 +388,7 @@ def re_reference(
     else:
         raise ValueError(f"unknown reference type: ref_type={ref_type}")
 
+    br_epochs_df = epochs_df.copy()
     for col in eeg_streams:
         br_epochs_df[col] = br_epochs_df[col] - new_ref
 
