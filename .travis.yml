@@ -29,6 +29,14 @@ script:
 after_success:
     - pip install codecov && codecov
 deploy:
+
+    # homegrown replacement for pages provider
+    - provider: script
+      skip_cleanup: true
+      script: bash ./ci/ghpages_upload.sh
+      on:
+          branch: master
+
     # conda_upload.sh switches anaconda upload on $TRAVIS_BRANCH
     #    master -> /pre-release
     #    vM.N.P -> /main
@@ -48,10 +56,4 @@ deploy:
           tags: true
           condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ 
 
-    # homegrown replacement for pages provider
-    - provider: script
-      skip_cleanup: true
-      script: bash ./ci/ghpages_upload.sh
-      on:
-          branch: master
 
