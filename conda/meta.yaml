@@ -1,4 +1,4 @@
-{% set version = "0.0.5" %}
+{% set version = "0.0.9" %}
 {% set py_pin = "3.6" %}  # pins for mkpy and fitgrid
 {% set np_pin = "1.16.4" %}
 
@@ -18,7 +18,7 @@ source:
 
 build:
     script: python setup.py install --single-version-externally-managed --record=record.txt
-    string: {{ environ.get("GIT_BUILD_STR", "no_git_build_str") }}_{{ environ.get("PKG_BUILDNUM", "no_pkg_buildnum") }}
+    string: {{ environ.get("GIT_ABBREV_COMMIT", "no_git_abbrev_commit") }}_{{ environ.get("PKG_BUILDNUM", "no_pkg_buildnum") }}
 
 requirements:
     # build ... all moved to host
@@ -35,11 +35,12 @@ requirements:
         - numpy =={{ np_pin }}  # these to pull from anaconda for mkl
         - numpy-base =={{ np_pin }}
         - scipy
-        - pandas
+        - pandas <1.0
         - matplotlib
         - bottleneck
         - pytables
         - pyarrow
+        - patsy
 
 test:
     imports:
