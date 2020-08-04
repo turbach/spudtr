@@ -5,6 +5,8 @@ import pandas as pd
 import bottleneck as bn
 
 # from scipy.signal import kaiserord, lfilter, firwin, freqz
+# 
+from spudtr.filters import _design_firwin_filter, fir_filter_dt
 
 EPOCH_ID = "epoch_id"  # default epoch ID column
 TIME = "time"  # default time column
@@ -390,3 +392,124 @@ def re_reference(
         br_epochs_df[col] = br_epochs_df[col] - new_ref
 
     return br_epochs_df
+
+
+def fir_filter_epochs(
+    epochs_df,
+    data_columns,
+    ftype,
+    window,
+    cutoff_hz,
+    width_hz,
+    ripple_db,
+    sfreq,
+    trim_edges,
+    epoch_id=EPOCH_ID,
+    time=TIME,
+):
+    """apply FIRLS filtering to spudtr format epoched data
+    Parameters
+    ----------
+    epochs_df : pd.DataFrame 
+        must be a spudtr format epochs dataframe with epoch_id, time columns
+    data_columns: list of str
+        column names to apply the transform
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+    trim_edges : bool
+        True trim edges, False not trim edges
+    epoch_id : str or None, optional
+        column name for epoch indexes
+    time: str or None, optional
+        column name for time stamps
+    Returns
+    -------
+    pd.DataFrame
+        filtered epochs_df
+    Examples
+    --------
+    >>> ftype = "bandpass"
+    >>> window = "kaiser"
+    >>> cutoff_hz = [18, 35]
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+    >>> epoch_id = "epoch_id"
+    >>> time = "time_ms"
+    >>> filt_test_df = epochs_filters(
+        epochs_df, 
+        data_columns,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=False
+        epoch_id=epoch_id
+        time=time
+    )
+    >>> ftype = "lowpass"
+    >>> window = "hamming"
+    >>> cutoff_hz = 10
+    >>> width_hz = 5
+    >>> ripple_db = 60
+    >>> sfreq = 250
+    >>> epoch_id = "day"
+    >>> time = "hour"
+    >>> filt_test_df = epochs_filters(
+        epochs_df,
+        data_columns,
+        ftype,
+        window,
+        cutoff_hz,
+        width_hz,
+        ripple_db,
+        sfreq,
+        trim_edges=True
+        epoch_id=epoch_id
+        time=time
+    )
+    """
+
+    # it is crucial to enforce the spudtr epochs format because trimming
+    # needs to know about epoch boundaries and times
+    _epochs_QC(epochs_df, data_columns, epoch_id=epoch_id, time=time)
+
+    # build and apply the filter
+    taps = _design_firwin_filter(
+        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    )
+
+    # filt_epochs_df = _apply_firwin_filter(epochs_df, data_columns, taps)
+    filt_epochs_df = fir_filter_dt(
+        epochs_df,
+        data_columns,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        ftype=ftype,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+    )
+
+    # this trims edges in *each epoch*
+    if trim_edges:
+        times = filt_epochs_df[time].unique()
+        n_edge = int(np.floor(len(taps) / 2.0))
+        start_good = times[n_edge]  # first good sample
+        stop_good = times[-(n_edge + 1)]  # last good sample
+        qstr = f"{time} >= @start_good and {time} <= @stop_good"
+        filt_epochs_df = filt_epochs_df.query(qstr).copy()
+
+    return filt_epochs_df
