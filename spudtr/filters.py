@@ -94,9 +94,9 @@ def _suggest_epoch_length(sfreq, ripple_db, width_hz):
 
 
 def show_filter(
-    cutoff_hz,
-    sfreq,
-    ftype,
+    cutoff_hz=None,
+    sfreq=None,
+    ftype=None,
     width_hz=None,
     ripple_db=None,
     window=None,
@@ -142,6 +142,7 @@ def show_filter(
     >>> window = 'hamming'
     >>> show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
     """
+
     if window is None:
         window = "kaiser"
 
@@ -335,6 +336,18 @@ def _design_firwin_filter(
 
     """
 
+    # a bit of guarding
+    for _arg in [
+        "cutoff_hz",
+        "width_hz",
+        "ripple_db",
+        "sfreq",
+        "ftype",
+        "window",
+    ]:
+        if eval(_arg) is None:
+            raise ValueError(f"{_arg} is None, set a value")
+
     # Nyquist frequency
     nyq_rate = sfreq / 2.0
 
@@ -461,9 +474,9 @@ def _sins_test_data(
 def fir_filter_dt(
     dt,
     col_names,
-    cutoff_hz,
-    sfreq,
-    ftype,
+    cutoff_hz=None,
+    sfreq=None,
+    ftype=None,
     width_hz=None,
     ripple_db=None,
     window=None,
@@ -575,7 +588,13 @@ def fir_filter_dt(
 
 
 def fir_filter_data(
-    data, cutoff_hz, sfreq, ftype, width_hz=None, ripple_db=None, window=None
+    data,
+    cutoff_hz=None,
+    sfreq=None,
+    ftype=None,
+    width_hz=None,
+    ripple_db=None,
+    window=None,
 ):
 
     """
@@ -671,7 +690,12 @@ def _apply_firwin_filter_data(data, taps):
 
 
 def filters_effect(
-    cutoff_hz, sfreq, ftype, width_hz=None, ripple_db=None, window=None
+    cutoff_hz=None,
+    sfreq=None,
+    ftype=None,
+    width_hz=None,
+    ripple_db=None,
+    window=None,
 ):
 
     """

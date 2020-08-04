@@ -5,7 +5,7 @@ import pandas as pd
 import bottleneck as bn
 
 # from scipy.signal import kaiserord, lfilter, firwin, freqz
-# 
+#
 from spudtr.filters import _design_firwin_filter, fir_filter_dt
 
 EPOCH_ID = "epoch_id"  # default epoch ID column

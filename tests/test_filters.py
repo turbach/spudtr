@@ -122,6 +122,29 @@ def test_impz():
     assert len(taps) == 183
 
 
+@pytest.mark.parametrize(
+    "test_arg",
+    ["cutoff_hz", "width_hz", "ripple_db", "sfreq", "ftype", "window"],
+)
+def test_design_firwin_filter_args(test_arg):
+
+    # usable values
+    specs = dict(
+        cutoff_hz=20,
+        width_hz=5,
+        ripple_db=60,
+        sfreq=250,
+        ftype="lopass",
+        window="kaiser",
+    )
+    specs[test_arg] = None
+    try:
+        taps = filters._design_firwin_filter(**specs)
+    except ValueError as fail:
+        assert str(fail) == f"{test_arg} is None, set a value"
+        pytest.xfail()
+
+
 def test_design_firwin_filter():
     ftype = "highpass"
     window = "blackman"
