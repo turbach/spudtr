@@ -420,8 +420,8 @@ def _design_firwin_filter(
 def _sins_test_data(
     freq_list,
     amplitude_list,
-    sampling_freq=None,
-    duration=None,
+    sampling_freq=250,
+    duration=1.5,
     show_plot=False,
 ):
     """creat a noisy signal to test the filter
@@ -447,14 +447,11 @@ def _sins_test_data(
     --------
     >>> freq_list = [10.0, 25.0, 45.0]
     >>> amplitude_list = [1.0, 0.2, 0.3]
-    >>> t,y = _sins_test_data(freq_list, amplitude_list)
+    >>> t, y = _sins_test_data(freq_list, amplitude_list)
 
     """
     assert len(freq_list) == len(amplitude_list)
-    if sampling_freq is None:
-        sampling_freq = 250
-    if duration is None:
-        duration = 1.5
+
     t = np.arange(0.0, duration, 1 / sampling_freq)
     x_noise = 0.1 * np.sin(2 * np.pi * 60 * t) + 0.2 * np.random.normal(
         size=len(t)
@@ -689,6 +686,8 @@ def _apply_firwin_filter_data(data, taps):
     return filtered_data
 
 
+
+
 def filters_effect(
     cutoff_hz=None,
     sfreq=None,
@@ -719,6 +718,13 @@ def filters_effect(
     fig : `~.figure.Figure`
     -------
     """
+
+    # test signal lower and upper bounds
+    LO_HZ_LB = 0.2
+    HI_HZ_UB = sfreq / 2.0
+
+    duration = 1.5  # seconds, default may be overriden
+
     if window is None:
         window = "kaiser"
 
@@ -727,83 +733,70 @@ def filters_effect(
             cutoff_hz, sfreq, ftype, window
         )
 
+    if isinstance(cutoff_hz, list):
+        lo_hz = cutoff_hz[0] - width_hz
+        hi_hz = cutoff_hz[1] + width_hz
+    else:
+        lo_hz = cutoff_hz - width_hz
+        hi_hz = cutoff_hz + width_hz
+
+    mid_hz = np.mean([lo_hz, hi_hz])  # same as np.mean(cutoff_hz)
+
+    # bound lo, hi, mid hz
+    lo_hz = np.max([LO_HZ_LB, lo_hz])
+    hi_hz = np.min([HI_HZ_UB, hi_hz])
+    assert lo_hz < mid_hz and mid_hz < hi_hz
+
+
+    # set y, y1 sine wave lo_hz, hi_hz, w/ mid_hz for band pass/stop
     if ftype.lower() == "lowpass":
-        if cutoff_hz - width_hz <= 0:
-            freq_list = [0.2, cutoff_hz + width_hz]
-            amplitude_list = [1.0, 1.0]
-            t, y = _sins_test_data(
-                freq_list, amplitude_list, sfreq, duration=5
-            )
-            freq_list = [0.2]
-            amplitude_list = [1.0]
-            t, y1 = _sins_test_data(
-                freq_list, amplitude_list, sfreq, duration=5
-            )
-        else:
-            freq_list = [cutoff_hz - width_hz, cutoff_hz + width_hz]
-            amplitude_list = [1.0, 1.0]
-            t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
-            freq_list = [cutoff_hz - width_hz]
-            amplitude_list = [1.0]
-            t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
-        y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
+        if lo_hz == LO_HZ_LB:
+            duration = 5
+        y_freqs = [lo_hz, hi_hz] 
+        y1_freqs = [lo_hz]  # lo signal to pass
+
     elif ftype.lower() == "highpass":
-        if cutoff_hz - width_hz <= 0:
-            freq_list = [0.2, cutoff_hz + width_hz]
-        else:
-            freq_list = [cutoff_hz - width_hz, cutoff_hz + width_hz]
-        amplitude_list = [1.0, 1.0]
-        t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
-        freq_list = [cutoff_hz + width_hz]
-        amplitude_list = [1.0]
-        t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
-        y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
+        y_freqs = [lo_hz, hi_hz]
+        y1_freqs = [hi_hz]  # hi signal to pass
+
     elif ftype.lower() == "bandpass":
-        freq_list = [np.mean(cutoff_hz), cutoff_hz[1] + width_hz]
-        amplitude_list = [1.0, 1.0]
-        t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
-        freq_list = [np.mean(cutoff_hz)]
-        amplitude_list = [1.0]
-        t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
-        y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
+        y_freqs = [lo_hz, mid_hz, hi_hz]
+        y1_freqs = [mid_hz]  # in-band signal to pass
+
     elif ftype.lower() == "bandstop":
-        if cutoff_hz[0] - width_hz <= 0:
-            freq_list = [0.2, np.mean(cutoff_hz), cutoff_hz[1] + width_hz]
-            amplitude_list = [1.0, 1.0, 1.0]
-            t, y = _sins_test_data(
-                freq_list, amplitude_list, sfreq, duration=5
-            )
-            freq_list = [0.2, cutoff_hz[1] + width_hz]
-            amplitude_list = [1.0, 1.0]
-            t, y1 = _sins_test_data(
-                freq_list, amplitude_list, sfreq, duration=5
-            )
-        else:
-            freq_list = [
-                cutoff_hz[0] - width_hz,
-                np.mean(cutoff_hz),
-                cutoff_hz[1] + width_hz,
-            ]
-            amplitude_list = [1.0, 1.0, 1.0]
-            t, y = _sins_test_data(freq_list, amplitude_list, sfreq)
-            freq_list = [cutoff_hz[0] - width_hz, cutoff_hz[1] + width_hz]
-            amplitude_list = [1.0, 1.0]
-            t, y1 = _sins_test_data(freq_list, amplitude_list, sfreq)
-        y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype)
+        if lo_hz == LO_HZ_LB:
+            duration = 5
+        y_freqs = [lo_hz, mid_hz, hi_hz]
+        y1_freqs = [lo_hz, hi_hz]  # out-of-band signals to pass
+
+
+    # generate y, y1, and filter y
+    y_amplitude_list = [1.0] * len(y_freqs)
+    y1_amplitude_list = [1.0] * len(y1_freqs)
+
+    t, y = _sins_test_data(y_freqs, y_amplitude_list, sfreq, duration)
+    t1, y1 = _sins_test_data(y1_freqs, y1_amplitude_list, sfreq, duration)
+    y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype, width_hz, ripple_db, window)
 
     fig, ax = plt.subplots(figsize=(16, 4))
 
-    ax.plot(t, y, ".-", color="c", linestyle="-", label="original data")
-    ax.plot(t, y1, ".-", color="b", linestyle="-", label="clean data")
+    ax.plot(t, y, ".-", color="c", linestyle="-", label="input")
+    ax.plot(t, y1, ".-", color="b", linestyle="-", label="ideal output")
     ax.plot(
         t,
         y_filt,
         ".-",
         color="r",
         linestyle="-",
-        label="%s filtered data" % ftype,
+        label="%s filter output" % ftype,
     )
-    ax.set_title(f"{ftype} filter effect", fontsize=20)
+    ax.set_title(
+        (
+            f"{ftype} filter cutoff {cutoff_hz} Hz transition {width_hz} Hz"
+            f"{window} ripple {ripple_db} dB"
+        ),
+        fontsize=20
+    )
     ax.set_xlabel("Time", fontsize=20)
     ax.legend(fontsize=16, loc=1)
     return fig
