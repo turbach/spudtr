@@ -100,7 +100,7 @@ def show_filter(
     width_hz=None,
     ripple_db=None,
     window=None,
-    sample_effect=True,
+    show_output=True,
 ):
 
     """
@@ -118,8 +118,8 @@ def show_filter(
         attenuation in the stop band, in dB, e.g., 24.0, 60.0
     window : None or string
         window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
-    sample_effect : True or False
-        sample filter effect
+    show_output : True or False
+        plot example filter input-output
 
     Returns
     -------
@@ -159,25 +159,26 @@ def show_filter(
     n_edge = int(np.floor(len(taps) / 2.0))
     s_edge = n_edge / sfreq
     # print filter information
-    print(f" {ftype} filter")
-    print(
-        f" sample rate, fs={sfreq} \n cutoff_hz = {cutoff_hz} \n width of transition, width={width_hz} hz \n ripple_db={ripple_db}"
-    )
-    print(
-        f" FIR filter size: numtaps = {len(taps)}, time = {len(taps)/sfreq} s, delay = {int((len(taps) - 1) / 2)} , delay_time = {len(taps)/(2*sfreq)} s"
-    )
+    print(f"{ftype} filter")
+    print(f"sampling rate (samples / s): {sfreq:0.5f}")
+    print(f"1/2 amplitude cutoff (Hz): {cutoff_hz:0.5f}")
+    print(f"transition width (Hz): {width_hz:0.5f}")
+    print(f"ripple (dB): {ripple_db:0.5f}")
+    print(f"window: {window}")
+
+    print(f"length (coefficients): {len(taps)}")
+    print(f"delay (samples): {n_edge}")
 
     print(
-        f" Filter length={len(taps)} distorts the first and last"
-        f" {s_edge:.4f}  seconds of each epoch"
-        f" (= {n_edge} samples at {sfreq} samples / s)"
+        f"edge distortion: first and last {s_edge:.4f} seconds of the data"
+        f"(= {n_edge} samples at {sfreq} samples / s)"
     )
 
     freq_phase = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
     imp_step = _impz(taps, a=1)
 
-    if sample_effect:
-        filters_effect(
+    if show_output:
+        io_fig, io_ax = filters_effect(
             cutoff_hz,
             sfreq,
             ftype,
@@ -185,6 +186,10 @@ def show_filter(
             ripple_db=ripple_db,
             window=window,
         )
+        tmin, tmax = io_ax.get_xlim()
+        io_ax.axvspan(tmin, tmin + s_edge, color='gray', alpha=0.15)
+        io_ax.axvspan(tmax, tmax - s_edge, color='gray', alpha=0.15)
+
     return freq_phase, imp_step, s_edge, n_edge
 
 
@@ -308,14 +313,17 @@ def _impz(b, a=1):
 def _design_firwin_filter(
     cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
 ):
-    """
+    """calculate odd length, symmetric, linear phase FIR filter coefficients
+
     FIRLS at https://scipy-cookbook.readthedocs.io/items/FIRFilter.html
 
     Parameters
     ----------
 
     cutoff_hz : float or 1D array_like
-        cutoff frequency in Hz, e.g., 5.0, 30.0 for lowpass or highpass. 1D array_like, e.g. [10.0, 30.0] for bandpass or bandstop
+        cutoff frequency in Hz, e.g., 5.0, 30.0 for lowpass or
+        highpass. 1D array_like, e.g. [10.0, 30.0] for bandpass or
+        bandstop
 
     width_hz : float
         transition band width start to stop in Hz
@@ -327,12 +335,12 @@ def _design_firwin_filter(
         sampling frequency, e.g., 250.0, 500.0
 
     ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+        filter type, one of 'lowpass' , 'highpass', 'bandpass', 'bandstop'
 
     Returns
     -------
-    taps : ndarray
-        Coefficients of FIR filter.
+    taps : np.array
+        coefficients of FIR filter.
 
     """
 
@@ -360,7 +368,7 @@ def _design_firwin_filter(
     if N % 2 == 0:
         N = N + 1  # enforce odd number of taps
 
-    # create a FIR filter using firwin .
+    # create a FIR filter using firwin
     if ftype.lower() == "lowpass":
         if window.lower() == "kaiser":
             taps = firwin(
@@ -595,6 +603,8 @@ def fir_filter_data(
 ):
 
     """
+    Finite Impulse Response filter
+
     Parameters
     ----------
     data : 1-D array
@@ -715,7 +725,7 @@ def filters_effect(
 
     Returns
     -------
-    fig : `~.figure.Figure`
+    fig, ax : `~.figure.Figure`, `~axes.Axes`
     -------
     """
 
@@ -792,11 +802,11 @@ def filters_effect(
     )
     ax.set_title(
         (
-            f"{ftype} filter cutoff {cutoff_hz} Hz transition {width_hz} Hz"
-            f"{window} ripple {ripple_db} dB"
+            f"{ftype} filter cutoff={cutoff_hz} Hz, transition width={width_hz} Hz, "
+            f"ripple={ripple_db}, dB window={window}"
         ),
         fontsize=20
     )
     ax.set_xlabel("Time", fontsize=20)
-    ax.legend(fontsize=16, loc=1)
-    return fig
+    ax.legend(fontsize=16, loc="upper left", bbox_to_anchor=(1.05, 1.0))
+    return fig, ax
