@@ -12,6 +12,7 @@ docs/source/
 
 # conda build files
 tmp-conda-builds/
+conda-build
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -33,6 +34,8 @@ build/
 
 # Coverage files
 .coverage
+htmlcov
+cov_html
 
 # Development/scratch work directory
 dev/
