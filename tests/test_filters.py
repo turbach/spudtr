@@ -225,7 +225,7 @@ def test__apply_firwin_filter_data():
 
     with pytest.raises(ValueError) as excinfo:
         y_filt = filters.fir_filter_data(y, cutoff_hz, sfreq, ftype)
-    assert "The input data is too short" in str(excinfo.value)
+    assert "filter I/O length mismatch" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(

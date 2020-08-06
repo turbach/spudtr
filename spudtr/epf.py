@@ -1,5 +1,6 @@
 """utilities for epoched EEG data in a pandas.DataFrame """
 from pathlib import Path
+import warnings
 import numpy as np
 import pandas as pd
 import bottleneck as bn
@@ -116,6 +117,10 @@ def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
     df : pd.DataFrame
         columns in INDEX_NAMES are pd.MultiIndex axis 0
     """
+    warnings.warn(
+        "_hdf_read_epochs() is unused and deprecated in spudtr.epf v0.0.9 and will be removed in v0.0.11",
+        DeprecationWarning
+    )
 
     if h5_group is None:
         raise ValueError("You have to give h5_group key")

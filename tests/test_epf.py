@@ -1,12 +1,50 @@
 import pytest
 
-from spudtr import epf, DATA_DIR, P3_F, P5_F, WR_F
+# local HDF5 files to be deprecated in v0.0.11 with _hdf_read_epochs
+from spudtr import DATA_DIR, P3_F, P5_F, WR_F
+
+# Zenodo archive feather files used starting with v0.0.9
+from spudtr import get_demo_df, WR_100_FEATHER, P5_1500_FEATHER
+from spudtr import epf
 import spudtr.fake_epochs_data as fake_data
 
 from spudtr.epf import EPOCH_ID, TIME
 
 import numpy as np
 import pandas as pd
+
+# ------------------------------------------------------------
+# test epochs Zenodo https://doi.org/10.5281/zenodo.3968485
+# ------------------------------------------------------------
+WR_DF_COLS = [
+    'epoch_id', 'time_ms', 'sub_id', 'eeg_artifact', 'dblock_path',
+    'log_evcodes', 'log_ccodes', 'dblock_srate', 'ccode', 'instrument',
+    'repetition', 'pres_position', 'word_lag', 'congruity', 'event_code',
+    'condition_id', 'item_id', 'category', 'probe', 'lle', 'lhz', 'MiPf',
+    'LLPf', 'RLPf', 'LMPf', 'RMPf', 'LDFr', 'RDFr', 'LLFr', 'RLFr', 'LMFr',
+    'RMFr', 'LMCe', 'RMCe', 'MiCe', 'MiPa', 'LDCe', 'RDCe', 'LDPa', 'RDPa',
+    'LMOc', 'RMOc', 'LLTe', 'RLTe', 'LLOc', 'RLOc', 'MiOc', 'A2', 'HEOG',
+    'rle', 'rhz'
+]
+
+P5_DF_COLS = ['epoch_id', 'time_ms', 'sub_id', 'eeg_artifact', 'dblock_path',
+       'log_evcodes', 'log_ccodes', 'dblock_srate', 'ccode', 'instrument',
+       'bin', 'click', 'type', 'lle', 'lhz', 'MiPf', 'LLPf', 'RLPf', 'LMPf',
+       'RMPf', 'LDFr', 'RDFr', 'LLFr', 'RLFr', 'LMFr', 'RMFr', 'LMCe', 'RMCe',
+       'MiCe', 'MiPa', 'LDCe', 'RDCe', 'LDPa', 'RDPa', 'LMOc', 'RMOc', 'LLTe',
+       'RLTe', 'LLOc', 'RLOc', 'MiOc', 'A2', 'HEOG', 'rle', 'rhz'
+]
+
+print("downloading test epochs")
+WR_100_FEATHER_DF = get_demo_df(WR_100_FEATHER)
+assert WR_100_FEATHER_DF.shape == (12425, 51)
+assert all(WR_100_FEATHER_DF.columns == WR_DF_COLS)
+
+P5_1500_FEATHER_DF = get_demo_df(P5_1500_FEATHER)
+assert P5_1500_FEATHER_DF.shape == (335250, 45)
+assert all(P5_1500_FEATHER_DF.columns == P5_DF_COLS)
+
+print("ok")
 
 
 @pytest.mark.parametrize(
@@ -77,15 +115,13 @@ def test__validate_epochs_df(_epoch_id, _time):
 
 # test by using one file
 def test_epochs_QC():
-    _f1, h5_group1 = WR_F, "wr"
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1, time="time_ms")
+    epochs_df = WR_100_FEATHER_DF.copy()
     data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    epf._epochs_QC(epochs_df, data_streams, time="time_ms")
+    epf._epochs_QC(epochs_df, data_streams, epoch_id="epoch_id", time="time_ms")
 
 
 def test_epochs_QC_fails():
-    _f1, h5_group1 = WR_F, "wr"
-    epochs_df = epf._hdf_read_epochs(DATA_DIR / _f1, h5_group1, time="time_ms")
+    epochs_df = WR_100_FEATHER_DF.copy()
     data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
 
     with pytest.raises(ValueError) as excinfo:
@@ -255,12 +291,10 @@ def test_center_eeg():
 
 
 def test_drop_bad_epochs():
-    _f1, h5_group1 = WR_F, "wr"
     epoch_id = "epoch_id"
     time = "time_ms"
-    epochs_df = epf._hdf_read_epochs(
-        DATA_DIR / _f1, h5_group1, epoch_id=epoch_id, time=time
-    )
+
+    epochs_df = WR_100_FEATHER_DF.copy()
     bads_column = "eeg_artifact"
 
     epochs_df_good = epf.drop_bad_epochs(
@@ -347,16 +381,14 @@ def test_re_reference_2(eeg_streams, ref, ref_type, expected):
 
 
 @pytest.mark.parametrize(
-    "trim_edges,df_shape", [(False, (252_000, 13)), (True, (190_848, 13))]
+    "trim_edges,df_shape", [(False, (335_250, 45)), (True, (253_896, 45))]
 )
 def test_fir_filter_epochs(trim_edges, df_shape):
 
     epoch_id = "epoch_id"
     time = "time_ms"
-    epochs_df = epf._hdf_read_epochs(
-        DATA_DIR / P5_F, "p5", epoch_id=epoch_id, time=time
-    )
-    assert epochs_df.shape == (252_000, 13)
+
+    epochs_df = P5_1500_FEATHER_DF.copy()
 
     eeg_cols = ["MiPf", "MiCe", "MiCe", "MiOc"]
     epf.check_epochs(

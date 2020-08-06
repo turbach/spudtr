@@ -691,7 +691,7 @@ def _apply_firwin_filter_data(data, taps):
     filtered_data = np.roll(filtered_data, -delay)[delay:-delay]
 
     if not len(data) == len(filtered_data):
-        raise ValueError("The input data is too short.")
+        raise ValueError(f"filter I/O length mismatch: input={len(data)} output={len(filtered_data)}")
 
     return filtered_data
 
@@ -731,8 +731,6 @@ def filters_effect(
     LO_HZ_LB = 0.2
     HI_HZ_UB = sfreq / 2.0
 
-    duration = 1.5  # seconds, default may be overriden
-
     if window is None:
         window = "kaiser"
 
@@ -757,8 +755,6 @@ def filters_effect(
 
     # set y, y1 sine wave lo_hz, hi_hz, w/ mid_hz for band pass/stop
     if ftype.lower() == "lowpass":
-        if lo_hz == LO_HZ_LB:
-            duration = 5
         y_freqs = [lo_hz, hi_hz]
         y1_freqs = [lo_hz]  # lo signal to pass
 
@@ -771,14 +767,13 @@ def filters_effect(
         y1_freqs = [mid_hz]  # in-band signal to pass
 
     elif ftype.lower() == "bandstop":
-        if lo_hz == LO_HZ_LB:
-            duration = 5
         y_freqs = [lo_hz, mid_hz, hi_hz]
         y1_freqs = [lo_hz, hi_hz]  # out-of-band signals to pass
 
     # generate y, y1, and filter y
     y_amplitude_list = [1.0] * len(y_freqs)
     y1_amplitude_list = [1.0] * len(y1_freqs)
+    duration = max(1.5, 1 / lo_hz)  # seconds
 
     t, y = _sins_test_data(y_freqs, y_amplitude_list, sfreq, duration)
     t1, y1 = _sins_test_data(y1_freqs, y1_amplitude_list, sfreq, duration)
