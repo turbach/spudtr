@@ -187,8 +187,8 @@ def show_filter(
             window=window,
         )
         tmin, tmax = io_ax.get_xlim()
-        io_ax.axvspan(tmin, tmin + s_edge, color='gray', alpha=0.15)
-        io_ax.axvspan(tmax, tmax - s_edge, color='gray', alpha=0.15)
+        io_ax.axvspan(tmin, tmin + s_edge, color="gray", alpha=0.15)
+        io_ax.axvspan(tmax, tmax - s_edge, color="gray", alpha=0.15)
 
     return freq_phase, imp_step, s_edge, n_edge
 
@@ -696,8 +696,6 @@ def _apply_firwin_filter_data(data, taps):
     return filtered_data
 
 
-
-
 def filters_effect(
     cutoff_hz=None,
     sfreq=None,
@@ -757,12 +755,11 @@ def filters_effect(
     hi_hz = np.min([HI_HZ_UB, hi_hz])
     assert lo_hz < mid_hz and mid_hz < hi_hz
 
-
     # set y, y1 sine wave lo_hz, hi_hz, w/ mid_hz for band pass/stop
     if ftype.lower() == "lowpass":
         if lo_hz == LO_HZ_LB:
             duration = 5
-        y_freqs = [lo_hz, hi_hz] 
+        y_freqs = [lo_hz, hi_hz]
         y1_freqs = [lo_hz]  # lo signal to pass
 
     elif ftype.lower() == "highpass":
@@ -779,14 +776,15 @@ def filters_effect(
         y_freqs = [lo_hz, mid_hz, hi_hz]
         y1_freqs = [lo_hz, hi_hz]  # out-of-band signals to pass
 
-
     # generate y, y1, and filter y
     y_amplitude_list = [1.0] * len(y_freqs)
     y1_amplitude_list = [1.0] * len(y1_freqs)
 
     t, y = _sins_test_data(y_freqs, y_amplitude_list, sfreq, duration)
     t1, y1 = _sins_test_data(y1_freqs, y1_amplitude_list, sfreq, duration)
-    y_filt = fir_filter_data(y, cutoff_hz, sfreq, ftype, width_hz, ripple_db, window)
+    y_filt = fir_filter_data(
+        y, cutoff_hz, sfreq, ftype, width_hz, ripple_db, window
+    )
 
     fig, ax = plt.subplots(figsize=(16, 4))
 
@@ -805,7 +803,7 @@ def filters_effect(
             f"{ftype} filter cutoff={cutoff_hz} Hz, transition width={width_hz} Hz, "
             f"ripple={ripple_db}, dB window={window}"
         ),
-        fontsize=20
+        fontsize=20,
     )
     ax.set_xlabel("Time", fontsize=20)
     ax.legend(fontsize=16, loc="upper left", bbox_to_anchor=(1.05, 1.0))

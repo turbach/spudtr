@@ -48,7 +48,7 @@ def get_demo_df(filename, url=DATA_URL):
         spudtr epochs format data frame with epoch_id, time_ms columns
 
     """
- 
+
     import pandas as pd
     import io
     import os
@@ -59,34 +59,33 @@ def get_demo_df(filename, url=DATA_URL):
     resp = requests.get(url + filename, stream=True)
     resp.raw.decode_content = True
     mem_fh = io.BytesIO(resp.raw.read())
-    
+
     df = pd.read_feather(mem_fh)
-    df.insert(1,"time_ms", df["match_time"])
-    df.insert(2,"sub_id", df["data_group"])
+    df.insert(1, "time_ms", df["match_time"])
+    df.insert(2, "sub_id", df["data_group"])
     _mkh5_internal = [
-        'data_group',
-        'dblock_tick_idx',
-        'dblock_ticks',
-        'crw_ticks',
-        'raw_evcodes',
-        'epoch_match_tick_delta', 
-        'epoch_ticks', 
-        'idx',
-        'dlim',
-        'anchor_str',
-        'match_str',
-        'anchor_code',
-        'match_code', 
-        'anchor_tick', 
-        'match_tick', 
-        'anchor_time_delta',
-        'pygarv',
-        'anchor_tick_delta',
-        'is_anchor',
-        'regexp',
-        'match_time',
-        'anchor_time',
-       ]
+        "data_group",
+        "dblock_tick_idx",
+        "dblock_ticks",
+        "crw_ticks",
+        "raw_evcodes",
+        "epoch_match_tick_delta",
+        "epoch_ticks",
+        "idx",
+        "dlim",
+        "anchor_str",
+        "match_str",
+        "anchor_code",
+        "match_code",
+        "anchor_tick",
+        "match_tick",
+        "anchor_time_delta",
+        "pygarv",
+        "anchor_tick_delta",
+        "is_anchor",
+        "regexp",
+        "match_time",
+        "anchor_time",
+    ]
     df.drop(columns=_mkh5_internal, inplace=True)
     return df
-
