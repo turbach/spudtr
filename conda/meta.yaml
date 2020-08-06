@@ -2,12 +2,6 @@
 {% set py_pin = "3.6" %}  # pins for mkpy and fitgrid
 {% set np_pin = "1.16.4" %}
 
-# Notes: conda build string format uses the git hash instead of conda package hash
-# Format: conda build env var GIT_BUILD_STR_N where, per conda build docs GIT_BUILD_STR
-# has number of commits since last tag, and git short SHA. N conda build number.  For
-# github releases that trigger TravisCI deploy, number of commits since last tag and number 
-# of conda builds should be 0
-
 package:
     name: spudtr
     version: {{ version }}
@@ -41,6 +35,7 @@ requirements:
         - pytables
         - pyarrow
         - patsy
+        - requests
 
 test:
     imports:

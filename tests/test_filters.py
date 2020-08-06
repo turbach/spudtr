@@ -30,7 +30,7 @@ def test_show_filter():
         window=window,
     )
     filters.show_filter(cutoff_hz, sfreq, ftype)
-    filters.show_filter(cutoff_hz, sfreq, ftype, sample_effect=False)
+    filters.show_filter(cutoff_hz, sfreq, ftype, show_output=False)
     assert sfreq == 250
 
 
