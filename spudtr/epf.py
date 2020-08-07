@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 import bottleneck as bn
 
-# from scipy.signal import kaiserord, lfilter, firwin, freqz
-#
 from spudtr.filters import _design_firwin_filter, fir_filter_dt
 
 EPOCH_ID = "epoch_id"  # default epoch ID column
@@ -402,13 +400,13 @@ def re_reference(
 def fir_filter_epochs(
     epochs_df,
     data_columns,
-    ftype,
-    window,
-    cutoff_hz,
-    width_hz,
-    ripple_db,
-    sfreq,
-    trim_edges,
+    ftype=None,
+    cutoff_hz=None,
+    width_hz=None,
+    ripple_db=None,
+    window=None,
+    sfreq=None,
+    trim_edges=False,
     epoch_id=EPOCH_ID,
     time=TIME,
 ):
@@ -419,36 +417,37 @@ def fir_filter_epochs(
         must be a spudtr format epochs dataframe with epoch_id, time columns
     data_columns: list of str
         column names to apply the transform
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-    window : string
-        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
-    cutoff_hz : float or 1D array_like
-        cutoff frequency in Hz
+    ftype : str {'lowpass' , 'highpass', 'bandpass', 'bandstop'}
+        filter type
+    cutoff_hz : float or 1D array-like of floats, length 2
+        1/2 amplitude cutoff frequency in Hz
     width_hz : float
         transition band width start to stop in Hz
     ripple_db : float
-        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+        pass/stop band ripple, in dB, e.g., 24.0, 60.0
+    window : str
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
     sfreq : float
         sampling frequency, e.g., 250.0, 500.0
     trim_edges : bool
         True trim edges, False not trim edges
-    epoch_id : str or None, optional
-        column name for epoch indexes
-    time: str or None, optional
-        column name for time stamps
+    epoch_id : str {"epoch_id"}, optional
+        column name for epoch index
+    time: str {"time"}, optional
+        column name for timestamps
     Returns
     -------
     pd.DataFrame
         filtered epochs_df
+
     Examples
     --------
     >>> ftype = "bandpass"
-    >>> window = "kaiser"
     >>> cutoff_hz = [18, 35]
+    >>> sfreq = 250
+    >>> window = "kaiser"
     >>> width_hz = 5
     >>> ripple_db = 60
-    >>> sfreq = 250
     >>> epoch_id = "epoch_id"
     >>> time = "time_ms"
     >>> filt_test_df = epochs_filters(

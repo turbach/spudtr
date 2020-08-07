@@ -84,6 +84,7 @@ def get_demo_df(filename, ftype="feather", url=DATA_URL):
     elif ftype == "h5":
         df = pd.read_hdf(mem_fh)
 
+    df["epoch_id"] = df["epoch_id"].astype(int)
     df.insert(1, "time_ms", df["match_time"])
     df.insert(2, "sub_id", df["data_group"])
     df.insert(3, "eeg_artifact", df["log_flags"])

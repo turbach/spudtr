@@ -395,29 +395,27 @@ def test_fir_filter_epochs(trim_edges, df_shape):
         epochs_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
     )
 
-    ftype = "lowpass"
-    window_type = "kaiser"
-    cutoff_hz = 12.5
-    width_hz = 5
-    ripple_db = 60
-    sfreq = 250
+    _fp = dict(
+        ftype="lowpass",
+        cutoff_hz=12.5,
+        width_hz=5,
+        ripple_db=60,
+        window="kaiser",
+        sfreq=250
+    )
 
     filt_test_df = epf.fir_filter_epochs(
         epochs_df,
         eeg_cols,
-        ftype,
-        window_type,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
         trim_edges=trim_edges,
         epoch_id=epoch_id,
         time=time,
+        **_fp
     )
     epf.check_epochs(
         filt_test_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
     )
+
 
     filt_times = filt_test_df[time].unique()
     if trim_edges is False:

@@ -1,3 +1,10 @@
+"""FIR filter wrappers and utility functions. 
+
+All functions require explicit parameters except `show_filter()` which
+will suggest defaults for `window`, `width_hz` (transition band) and
+`ripple_db` if these are not specified.
+"""
+
 import warnings
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,6 +14,92 @@ from scipy import signal, fftpack
 
 import logging as LOGGER
 from scipy.signal import kaiserord, firwin, freqz, lfilter
+
+
+FTYPES = ["lowpass", "highpass", "bandpass", "bandstop"]
+WINDOWS = ["kaiser", "hamming", "hann", "blackman"]
+
+
+def check_filter_params(
+        cutoff_hz=None, width_hz=None, ripple_db=None, sfreq=None, ftype=None, window=None,
+        allow_defaults=False
+):
+    """type check FIR filter parameters.
+
+    Values for `ftype`, `cutoff_hz`, and `sfreq` are obligatory.
+
+    If `allow_defaults` is True, reasonable defaults are provided if
+    any of window, width_hz and ripple_db are None
+
+    Returns
+    -------
+    dict
+       key:val with all parameters specified, suitable for passing as
+       **params to spudtr.filters FIR functions
+
+    """
+
+    def _test_numeric(_key, _val):
+        """helper raises ValueError if _val is None or non-numeric"""
+        try:
+            if _val is None: raise Exception
+            np.array(_val).astype(float)
+        except:
+            raise ValueError(f"{_key}={_val}, must be numeric")
+
+
+    # ------------------------------------------------------------
+    # API obligatory args: ftype, cutoff_hz, sfreq
+    # ------------------------------------------------------------
+    if ftype not in FTYPES:
+        raise ValueError(f"ftype={ftype}, must be one of " + " ".join(FTYPES))
+
+    for _param in ["cutoff_hz", "sfreq"]:
+        _test_numeric(_param, eval(_param))
+
+    # ------------------------------------------------------------
+    # API optional args: window, width_hz, ripple_db
+    # ------------------------------------------------------------
+    if window is None and allow_defaults:
+        window = "kaiser"
+        warnings.warn(f"using default window='{window}'")
+
+    if window not in WINDOWS:
+        raise ValueError(f"window={window}, must be one of " + " ".join(WINDOWS))
+
+    # compute default cutoff_hz and ripple_db for this window, ftype, sfreq
+    _width_hz, _ripple_db = _trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+
+    if width_hz is None and allow_defaults:
+        width_hz = _width_hz
+        warnings.warn(f"using default width_hz={width_hz:0.3f}")
+
+    if ripple_db is None and allow_defaults:
+        ripple_db = _ripple_db
+        warnings.warn(f"using default ripple_db={ripple_db:0.3f}")
+
+    for _param in ["width_hz", "ripple_db"]:
+        _test_numeric(_param, eval(_param))
+
+
+    # load up return dict
+    _params = {
+        "ftype": ftype,
+        "cutoff_hz": cutoff_hz,
+        "width_hz": width_hz,
+        "ripple_db": ripple_db,
+        "window": window,
+        "sfreq": sfreq,
+    }
+
+    # ensure no missing parameter values
+    for key, val in _params.items():
+        if val is None:
+            raise ValueError(f"{key}={val}, specify a value. See spudtr.filter docs.")
+
+    return _params
 
 
 def _trans_bwidth_ripple(cutoff_hz, sfreq, ftype, window):
@@ -94,30 +187,30 @@ def _suggest_epoch_length(sfreq, ripple_db, width_hz):
 
 
 def show_filter(
-    cutoff_hz=None,
-    sfreq=None,
     ftype=None,
+    cutoff_hz=None,
     width_hz=None,
     ripple_db=None,
     window=None,
+    sfreq=None,
     show_output=True,
 ):
 
     """
     Parameters
     ----------
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
     cutoff_hz : float or 1D array_like
         cutoff frequency in Hz
     sfreq : float
         sampling frequency per second, e.g., 250.0, 500.0
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-    width_hz : None or float
+    width_hz : float, optional
         transition band width start to stop in Hz
-    ripple_db : None or float
+    ripple_db : float, optional
         attenuation in the stop band, in dB, e.g., 24.0, 60.0
-    window : None or string
-        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+    window : {'kaiser','hamming','hann','blackman'}, optional
+        window type for firwin, e.g., 
     show_output : True or False
         plot example filter input-output
 
@@ -134,59 +227,57 @@ def show_filter(
 
     Examples
     --------
+    >>> ftype = 'lowpass'
     >>> cutoff_hz = 10.0
+    >>> sfreq = 250
     >>> width_hz = 5.0
     >>> ripple_db = 60.0
-    >>> sfreq = 250
-    >>> ftype = 'lowpass'
     >>> window = 'hamming'
     >>> show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
     """
 
-    if window is None:
-        window = "kaiser"
-
-    if width_hz is None or ripple_db is None:
-        width_hz, ripple_db = _trans_bwidth_ripple(
-            cutoff_hz, sfreq, ftype, window
-        )
-
-    taps = _design_firwin_filter(
-        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    _fp = check_filter_params(
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+        allow_defaults=True
     )
+
+    taps = _design_firwin_filter(**_fp)
 
     # this many samples are lost to edge distortion (worst case)
     n_edge = int(np.floor(len(taps) / 2.0))
     s_edge = n_edge / sfreq
-    # print filter information
-    print(f"{ftype} filter")
-    print(f"sampling rate (samples / s): {sfreq:0.5f}")
-    print(f"1/2 amplitude cutoff (Hz): {cutoff_hz:0.5f}")
-    print(f"transition width (Hz): {width_hz:0.5f}")
-    print(f"ripple (dB): {ripple_db:0.5f}")
-    print(f"window: {window}")
+
+    # promote scalar to iterable for printing
+    _cutoff_hz = np.array(_fp["cutoff_hz"]).flatten()
+
+    print(f"{_fp['ftype']} filter")
+    print(f"sampling rate (samples / s): {_fp['sfreq']:0.3f}")
+    print("1/2 amplitude cutoff (Hz): " + " ".join([f"hz:0.3f" for hz in _cutoff_hz]))
+    print(f"transition width (Hz): {_fp['width_hz']:0.3f}")
+    print(f"ripple (dB): {_fp['ripple_db']:0.3f}")
+    print(f"window: {_fp['window']}")
 
     print(f"length (coefficients): {len(taps)}")
     print(f"delay (samples): {n_edge}")
-
     print(
         f"edge distortion: first and last {s_edge:.4f} seconds of the data"
         f"(= {n_edge} samples at {sfreq} samples / s)"
     )
 
-    freq_phase = _mfreqz(taps, sfreq, cutoff_hz, width_hz, a=1)
+    freq_phase = _mfreqz(taps, _fp["sfreq"], _fp["cutoff_hz"], _fp["width_hz"], a=1)
     imp_step = _impz(taps, a=1)
 
     if show_output:
-        io_fig, io_ax = filters_effect(
-            cutoff_hz,
-            sfreq,
-            ftype,
-            width_hz=width_hz,
-            ripple_db=ripple_db,
-            window=window,
-        )
-        tmin, tmax = io_ax.get_xlim()
+        io_fig, io_ax = filters_effect(**_fp)
+        xdata_lims = np.array(
+            [(l.get_xdata()[0], l.get_xdata()[-1]) for l in io_ax.get_lines()]
+        ).max(axis=0)
+        tmin, tmax = xdata_lims[0], xdata_lims[1]
         io_ax.axvspan(tmin, tmin + s_edge, color="gray", alpha=0.15)
         io_ax.axvspan(tmax, tmax - s_edge, color="gray", alpha=0.15)
 
@@ -343,18 +434,15 @@ def _design_firwin_filter(
         coefficients of FIR filter.
 
     """
+    check_filter_params(
+        cutoff_hz=cutoff_hz,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        sfreq=sfreq,
+        ftype=ftype,
+        window=window
+    )
 
-    # a bit of guarding
-    for _arg in [
-        "cutoff_hz",
-        "width_hz",
-        "ripple_db",
-        "sfreq",
-        "ftype",
-        "window",
-    ]:
-        if eval(_arg) is None:
-            raise ValueError(f"{_arg} is None, set a value")
 
     # Nyquist frequency
     nyq_rate = sfreq / 2.0
@@ -479,12 +567,12 @@ def _sins_test_data(
 def fir_filter_dt(
     dt,
     col_names,
-    cutoff_hz=None,
-    sfreq=None,
     ftype=None,
+    cutoff_hz=None,
     width_hz=None,
     ripple_db=None,
     window=None,
+    sfreq=None,
 ):
 
     """apply FIRLS filtering to columns of synchronized discrete time series
@@ -502,14 +590,14 @@ def fir_filter_dt(
     col_names: list of str
         column names to apply the transform
 
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
     cutoff_hz : float or 1D array_like
         cutoff frequency in Hz
 
     sfreq : float
         sampling frequency, e.g., 250.0, 500.0
-
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
 
     width_hz : None or float
         transition band width start to stop in Hz
@@ -529,60 +617,57 @@ def fir_filter_dt(
     Examples
     --------
     >>> ftype = "bandpass"
-    >>> window = "kaiser"
     >>> cutoff_hz = [18, 35]
     >>> width_hz = 5
     >>> ripple_db = 60
+    >>> window = "kaiser"
     >>> sfreq = 250
 
-    >>> filt_test_dt = epochs_filters(
+    >>> fir_filter_dt = epochs_filters(
         dt,
         col_names,
-        ftype,
-        window,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
+        ftype=ftype,
+        window=window,
+        cutoff_hz=cutoff_hz,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        sfreq=sfreq,
         trim_edges=False
     )
 
-    >>> ftype = "lowpass"
-    >>> window = "hamming"
-    >>> cutoff_hz = 10
-    >>> width_hz = 5
-    >>> ripple_db = 60
-    >>> sfreq = 250
-
-    >>> filt_test_dt = epochs_filters(
-            dt,
-            col_names,
-            cutoff_hz,
-            sfreq,
-            ftype,
-            width_hz=None,
-            ripple_db=None,
-            window=None,
-        )
+    >>> params = dict(ftype="lowpass", cutoff_hz=10, width_hz=5, ripple_db=60, sfreq=250, window="hamming")
+    >>> fir_filter_dt = epochs_filters(dt, col_names, **params)
     """
-    if window is None:
-        window = "kaiser"
 
-    if width_hz is None or ripple_db is None:
-        width_hz, ripple_db = _trans_bwidth_ripple(
-            cutoff_hz, sfreq, ftype, window
-        )
+    # if window is None:
+    #     window = "kaiser"
 
-    # modicum of guarding
-    if isinstance(dt, pd.DataFrame):
-        pass
-    else:
-        raise TypeError("dt must be pandas.DataFrame or np.ndarray")
+    # if width_hz is None or ripple_db is None:
+    #     width_hz, ripple_db = _trans_bwidth_ripple(
+    #         cutoff_hz, sfreq, ftype, window
+    #     )
 
     # build and apply the filter
-    taps = _design_firwin_filter(
-        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    # taps = _design_firwin_filter(
+    #     cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    # )
+
+    _fp = check_filter_params(
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window
     )
+
+    taps = _design_firwin_filter(**_fp)
+
+    # modicum of guarding
+    if isinstance(dt, pd.DataFrame) or (isinstance(dt, np.ndarray) and dt.dtype.names is not None):
+        pass
+    else:
+        raise TypeError("dt must be pandas.DataFrame or structured numpy.ndarray")
 
     filt_dt = dt.copy()
     for column in col_names:
@@ -626,18 +711,31 @@ def fir_filter_data(
         filt_data : filtered data
     """
 
-    if window is None:
-        window = "kaiser"
+    # if window is None:
+    #     window = "kaiser"
 
-    if width_hz is None or ripple_db is None:
-        width_hz, ripple_db = _trans_bwidth_ripple(
-            cutoff_hz, sfreq, ftype, window
-        )
+    # if width_hz is None or ripple_db is None:
+    #     width_hz, ripple_db = _trans_bwidth_ripple(
+    #         cutoff_hz, sfreq, ftype, window
+    #     )
 
-    # build and apply the filter
-    taps = _design_firwin_filter(
-        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    # # build and apply the filter
+    # taps = _design_firwin_filter(
+    #     cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    # )
+
+
+    _fp = check_filter_params(
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window
     )
+
+
+    taps = _design_firwin_filter(**_fp)
 
     filt_data = _apply_firwin_filter_data(data, taps)
 
@@ -674,7 +772,6 @@ def _apply_firwin_filter_data(data, taps):
     taps:
     {taps}
     """
-    # LOGGER.info(msg)
     data = np.asanyarray(data).astype("float64")
 
     # add pads
@@ -697,15 +794,18 @@ def _apply_firwin_filter_data(data, taps):
 
 
 def filters_effect(
-    cutoff_hz=None,
-    sfreq=None,
     ftype=None,
+    cutoff_hz=None,
     width_hz=None,
     ripple_db=None,
     window=None,
+    sfreq=None,
 ):
 
     """
+    Generate filter performance on pure sinewave data, all filter parameters are obligatory.
+
+
     Parameters
     ----------
     cutoff_hz : float or 1D array_like
@@ -731,13 +831,23 @@ def filters_effect(
     LO_HZ_LB = 0.2
     HI_HZ_UB = sfreq / 2.0
 
-    if window is None:
-        window = "kaiser"
+    # if window is None:
+    #     window = "kaiser"
 
-    if width_hz is None or ripple_db is None:
-        width_hz, ripple_db = _trans_bwidth_ripple(
-            cutoff_hz, sfreq, ftype, window
-        )
+    # if width_hz is None or ripple_db is None:
+    #     width_hz, ripple_db = _trans_bwidth_ripple(
+    #         cutoff_hz, sfreq, ftype, window
+    #     )
+
+    _fp = check_filter_params(
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+        allow_defaults=False
+    )
 
     if isinstance(cutoff_hz, list):
         lo_hz = cutoff_hz[0] - width_hz
