@@ -93,8 +93,6 @@ def check_filter_params(
         "window": window,
         "sfreq": sfreq,
     }
-
-    # ensure no missing parameter values
     assert all([val is not None for val in _params.values()])
 
     return _params
@@ -103,6 +101,8 @@ def check_filter_params(
 def _trans_bwidth_ripple(cutoff_hz, sfreq, ftype, window):
 
     """
+    Calculate reasonable default transition width and ripple dB
+
     Parameters
     ----------
     cutoff_hz : float or 1D array_like
@@ -318,25 +318,26 @@ def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
     nyq_rate = sfreq / 2.0
     ax_freq.plot((w / np.pi) * nyq_rate, abs(h))
     cutoff_hz = np.atleast_1d(cutoff_hz)
+    lstyle = {"linestyle": "--", "lw": 1, "color": "r"}
     if cutoff_hz.size == 1:
         ax_freq.axvline(
-            cutoff_hz + width_hz / 2, linestyle="--", linewidth=1, color="r"
+            cutoff_hz + width_hz / 2, **lstyle
         )
         ax_freq.axvline(
-            cutoff_hz - width_hz / 2, linestyle="--", linewidth=1, color="r"
+            cutoff_hz - width_hz / 2, **lstyle
         )
     else:
         ax_freq.axvline(
-            cutoff_hz[0] + width_hz / 2, linestyle="--", linewidth=1, color="r"
+            cutoff_hz[0] + width_hz / 2, **lstyle
         )
         ax_freq.axvline(
-            cutoff_hz[0] - width_hz / 2, linestyle="--", linewidth=1, color="r"
+            cutoff_hz[0] - width_hz / 2, **lstyle
         )
         ax_freq.axvline(
-            cutoff_hz[1] + width_hz / 2, linestyle="--", linewidth=1, color="r"
+            cutoff_hz[1] + width_hz / 2, **lstyle
         )
         ax_freq.axvline(
-            cutoff_hz[1] - width_hz / 2, linestyle="--", linewidth=1, color="r"
+            cutoff_hz[1] - width_hz / 2, **lstyle
         )
 
     ax_freq.set_ylabel("Gain")
@@ -637,19 +638,6 @@ def fir_filter_dt(
     >>> fir_filter_dt = epochs_filters(dt, col_names, **params)
     """
 
-    # if window is None:
-    #     window = "kaiser"
-
-    # if width_hz is None or ripple_db is None:
-    #     width_hz, ripple_db = _trans_bwidth_ripple(
-    #         cutoff_hz, sfreq, ftype, window
-    #     )
-
-    # build and apply the filter
-    # taps = _design_firwin_filter(
-    #     cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
-    # )
-
     _fp = check_filter_params(
         ftype=ftype,
         cutoff_hz=cutoff_hz,
@@ -709,20 +697,6 @@ def fir_filter_data(
         filt_data : filtered data
     """
 
-    # if window is None:
-    #     window = "kaiser"
-
-    # if width_hz is None or ripple_db is None:
-    #     width_hz, ripple_db = _trans_bwidth_ripple(
-    #         cutoff_hz, sfreq, ftype, window
-    #     )
-
-    # # build and apply the filter
-    # taps = _design_firwin_filter(
-    #     cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
-    # )
-
-
     _fp = check_filter_params(
         ftype=ftype,
         cutoff_hz=cutoff_hz,
@@ -732,11 +706,8 @@ def fir_filter_data(
         window=window
     )
 
-
     taps = _design_firwin_filter(**_fp)
-
     filt_data = _apply_firwin_filter_data(data, taps)
-
     return filt_data
 
 
@@ -828,14 +799,6 @@ def filters_effect(
     # test signal lower and upper bounds
     LO_HZ_LB = 0.2
     HI_HZ_UB = sfreq / 2.0
-
-    # if window is None:
-    #     window = "kaiser"
-
-    # if width_hz is None or ripple_db is None:
-    #     width_hz, ripple_db = _trans_bwidth_ripple(
-    #         cutoff_hz, sfreq, ftype, window
-    #     )
 
     _fp = check_filter_params(
         ftype=ftype,

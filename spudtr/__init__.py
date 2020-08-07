@@ -42,8 +42,8 @@ def get_ver():
         return pf_ver["ver_str"]
 
 
-def get_demo_df(filename, ftype="feather", url=DATA_URL):
-    """fetch feather format demo EEG epochs data 
+def get_demo_df(filename, url=DATA_URL):
+    """fetch and cache feather format demo EEG epochs data 
 
     default = Zenodo eeg-workshops/mkpy_data_examples/data, v0.0.3
               https://doi.org/10.5281/zenodo.3968485/files
@@ -52,9 +52,6 @@ def get_demo_df(filename, ftype="feather", url=DATA_URL):
     ----------
     filename : str
        file to fetch
-
-    ftype : str {"feather", "h5"}
-       data format
 
     url : str {DATA_URL}
        top-level URL to fetch from
@@ -71,15 +68,18 @@ def get_demo_df(filename, ftype="feather", url=DATA_URL):
     import os
     import requests  # URL IO
 
+    # shortcut if previously downloaded
+    if (DATA_DIR / filename).exists():
+        return pd.read_feather(DATA_DIR / filename)
+
+    # otherwise download 
+    print(f"downloading {filename} from {url} ... please wait")
     if not url[-1] == r"/":
         url += r"/"
     resp = requests.get(url + filename, stream=True)
     resp.raw.decode_content = True
     mem_fh = io.BytesIO(resp.raw.read())
-    if ftype == "feather":
-        df = pd.read_feather(mem_fh)
-    elif ftype == "h5":
-        raise NotImplementedError("HDF5 download not supported")
+    df = pd.read_feather(mem_fh)
 
     df["epoch_id"] = df["epoch_id"].astype(int)
     df.insert(1, "time_ms", df["match_time"])
@@ -112,4 +112,6 @@ def get_demo_df(filename, ftype="feather", url=DATA_URL):
         "pygarv",
     ]
     df.drop(columns=_mkh5_internal, inplace=True)
+
+    df.to_feather(DATA_DIR / filename)
     return df

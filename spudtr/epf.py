@@ -244,12 +244,11 @@ def center_eeg(
 
 
 def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
-    """Simple filter to exclude previously tagged epochs
+    """Quality control data slicer, excludes previously tagged artifact epochs
 
-    Quality All epochs tagged with a non-zero quality code on `bads_column` at
-    the time stamp == 0 are excluded.
+    All epochs tagged with a non-zero quality code on the specified
+    `bads_column` at the time stamp == 0 are excluded.
 
-    ..
 
     Parameters
     ----------
@@ -411,6 +410,7 @@ def fir_filter_epochs(
     time=TIME,
 ):
     """apply FIRLS filtering to spudtr format epoched data
+
     Parameters
     ----------
     epochs_df : pd.DataFrame 
@@ -425,8 +425,8 @@ def fir_filter_epochs(
         transition band width start to stop in Hz
     ripple_db : float
         pass/stop band ripple, in dB, e.g., 24.0, 60.0
-    window : str
-        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+    window : str {'kaiser','hamming','hann','blackman'}
+        window type for firwin
     sfreq : float
         sampling frequency, e.g., 250.0, 500.0
     trim_edges : bool
@@ -439,6 +439,19 @@ def fir_filter_epochs(
     -------
     pd.DataFrame
         filtered epochs_df
+
+
+    Notes
+    -----
+    All the filter parameters are mandatory, consider making a
+    `filter_params` dictionary and expanding it like so
+    `fir_filter_epochs( ..., **filter_params)`
+
+    By default the filtered epochs have the same length as the
+    original. The `trim_edges` option returns the center interval of
+    each epoch, free from distortion at the edges but this may result in
+    considerable data loss depending on the filter specifications.
+
 
     Examples
     --------
@@ -453,37 +466,17 @@ def fir_filter_epochs(
     >>> filt_test_df = epochs_filters(
         epochs_df, 
         data_columns,
-        ftype,
-        window,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+        sfreq=sfreq,
         trim_edges=False
         epoch_id=epoch_id
         time=time
     )
-    >>> ftype = "lowpass"
-    >>> window = "hamming"
-    >>> cutoff_hz = 10
-    >>> width_hz = 5
-    >>> ripple_db = 60
-    >>> sfreq = 250
-    >>> epoch_id = "day"
-    >>> time = "hour"
-    >>> filt_test_df = epochs_filters(
-        epochs_df,
-        data_columns,
-        ftype,
-        window,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=True
-        epoch_id=epoch_id
-        time=time
-    )
+
     """
 
     # it is crucial to enforce the spudtr epochs format because trimming
