@@ -21,10 +21,10 @@ WINDOWS = ["kaiser", "hamming", "hann", "blackman"]
 
 
 def check_filter_params(
-        cutoff_hz=None, width_hz=None, ripple_db=None, sfreq=None, ftype=None, window=None,
+        ftype=None, cutoff_hz=None, width_hz=None, ripple_db=None, window=None, sfreq=None, 
         allow_defaults=False
 ):
-    """type check FIR filter parameters.
+    """type check FIR filter parameters
 
     Values for `ftype`, `cutoff_hz`, and `sfreq` are obligatory.
 
@@ -95,9 +95,7 @@ def check_filter_params(
     }
 
     # ensure no missing parameter values
-    for key, val in _params.items():
-        if val is None:
-            raise ValueError(f"{key}={val}, specify a value. See spudtr.filter docs.")
+    assert all([val is not None for val in _params.values()])
 
     return _params
 

@@ -56,10 +56,7 @@ def get_demo_df(filename, ftype="feather", url=DATA_URL):
     ftype : str {"feather", "h5"}
        data format
 
-    key : str {"p5", "p3", "wr", "pm"}
-       HDF5 group name, not needed for feather
-
-    url : str default=
+    url : str {DATA_URL}
        top-level URL to fetch from
 
     Returns
@@ -82,7 +79,7 @@ def get_demo_df(filename, ftype="feather", url=DATA_URL):
     if ftype == "feather":
         df = pd.read_feather(mem_fh)
     elif ftype == "h5":
-        df = pd.read_hdf(mem_fh)
+        raise NotImplementedError("HDF5 download not supported")
 
     df["epoch_id"] = df["epoch_id"].astype(int)
     df.insert(1, "time_ms", df["match_time"])

@@ -109,19 +109,26 @@ def test_fir_filter_dt(_ftype, _cutoff_hz, _window):
         allow_defaults=True
     )
 
-    # create fakedata to show the filter
-    freq_list = [10, 30]
-    amplitude_list = [1.0, 1.0]
-    t, y = filters._sins_test_data(freq_list, amplitude_list)
-    testdata = pd.DataFrame({"fakedata": y})
+    # create data vector, dataframe, structured array, 
+    t, y = filters._sins_test_data([10], [1.0])  #freqs, amps
+    test_df = pd.DataFrame({"fakedata": y})
+    struct_arry = np.array(y, dtype=np.dtype([("fakedata", float)]))
 
-    filt_test_df = filters.fir_filter_dt(testdata, ["fakedata"], **_params)
-    assert isinstance(filt_test_df, pd.DataFrame)
-    assert filt_test_df.columns.tolist() == ["fakedata"]
+    # dataframes and structured arrays should be OK
+    for dt in [test_df, struct_arry]:
+        filt_dt = filters.fir_filter_dt(dt, ["fakedata"], **_params)
+        assert type(filt_dt) == type(dt)
+        assert dt.shape == filt_dt.shape
+        if isinstance(dt, pd.DataFrame):
+            assert filt_dt.columns.tolist() == ["fakedata"]
+        elif isinstance(dt, np.ndarray):
+            assert filt_dt.dtype.names == ("fakedata",)
 
+    # np.array should fail
     with pytest.raises(TypeError) as excinfo:
-        filt_test_df = filters.fir_filter_dt(y, ["fakedata"], **_params)
+        filt_dt = filters.fir_filter_dt(y, ["fakedata"], **_params)
     assert "dt must be pandas.DataFrame or structured numpy.ndarray" in str(excinfo.value)
+
 
 
 def test_mfreqz():
