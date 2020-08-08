@@ -1,13 +1,11 @@
 """utilities for epoched EEG data in a pandas.DataFrame """
 from pathlib import Path
+import warnings
 import numpy as np
 import pandas as pd
 import bottleneck as bn
 
-from spudtr.filters import _design_firwin_filter, _apply_firwin_filter
-
-
-# from scipy.signal import kaiserord, lfilter, firwin, freqz
+from spudtr.filters import _design_firwin_filter, fir_filter_dt
 
 EPOCH_ID = "epoch_id"  # default epoch ID column
 TIME = "time"  # default time column
@@ -104,6 +102,10 @@ def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
 def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
     """read tabular hdf5 epochs file, return as pd.DataFrame
 
+    .. deprecated:: 0.0.9
+       Use native pandas HDF functions instead. Will be removed in 0.0.11
+
+
     Parameters
     ----------
     epochs_f : str
@@ -117,6 +119,10 @@ def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
     df : pd.DataFrame
         columns in INDEX_NAMES are pd.MultiIndex axis 0
     """
+    warnings.warn(
+        "_hdf_read_epochs() is unused and deprecated in spudtr.epf v0.0.9 and will be removed in v0.0.11",
+        DeprecationWarning,
+    )
 
     if h5_group is None:
         raise ValueError("You have to give h5_group key")
@@ -128,6 +134,12 @@ def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
 
 
 def _find_subscript(times, start, stop):
+    """start stop interval includes end both end time stamps
+
+    This makes the timestamp interval open left and right, 
+    [start, stop] when slicing with pandas and open left, 
+    closed right, [start, stop) when slicing with numpy.
+    """
     istart = np.where(times >= start)[0]
     if len(istart) == 0:
         raise ValueError(
@@ -166,10 +178,10 @@ def check_epochs(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     data_streams: list of str
         the columns containing data
         
-    epoch_id : str (default="epoch_id")
+    epoch_id : str, optional
         column name for the epoch index
 
-    time: str (default="time")
+    time: str, optional
         column name for the time stamps
 
 
@@ -187,7 +199,8 @@ def center_eeg(
     epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time=TIME
 ):
 
-    """center (a.k.a. "baseline") EEG amplitude on mean from start to stop
+    """center (a.k.a. "baseline") EEG amplitude on mean amplitude in [start, stop)
+    
 
     Parameters
     ----------
@@ -197,14 +210,14 @@ def center_eeg(
     eeg_streams: list of str
         column names to apply the transform
 
-    start, stop : int,  start < stop
-        basline interval time values, stop is inclusive
+    start,stop : int
+        basline interval time values, `start <= t <= stop`
 
-    epoch_id : str (epf.EPOCH_ID)
-        column to use for the epoch index, default if unspecified
+    epoch_id : str, optional
+        column to use for the epoch index
 
-    time : str (epf.TIME)
-        column to use for the time stamp index, default if unspecified
+    time : str, optional
+        column to use for the time stamp index
 
 
     Returns
@@ -212,6 +225,16 @@ def center_eeg(
     centered_epochs_df : pd.DataFrame
        each epoch and channel time series centered on the [start, stop)
        interval mean amplitude
+
+    Notes
+    -----
+
+    The `start`, `stop` values pick the smallest and largest
+    timestamps in the interval, i.e., [start_stamp, stop_stamp], but
+    since the data are sliced with np.arange, the upper bound is not
+    included, i.e., start_stamp <= timestamps < stop_stamp.  So, for
+    instance, start=-200, stop=0, would include timestamps at -200,
+    -199, ... -1, but not 0. 
 
     """
 
@@ -242,12 +265,11 @@ def center_eeg(
 
 
 def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
-    """Simple filter to exclude previously tagged epochs
+    """Quality control data slicer, excludes previously tagged artifact epochs
 
-    Quality All epochs tagged with a non-zero quality code on `bads_column` at
-    the time stamp == 0 are excluded.
+    All epochs tagged with a non-zero quality code on the specified
+    `bads_column` at the time stamp == 0 are excluded.
 
-    ..
 
     Parameters
     ----------
@@ -257,10 +279,10 @@ def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
     bads_column : str
         column name with QC codes: non-zero == drop
 
-    epoch_id : str or None, optional
+    epoch_id : str, optional
         column name for epoch indexes
 
-    time: str or None, optional
+    time: str, optional
         column name for time stamps
 
     Returns
@@ -278,7 +300,6 @@ def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
     good_idx = list(group[epoch_id][group[bads_column] == 0])
 
     good_epochs_df = epochs_df[epochs_df[epoch_id].isin(good_idx)].copy()
-    # epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
 
     return good_epochs_df
 
@@ -309,9 +330,16 @@ def re_reference(
         
     type : str = {'linked_pair', 'new_common', 'common_average'}
 
+    epoch_id : str, optional
+
+    time : str, optional
+
+
     Returns
     -------
-    br_epochs_df : pd.DataFrame
+    pd.DataFrame
+       a copy of epochs_df with `eeg_streams` re-referenced
+
 
     Note
     ----
@@ -398,13 +426,13 @@ def re_reference(
 def fir_filter_epochs(
     epochs_df,
     data_columns,
-    ftype,
-    window,
-    cutoff_hz,
-    width_hz,
-    ripple_db,
-    sfreq,
-    trim_edges,
+    ftype=None,
+    cutoff_hz=None,
+    width_hz=None,
+    ripple_db=None,
+    window=None,
+    sfreq=None,
+    trim_edges=False,
     epoch_id=EPOCH_ID,
     time=TIME,
 ):
@@ -414,94 +442,73 @@ def fir_filter_epochs(
     ----------
     epochs_df : pd.DataFrame 
         must be a spudtr format epochs dataframe with epoch_id, time columns
-
     data_columns: list of str
         column names to apply the transform
-
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-
-    window : string
-        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
-
-    cutoff_hz : float or 1D array_like
-        cutoff frequency in Hz
-
+    ftype : str {'lowpass' , 'highpass', 'bandpass', 'bandstop'}
+        filter type
+    cutoff_hz : float or 1D-array-like of floats, length 2
+        1/2 amplitude cutoff frequency in Hz
     width_hz : float
-        transition band width start to stop in Hz
-
+        pass-to-stop transition band width (Hz), symmetric for bandpass, bandstop
     ripple_db : float
-        attenuation in the stop band, in dB, e.g., 24.0, 60.0
-
+        ripple, in dB, e.g., 53.0, 60.0
+    window : str {'kaiser','hamming','hann','blackman'}
+        window type for firwin
     sfreq : float
         sampling frequency, e.g., 250.0, 500.0
-
     trim_edges : bool
         True trim edges, False not trim edges
-
-    epoch_id : str or None, optional
-        column name for epoch indexes
-
-    time: str or None, optional
-        column name for time stamps
-
+    epoch_id : str {"epoch_id"}, optional
+        column name for epoch index
+    time: str {"time"}, optional
+        column name for timestamps
 
     Returns
     -------
     pd.DataFrame
-        filtered epochs_df
+        a copy of epochs_df, with data in `data_columns` filtered
+
+
+    Notes
+    -----
+    All the filter parameters are mandatory, consider making a
+    ``filter_params`` dictionary and expanding it like so
+    ``fir_filter_epochs( ..., **filter_params)``.
+
+    By default the filtered epochs have the same length as the
+    original. The `trim_edges` option returns the center interval of
+    each epoch, free from distortion at the edges but this may result in
+    considerable data loss depending on the filter specifications.
+
 
     Examples
     --------
     >>> ftype = "bandpass"
-    >>> window = "kaiser"
     >>> cutoff_hz = [18, 35]
+    >>> sfreq = 250
+    >>> window = "kaiser"
     >>> width_hz = 5
     >>> ripple_db = 60
-    >>> sfreq = 250
     >>> epoch_id = "epoch_id"
     >>> time = "time_ms"
-
     >>> filt_test_df = epochs_filters(
-        epochs_df, 
-        data_columns,
-        ftype,
-        window,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=False
-        epoch_id=epoch_id
-        time=time
+            epochs_df, 
+            data_columns,
+            ftype=ftype,
+            cutoff_hz=cutoff_hz,
+            width_hz=width_hz,
+            ripple_db=ripple_db,
+            window=window,
+            sfreq=sfreq,
+            trim_edges=False
+            epoch_id=epoch_id
+            time=time
     )
 
-    >>> ftype = "lowpass"
-    >>> window = "hamming"
-    >>> cutoff_hz = 10
-    >>> width_hz = 5
-    >>> ripple_db = 60
-    >>> sfreq = 250
-    >>> epoch_id = "day"
-    >>> time = "hour"
-
-    >>> filt_test_df = epochs_filters(
-        epochs_df,
-        data_columns,
-        ftype,
-        window,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=True
-        epoch_id=epoch_id
-        time=time
-    )
     """
 
-    # it is crucial to enforce the spudtr format because trimming
-    # needs to know about epoch boundaries and/or times
+    # it is crucial to enforce the spudtr epochs format because trimming
+    # needs to know about epoch boundaries and times
     _epochs_QC(epochs_df, data_columns, epoch_id=epoch_id, time=time)
 
     # build and apply the filter
@@ -509,22 +516,25 @@ def fir_filter_epochs(
         cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
     )
 
-    filt_epochs_df = _apply_firwin_filter(epochs_df, data_columns, taps)
+    # filt_epochs_df = _apply_firwin_filter(epochs_df, data_columns, taps)
+    filt_epochs_df = fir_filter_dt(
+        epochs_df,
+        data_columns,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        ftype=ftype,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+    )
 
-    # this trims edges in *each epoch* within the column as intended
+    # this trims edges in *each epoch*
     if trim_edges:
-        N = len(taps)
-        half_delay = int(np.floor(N / 2))
-        # times = filt_epochs_df.index.unique("Time")
         times = filt_epochs_df[time].unique()
-        n_epoch_ids = len(filt_epochs_df[epoch_id].unique())
-
-        # unique times must be in sequence across the epochs ...
-        assert all(np.tile(times, n_epoch_ids) == filt_epochs_df[time])
-
-        start_good = times[half_delay]  # == first good sample
-        stop_good = times[-(half_delay + 1)]  # last good sample
+        n_edge = int(np.floor(len(taps) / 2.0))
+        start_good = times[n_edge]  # first good sample
+        stop_good = times[-(n_edge + 1)]  # last good sample
         qstr = f"{time} >= @start_good and {time} <= @stop_good"
-        filt_epochs_df = filt_epochs_df.query(qstr)
+        filt_epochs_df = filt_epochs_df.query(qstr).copy()
 
     return filt_epochs_df

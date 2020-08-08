@@ -25,6 +25,7 @@ bld_prefix="/home/travis/miniconda"  # from the .travis.yml
 
 # on travis there should be a single linux-64 package tarball. insist
 tarball=`/bin/ls -1 ${bld_prefix}/conda-bld/linux-64/${PACKAGE_NAME}-*-*.tar.bz2`
+
 n_tarballs=`echo "${tarball}" | wc -w`
 if (( $n_tarballs != 1 )); then
     echo "found $n_tarballs package tarballs there must be exactly 1"
@@ -53,7 +54,8 @@ mmp=`echo $version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 # deviations from M.N.P versions are always dry-runs, e.g., M.N.P.dev1
 
 label="dry-run"
-if [[ "${version}" = "$mmp" ]]; then
+#if [[ "${version}" = "$mmp" ]]; then
+if [[ "${version}" =~ ^${mmp}(.dev[0-9]+){0,1}$ ]]; then
 
     # commit to master uploads to /pre-release
     if [[ $TRAVIS_BRANCH = "master" ]]; then

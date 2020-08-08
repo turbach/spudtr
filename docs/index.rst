@@ -33,6 +33,8 @@ spudtr
    contributors
 
 
+We gratefully acknowledge the support of grant NICHD 5R01HD022614 for the development of these routines.
+
 
 ==============
 |BSD 3-Clause|

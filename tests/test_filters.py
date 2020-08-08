@@ -2,11 +2,58 @@ import pandas as pd
 import numpy as np
 import pytest
 import spudtr.filters as filters
+import matplotlib.pyplot as plt
 
-# import matplotlib.pyplot as plt
-# from scipy import signal, fftpack
-# from pylab import *
-# from scipy.signal import kaiserord, firwin, freqz, lfilter
+
+xfve = pytest.mark.xfail(strict=True, reason=ValueError)
+
+
+@pytest.mark.parametrize(
+    "_allow_defaults", [True, pytest.param(False, marks=xfve)]
+)
+@pytest.mark.parametrize(
+    "_ftype,_cutoff, _srate",
+    [
+        ("lowpass", 20.0, 250.0),
+        ("highpass", 10.0, 250.0),
+        ("bandpass", [15.0, 20.0], 250.0),
+        ("bandstop", [20.0, 30.0], 250.0),
+        pytest.param(None, 20.0, 250, marks=xfve),
+        pytest.param("Xlowpass", 20.0, 250.0, marks=xfve),
+        pytest.param("lowpass", None, 250, marks=xfve),
+        pytest.param("lowpass", "_nn", 250, marks=xfve),
+        pytest.param("lowpass", 20.0, None, marks=xfve),
+        pytest.param("lowpass", 20.0, "_nn", marks=xfve),
+    ],
+)
+def test_check_filter_params_obligatory(
+    _ftype, _cutoff, _srate, _allow_defaults
+):
+    filt_params = filters.check_filter_params(
+        ftype=_ftype,
+        cutoff_hz=_cutoff,
+        sfreq=_srate,
+        allow_defaults=_allow_defaults,
+    )
+
+
+@pytest.mark.parametrize(
+    "_width_hz", [5.0, None, pytest.param("_nn", marks=xfve)]
+)
+@pytest.mark.parametrize(
+    "_ripple_db", [53.0, None, pytest.param("_nn", marks=xfve)]
+)
+@pytest.mark.parametrize("_window", ["kaiser", "hamming", "hann", "blackman"])
+def test_check_filter_params_optional(_width_hz, _ripple_db, _window):
+    filt_params = filters.check_filter_params(
+        ftype="lowpass",
+        cutoff_hz=25.0,
+        sfreq=25,
+        width_hz=_width_hz,
+        ripple_db=_ripple_db,
+        window=_window,
+        allow_defaults=True,
+    )
 
 
 def test__suggest_epoch_length():
@@ -17,151 +64,79 @@ def test__suggest_epoch_length():
     assert N == 230
 
 
-def test_show_filter():
-    cutoff_hz = 10.0
-    width_hz = 5.0
-    ripple_db = 60.0
-    sfreq = 250
-    ftype = "lowpass"
-    window = "hamming"
-    filters.show_filter(cutoff_hz, width_hz, ripple_db, sfreq, ftype, window)
-    assert sfreq == 250
-
-
 @pytest.mark.parametrize(
-    "window_type", ("kaiser", "hamming", "hann", "blackman")
-)
-def test_fir_filter_dt(window_type):
-    # create fakedata to show the filter
-    freq_list = [10, 30]
-    amplitude_list = [1.0, 1.0]
-    t, y = filters._sins_test_data(freq_list, amplitude_list)
-    testdata = pd.DataFrame({"fakedata": y})
-
-    ftype = "lowpass"
-    # window = "hamming"
-    cutoff_hz = 12.5
-    width_hz = 5
-    ripple_db = 60
-    sfreq = 250
-
-    filt_test_df = filters.fir_filter_dt(
-        testdata,
-        ["fakedata"],
-        ftype,
-        window_type,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=False,
-    )
-    assert isinstance(filt_test_df, pd.DataFrame)
-    assert filt_test_df.columns.tolist() == ["fakedata"]
-
-    y_filt = filt_test_df["fakedata"]
-    freq_list = [10]
-    amplitude_list = [1.0]
-    t, y1 = filters._sins_test_data(freq_list, amplitude_list)
-    i1 = int(len(y1) / 2) - 20
-    i2 = int(len(y1) / 2) + 20
-    ya = y1[i1:i2]
-    yb = y_filt[i1:i2]
-    a = max(abs(ya - yb))
-    TorF = bool(np.isclose(a, 0, atol=1e-01))
-    assert TorF is True
-
-    # Test for trim_edges=True
-    testdata = pd.DataFrame({"Time": t, "fakedata": y})
-    filt_test_df = filters.fir_filter_dt(
-        testdata,
-        ["fakedata"],
-        ftype,
-        window_type,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=True,
-    )
-    # check the trimming
-    assert filt_test_df.shape == (193, 2)
-
-
-@pytest.mark.parametrize(
-    "_ndim, _ncol",
+    "_ftype,_cutoff_hz",
     [
-        (1, 1),  # 1-D vector
-        (2, 1),  # 2-D table, 1 column
-        (2, 2),  # 2-D table, 2 columns
-        pytest.param(
-            3, 3, marks=pytest.mark.xfail(strict=True)
-        ),  # 3-D should fail
+        ("lowpass", 25.0),
+        ("highpass", 10.0),
+        ("bandpass", [10, 15]),
+        ("bandstop", [10, 15]),
     ],
 )
-@pytest.mark.parametrize("_trim_edges", [True, False])
-def test_fir_filter_ndarray(_trim_edges, _ndim, _ncol):
-    # test filtering on np.ndarray
-    freq_list = [10]
-    amplitude_list = [1.0]
-
-    t, y = filters._sins_test_data(freq_list, amplitude_list)
-
-    # propagate the test data to _ndim columns
-    cols = np.ones(_ndim)
-    dt = np.dtype([(f"fakedata_{i}", float) for i in range(_ndim)])
-
-    if _ndim == 1:
-        testdata = y.astype(dt)
-
-    if _ndim > 1:
-        # + cols does np.broadcast voodoo to replicate y
-        testdata = (y.reshape(len(y), 1) + cols).astype(dt)
-
-        if _ndim == 3:
-            shape_2d = testdata.shape
-            testdata = np.tile(testdata, _ncol).reshape(shape_2d + (_ndim,))
-
-    ftype = "lowpass"
-    window_type = "kaiser"
-    cutoff_hz = 12.5
-    width_hz = 5
-    ripple_db = 60
+@pytest.mark.parametrize(
+    "_window", (None, "kaiser", "hamming", "hann", "blackman")
+)
+def test_show_filter(_ftype, _cutoff_hz, _window):
+    cutoff_hz = 10.0
     sfreq = 250
 
-    filt_test_df = filters.fir_filter_dt(
-        testdata,
-        ["fakedata_0"],  # this always exists regardless of _ndim
-        ftype,
-        window_type,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=_trim_edges,
+    width_hz = 5.0
+    ripple_db = 60.0
+    filters.show_filter(
+        ftype=_ftype,
+        cutoff_hz=_cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=_window,
     )
-    assert isinstance(filt_test_df, np.ndarray)
-    assert filt_test_df.dtype.names == dt.names
+
+    filters.show_filter(ftype=_ftype, cutoff_hz=_cutoff_hz, sfreq=sfreq)
+    filters.show_filter(
+        ftype=_ftype, cutoff_hz=_cutoff_hz, sfreq=sfreq, show_output=False
+    )
+    plt.close("all")
 
 
-@pytest.mark.xfail(strict=True)
-def test_fir_filter_bad_obj():
+@pytest.mark.parametrize(
+    "_ftype,_cutoff_hz",
+    [
+        ("lowpass", 12.5),
+        ("highpass", 20),
+        ("bandpass", [10, 20]),
+        ("bandstop", [5, 10]),
+    ],
+)
+@pytest.mark.parametrize("_window", ("kaiser", "hamming", "hann", "blackman"))
+def test_fir_filter_dt(_ftype, _cutoff_hz, _window):
+    _params = filters.check_filter_params(
+        ftype=_ftype,
+        cutoff_hz=_cutoff_hz,
+        window=_window,
+        sfreq=250,
+        allow_defaults=True,
+    )
 
-    ftype, cutoff_hz, width_hz, ripple_db = "lowpass", 12.5, 5, 60
-    window_type = "kaiser"
-    sfreq = 250
+    # create data vector, dataframe, structured array,
+    t, y = filters._sins_test_data([10], [1.0])  # freqs, amps
+    test_df = pd.DataFrame({"fakedata": y})
+    struct_arry = np.array(y, dtype=np.dtype([("fakedata", float)]))
 
-    testdata = list(range(5))
-    filters.fir_filter_dt(
-        testdata,
-        ["silly_rabbit_lists_dont_have_columns"],
-        ftype,
-        window_type,
-        cutoff_hz,
-        width_hz,
-        ripple_db,
-        sfreq,
-        trim_edges=False,
+    # dataframes and structured arrays should be OK
+    for dt in [test_df, struct_arry]:
+        filt_dt = filters.fir_filter_dt(dt, ["fakedata"], **_params)
+        assert type(filt_dt) == type(dt)
+        assert dt.shape == filt_dt.shape
+        if isinstance(dt, pd.DataFrame):
+            assert filt_dt.columns.tolist() == ["fakedata"]
+        elif isinstance(dt, np.ndarray):
+            assert filt_dt.dtype.names == ("fakedata",)
+
+    # np.array should fail
+    with pytest.raises(TypeError) as excinfo:
+        filt_dt = filters.fir_filter_dt(y, ["fakedata"], **_params)
+    assert "dt must be pandas.DataFrame or structured numpy.ndarray" in str(
+        excinfo.value
     )
 
 
@@ -205,6 +180,29 @@ def test_impz():
     )
     fig = filters._impz(taps, a=1)
     assert len(taps) == 183
+
+
+# @pytest.mark.parametrize(
+#     "test_arg",
+#     ["cutoff_hz", "width_hz", "ripple_db", "sfreq", "ftype", "window"],
+# )
+# def test_design_firwin_filter_args(test_arg):
+
+#     # usable values
+#     specs = dict(
+#         cutoff_hz=20,
+#         width_hz=5,
+#         ripple_db=60,
+#         sfreq=250,
+#         ftype="lowpass",
+#         window="kaiser",
+#     )
+#     specs[test_arg] = None
+#     try:
+#         taps = filters._design_firwin_filter(**specs)
+#     except ValueError as fail:
+#         assert str(fail) == f"{test_arg} is None, set a value"
+#         pytest.xfail()
 
 
 def test_design_firwin_filter():
@@ -256,12 +254,47 @@ def test_design_firwin_filter():
     )
 
 
-def test_apply_firwin_filter():
+def test__apply_firwin_filter_data():
     # creat a fakedata to show the filter
     freq_list = [10, 25, 45]
     amplitude_list = [1.0, 1.0, 1.0]
     t, y = filters._sins_test_data(freq_list, amplitude_list)
-    testdata = pd.DataFrame({"fakedata": y})
+
+    _params = filters.check_filter_params(
+        ftype="bandstop",
+        window="hann",
+        cutoff_hz=[18, 35],
+        width_hz=5,
+        ripple_db=60,
+        sfreq=250,
+    )
+
+    # build and apply the filter
+    taps = filters._design_firwin_filter(**_params)
+    filt_data = filters._apply_firwin_filter_data(y, taps)
+    assert len(taps) == 183
+
+    freq_list = [0.2, 3]
+    amplitude_list = [1.0, 1.0]
+    sampling_freq = 250
+    t, y = filters._sins_test_data(freq_list, amplitude_list, sampling_freq)
+
+    _params = filters.check_filter_params(
+        ftype="lowpass", cutoff_hz=1, sfreq=sampling_freq, allow_defaults=True
+    )
+    with pytest.raises(ValueError) as excinfo:
+        y_filt = filters.fir_filter_data(y, **_params)
+    assert "filter I/O length mismatch" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "window_type", ("kaiser", "hamming", "hann", "blackman")
+)
+def test_fir_filter_data(window_type):
+    # creat a fakedata to show the filter
+    freq_list = [10, 25, 45]
+    amplitude_list = [1.0, 1.0, 1.0]
+    t, data = filters._sins_test_data(freq_list, amplitude_list)
 
     ftype = "bandstop"
     window = "hann"
@@ -270,14 +303,21 @@ def test_apply_firwin_filter():
     ripple_db = 60
     sfreq = 250
 
-    epochs_df = testdata
-    eeg_streams = ["fakedata"]
-    # build and apply the filter
-    taps = filters._design_firwin_filter(
-        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
+    filt_data = filters.fir_filter_data(
+        data,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        ftype=ftype,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window_type,
     )
-    filt_epochs_df = filters._apply_firwin_filter(epochs_df, eeg_streams, taps)
-    assert len(taps) == 183
+
+    # fetch
+    _params = filters.check_filter_params(
+        ftype=ftype, cutoff_hz=cutoff_hz, sfreq=sfreq, allow_defaults=True
+    )
+    filt_data = filters.fir_filter_data(data, **_params)
 
 
 @pytest.mark.parametrize("_show_plot", [True, False])
@@ -289,3 +329,70 @@ def test_sins_test_data(_show_plot):
         freq_list, amplitude_list, show_plot=_show_plot
     )
     assert len(t) == 375
+
+
+def test__trans_bwidth_ripple():
+    ftype = "bandstop"
+    window = "kaiser"
+    cutoff_hz = [18, 35]
+    sfreq = 250
+    width_hz, ripple_db = filters._trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+    assert ripple_db == 53
+
+    ftype = "highpass"
+    cutoff_hz = 12.5
+    window = "hann"
+
+    width_hz, ripple_db = filters._trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+    assert ripple_db == 44
+
+    window = "blackman"
+    ftype = "bandstop"
+    cutoff_hz = [18, 35]
+    width_hz, ripple_db = filters._trans_bwidth_ripple(
+        cutoff_hz, sfreq, ftype, window
+    )
+    assert ripple_db == 74
+
+
+@pytest.mark.parametrize(
+    "_ftype,_cutoff_hz",
+    [
+        ["highpass", 20],
+        ["highpass", 20],
+        ["bandpass", [22, 40]],
+        ["bandstop", [18, 35]],
+    ],
+)
+def test_filters_effect(_ftype, _cutoff_hz):
+
+    width_hz = 5
+    ripple_db = 60
+    window = "blackman"
+    sfreq = 250
+    filters.filters_effect(
+        ftype=_ftype,
+        cutoff_hz=_cutoff_hz,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+        sfreq=sfreq,
+    )
+    plt.clf()
+    plt.close("all")
+    # filters.filters_effect(_cutoff_hz, sfreq, ftype)
+
+    # ftype = "lowpass"
+    # cutoff_hz = 1
+    # filters.filters_effect(cutoff_hz, sfreq, ftype)
+    # ftype = "highpass"
+    # cutoff_hz = 1
+    # filters.filters_effect(cutoff_hz, sfreq, ftype)
+    # ftype = "bandstop"
+    # cutoff_hz = [1, 10]
+    # filters.filters_effect(cutoff_hz, sfreq, ftype)
+    # assert sfreq == 250
