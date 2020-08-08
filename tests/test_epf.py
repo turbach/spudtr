@@ -1,7 +1,7 @@
 import pytest
 
 # local HDF5 files to be deprecated in v0.0.11 with _hdf_read_epochs
-from spudtr import DATA_DIR, P3_F, P5_F, WR_F
+from spudtr import DATA_DIR  # , P3_F, P5_F, WR_F
 
 # Zenodo archive feather files used starting with v0.0.9
 from spudtr import get_demo_df, WR_100_FEATHER, P5_1500_FEATHER
@@ -130,22 +130,22 @@ assert all(P5_1500_FEATHER_DF.columns == P5_DF_COLS)
 print("ok")
 
 
-@pytest.mark.parametrize(
-    "_f,h5_group", [[P3_F, "p3"], [P5_F, "p5"], [WR_F, "wr"]]
-)
-def test__hdf_read_epochs(_f, h5_group):
-    epoch_id, time = "epoch_id", "time_ms"
-    epochs_df = epf._hdf_read_epochs(
-        DATA_DIR / _f, h5_group, epoch_id=epoch_id, time=time,
-    )
-    with pytest.raises(ValueError) as excinfo:
-        epf._hdf_read_epochs(
-            DATA_DIR / _f, h5_group=None, epoch_id=epoch_id, time=time
-        )
-    assert "You have to give h5_group key" in str(excinfo.value)
-    _ = epf._epochs_QC(
-        epochs_df, epochs_df.columns.tolist(), epoch_id=epoch_id, time=time
-    )
+# @pytest.mark.parametrize(
+#     "_f,h5_group", [[P3_F, "p3"], [P5_F, "p5"], [WR_F, "wr"]]
+# )
+# def test__hdf_read_epochs(_f, h5_group):
+#     epoch_id, time = "epoch_id", "time_ms"
+#     epochs_df = epf._hdf_read_epochs(
+#         DATA_DIR / _f, h5_group, epoch_id=epoch_id, time=time,
+#     )
+#     with pytest.raises(ValueError) as excinfo:
+#         epf._hdf_read_epochs(
+#             DATA_DIR / _f, h5_group=None, epoch_id=epoch_id, time=time
+#         )
+#     assert "You have to give h5_group key" in str(excinfo.value)
+#     _ = epf._epochs_QC(
+#         epochs_df, epochs_df.columns.tolist(), epoch_id=epoch_id, time=time
+#     )
 
 
 # test default, alternative, and None epoch_id, time
