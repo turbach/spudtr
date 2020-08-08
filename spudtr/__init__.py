@@ -22,7 +22,7 @@ WR_1500_FEATHER = "sub000wr.ms1500.epochs.feather"
 PM_1500_FEATHER = "sub000pm.ms1500.epochs.feather"
 
 # single source the python package version with a bit of error checking
-__version__ = "0.0.9.dev1"
+__version__ = "0.0.9"
 
 
 def get_ver():
