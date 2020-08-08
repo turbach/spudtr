@@ -1,6 +1,9 @@
 from pathlib import Path
 import re
 
+# single source the python package version with a bit of error checking
+__version__ = "0.0.10.dev0"
+
 # DEPRECATED in v.0.0.9, to be removed v0.0.11
 # local EEG files for testing and docs in DATA_DIR
 DATA_DIR = Path(__file__).parents[0] / "data"
@@ -20,9 +23,6 @@ P3_1500_FEATHER = "sub000p3.ms1500.epochs.feather"
 P5_1500_FEATHER = "sub000p50.ms1500.epochs.feather"
 WR_1500_FEATHER = "sub000wr.ms1500.epochs.feather"
 PM_1500_FEATHER = "sub000pm.ms1500.epochs.feather"
-
-# single source the python package version with a bit of error checking
-__version__ = "0.0.9"
 
 
 def get_ver():
