@@ -6,6 +6,9 @@
 \#*\#
 .\#*
 
+# these are downloaded 
+spudtr/data
+
 # sphinx-api generates these
 docs/source/
 
