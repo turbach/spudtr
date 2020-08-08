@@ -35,7 +35,8 @@ deploy:
       skip_cleanup: true
       script: bash ./ci/ghpages_upload.sh
       on:
-          branch: master
+          branch: master   # for normal operation
+          # all_branches: true  # for testing deploy only
 
     # conda_upload.sh switches anaconda upload on $TRAVIS_BRANCH
     #    master -> /pre-release
