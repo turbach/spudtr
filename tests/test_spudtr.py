@@ -19,5 +19,5 @@ def test_get_demo_df(_url):
     if (spudtr.DATA_DIR / test_f).exists():
         (spudtr.DATA_DIR / test_f).unlink()
 
-    _ = spudtr.get_demo_df(test_f, _url)   # download and cache
-    _ = spudtr.get_demo_df(test_f, _url)   # read cached
+    _ = spudtr.get_demo_df(test_f, _url)  # download and cache
+    _ = spudtr.get_demo_df(test_f, _url)  # read cached

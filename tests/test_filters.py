@@ -7,15 +7,15 @@ import matplotlib.pyplot as plt
 
 xfve = pytest.mark.xfail(strict=True, reason=ValueError)
 
+
 @pytest.mark.parametrize(
-    "_allow_defaults",
-    [True, pytest.param(False, marks=xfve)]
+    "_allow_defaults", [True, pytest.param(False, marks=xfve)]
 )
 @pytest.mark.parametrize(
     "_ftype,_cutoff, _srate",
     [
         ("lowpass", 20.0, 250.0),
-        ("highpass", 10.0, 250.0), 
+        ("highpass", 10.0, 250.0),
         ("bandpass", [15.0, 20.0], 250.0),
         ("bandstop", [20.0, 30.0], 250.0),
         pytest.param(None, 20.0, 250, marks=xfve),
@@ -24,19 +24,25 @@ xfve = pytest.mark.xfail(strict=True, reason=ValueError)
         pytest.param("lowpass", "_nn", 250, marks=xfve),
         pytest.param("lowpass", 20.0, None, marks=xfve),
         pytest.param("lowpass", 20.0, "_nn", marks=xfve),
-    ]
+    ],
 )
-def test_check_filter_params_obligatory(_ftype, _cutoff, _srate, _allow_defaults):
+def test_check_filter_params_obligatory(
+    _ftype, _cutoff, _srate, _allow_defaults
+):
     filt_params = filters.check_filter_params(
         ftype=_ftype,
         cutoff_hz=_cutoff,
         sfreq=_srate,
-        allow_defaults=_allow_defaults
+        allow_defaults=_allow_defaults,
     )
 
 
-@pytest.mark.parametrize("_width_hz", [5.0, None, pytest.param('_nn', marks=xfve)])
-@pytest.mark.parametrize("_ripple_db", [53.0, None, pytest.param('_nn', marks=xfve)])
+@pytest.mark.parametrize(
+    "_width_hz", [5.0, None, pytest.param("_nn", marks=xfve)]
+)
+@pytest.mark.parametrize(
+    "_ripple_db", [53.0, None, pytest.param("_nn", marks=xfve)]
+)
 @pytest.mark.parametrize("_window", ["kaiser", "hamming", "hann", "blackman"])
 def test_check_filter_params_optional(_width_hz, _ripple_db, _window):
     filt_params = filters.check_filter_params(
@@ -46,7 +52,7 @@ def test_check_filter_params_optional(_width_hz, _ripple_db, _window):
         width_hz=_width_hz,
         ripple_db=_ripple_db,
         window=_window,
-        allow_defaults=True
+        allow_defaults=True,
     )
 
 
@@ -59,12 +65,13 @@ def test__suggest_epoch_length():
 
 
 @pytest.mark.parametrize(
-    "_ftype,_cutoff_hz", [
+    "_ftype,_cutoff_hz",
+    [
         ("lowpass", 25.0),
         ("highpass", 10.0),
         ("bandpass", [10, 15]),
-        ("bandstop", [10, 15])
-    ]
+        ("bandstop", [10, 15]),
+    ],
 )
 @pytest.mark.parametrize(
     "_window", (None, "kaiser", "hamming", "hann", "blackman")
@@ -85,32 +92,33 @@ def test_show_filter(_ftype, _cutoff_hz, _window):
     )
 
     filters.show_filter(ftype=_ftype, cutoff_hz=_cutoff_hz, sfreq=sfreq)
-    filters.show_filter(ftype=_ftype, cutoff_hz=_cutoff_hz, sfreq=sfreq, show_output=False)
-    plt.close('all')
+    filters.show_filter(
+        ftype=_ftype, cutoff_hz=_cutoff_hz, sfreq=sfreq, show_output=False
+    )
+    plt.close("all")
 
 
 @pytest.mark.parametrize(
-    "_ftype,_cutoff_hz", [
+    "_ftype,_cutoff_hz",
+    [
         ("lowpass", 12.5),
         ("highpass", 20),
         ("bandpass", [10, 20]),
         ("bandstop", [5, 10]),
-    ]
+    ],
 )
-@pytest.mark.parametrize(
-    "_window", ("kaiser", "hamming", "hann", "blackman")
-)
+@pytest.mark.parametrize("_window", ("kaiser", "hamming", "hann", "blackman"))
 def test_fir_filter_dt(_ftype, _cutoff_hz, _window):
     _params = filters.check_filter_params(
         ftype=_ftype,
         cutoff_hz=_cutoff_hz,
         window=_window,
         sfreq=250,
-        allow_defaults=True
+        allow_defaults=True,
     )
 
-    # create data vector, dataframe, structured array, 
-    t, y = filters._sins_test_data([10], [1.0])  #freqs, amps
+    # create data vector, dataframe, structured array,
+    t, y = filters._sins_test_data([10], [1.0])  # freqs, amps
     test_df = pd.DataFrame({"fakedata": y})
     struct_arry = np.array(y, dtype=np.dtype([("fakedata", float)]))
 
@@ -127,8 +135,9 @@ def test_fir_filter_dt(_ftype, _cutoff_hz, _window):
     # np.array should fail
     with pytest.raises(TypeError) as excinfo:
         filt_dt = filters.fir_filter_dt(y, ["fakedata"], **_params)
-    assert "dt must be pandas.DataFrame or structured numpy.ndarray" in str(excinfo.value)
-
+    assert "dt must be pandas.DataFrame or structured numpy.ndarray" in str(
+        excinfo.value
+    )
 
 
 def test_mfreqz():
@@ -257,9 +266,8 @@ def test__apply_firwin_filter_data():
         cutoff_hz=[18, 35],
         width_hz=5,
         ripple_db=60,
-        sfreq= 250,
+        sfreq=250,
     )
-
 
     # build and apply the filter
     taps = filters._design_firwin_filter(**_params)
@@ -272,10 +280,7 @@ def test__apply_firwin_filter_data():
     t, y = filters._sins_test_data(freq_list, amplitude_list, sampling_freq)
 
     _params = filters.check_filter_params(
-        ftype = "lowpass",
-        cutoff_hz = 1,
-        sfreq = sampling_freq,
-        allow_defaults=True
+        ftype="lowpass", cutoff_hz=1, sfreq=sampling_freq, allow_defaults=True
     )
     with pytest.raises(ValueError) as excinfo:
         y_filt = filters.fir_filter_data(y, **_params)
@@ -308,12 +313,11 @@ def test_fir_filter_data(window_type):
         window=window_type,
     )
 
-    # fetch 
+    # fetch
     _params = filters.check_filter_params(
         ftype=ftype, cutoff_hz=cutoff_hz, sfreq=sfreq, allow_defaults=True
     )
     filt_data = filters.fir_filter_data(data, **_params)
-
 
 
 @pytest.mark.parametrize("_show_plot", [True, False])

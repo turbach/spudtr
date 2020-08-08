@@ -17,22 +17,105 @@ import pandas as pd
 # test epochs Zenodo https://doi.org/10.5281/zenodo.3968485
 # ------------------------------------------------------------
 WR_DF_COLS = [
-    'epoch_id', 'time_ms', 'sub_id', 'eeg_artifact', 'dblock_path',
-    'log_evcodes', 'log_ccodes', 'dblock_srate', 'ccode', 'instrument',
-    'repetition', 'pres_position', 'word_lag', 'congruity', 'event_code',
-    'condition_id', 'item_id', 'category', 'probe', 'lle', 'lhz', 'MiPf',
-    'LLPf', 'RLPf', 'LMPf', 'RMPf', 'LDFr', 'RDFr', 'LLFr', 'RLFr', 'LMFr',
-    'RMFr', 'LMCe', 'RMCe', 'MiCe', 'MiPa', 'LDCe', 'RDCe', 'LDPa', 'RDPa',
-    'LMOc', 'RMOc', 'LLTe', 'RLTe', 'LLOc', 'RLOc', 'MiOc', 'A2', 'HEOG',
-    'rle', 'rhz'
+    "epoch_id",
+    "time_ms",
+    "sub_id",
+    "eeg_artifact",
+    "dblock_path",
+    "log_evcodes",
+    "log_ccodes",
+    "dblock_srate",
+    "ccode",
+    "instrument",
+    "repetition",
+    "pres_position",
+    "word_lag",
+    "congruity",
+    "event_code",
+    "condition_id",
+    "item_id",
+    "category",
+    "probe",
+    "lle",
+    "lhz",
+    "MiPf",
+    "LLPf",
+    "RLPf",
+    "LMPf",
+    "RMPf",
+    "LDFr",
+    "RDFr",
+    "LLFr",
+    "RLFr",
+    "LMFr",
+    "RMFr",
+    "LMCe",
+    "RMCe",
+    "MiCe",
+    "MiPa",
+    "LDCe",
+    "RDCe",
+    "LDPa",
+    "RDPa",
+    "LMOc",
+    "RMOc",
+    "LLTe",
+    "RLTe",
+    "LLOc",
+    "RLOc",
+    "MiOc",
+    "A2",
+    "HEOG",
+    "rle",
+    "rhz",
 ]
 
-P5_DF_COLS = ['epoch_id', 'time_ms', 'sub_id', 'eeg_artifact', 'dblock_path',
-       'log_evcodes', 'log_ccodes', 'dblock_srate', 'ccode', 'instrument',
-       'bin', 'click', 'type', 'lle', 'lhz', 'MiPf', 'LLPf', 'RLPf', 'LMPf',
-       'RMPf', 'LDFr', 'RDFr', 'LLFr', 'RLFr', 'LMFr', 'RMFr', 'LMCe', 'RMCe',
-       'MiCe', 'MiPa', 'LDCe', 'RDCe', 'LDPa', 'RDPa', 'LMOc', 'RMOc', 'LLTe',
-       'RLTe', 'LLOc', 'RLOc', 'MiOc', 'A2', 'HEOG', 'rle', 'rhz'
+P5_DF_COLS = [
+    "epoch_id",
+    "time_ms",
+    "sub_id",
+    "eeg_artifact",
+    "dblock_path",
+    "log_evcodes",
+    "log_ccodes",
+    "dblock_srate",
+    "ccode",
+    "instrument",
+    "bin",
+    "click",
+    "type",
+    "lle",
+    "lhz",
+    "MiPf",
+    "LLPf",
+    "RLPf",
+    "LMPf",
+    "RMPf",
+    "LDFr",
+    "RDFr",
+    "LLFr",
+    "RLFr",
+    "LMFr",
+    "RMFr",
+    "LMCe",
+    "RMCe",
+    "MiCe",
+    "MiPa",
+    "LDCe",
+    "RDCe",
+    "LDPa",
+    "RDPa",
+    "LMOc",
+    "RMOc",
+    "LLTe",
+    "RLTe",
+    "LLOc",
+    "RLOc",
+    "MiOc",
+    "A2",
+    "HEOG",
+    "rle",
+    "rhz",
 ]
 
 print("downloading test epochs")
@@ -117,7 +200,9 @@ def test__validate_epochs_df(_epoch_id, _time):
 def test_epochs_QC():
     epochs_df = WR_100_FEATHER_DF.copy()
     data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    epf._epochs_QC(epochs_df, data_streams, epoch_id="epoch_id", time="time_ms")
+    epf._epochs_QC(
+        epochs_df, data_streams, epoch_id="epoch_id", time="time_ms"
+    )
 
 
 def test_epochs_QC_fails():
@@ -401,7 +486,7 @@ def test_fir_filter_epochs(trim_edges, df_shape):
         width_hz=5,
         ripple_db=60,
         window="kaiser",
-        sfreq=250
+        sfreq=250,
     )
 
     filt_test_df = epf.fir_filter_epochs(
@@ -410,12 +495,11 @@ def test_fir_filter_epochs(trim_edges, df_shape):
         trim_edges=trim_edges,
         epoch_id=epoch_id,
         time=time,
-        **_fp
+        **_fp,
     )
     epf.check_epochs(
         filt_test_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
     )
-
 
     filt_times = filt_test_df[time].unique()
     if trim_edges is False:

@@ -72,7 +72,7 @@ def get_demo_df(filename, url=DATA_URL):
     if (DATA_DIR / filename).exists():
         return pd.read_feather(DATA_DIR / filename)
 
-    # otherwise download 
+    # otherwise download
     print(f"downloading {filename} from {url} ... please wait")
     if not url[-1] == r"/":
         url += r"/"
