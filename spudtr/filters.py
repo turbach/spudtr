@@ -32,7 +32,7 @@ def check_filter_params(
     sfreq=None,
     allow_defaults=False,
 ):
-    """type check FIR filter parameters and optionally provide defaults
+    r"""type check FIR filter parameters and optionally provide defaults
 
     Values for `ftype`, `cutoff_hz`, and `sfreq` are obligatory.
 
@@ -60,8 +60,8 @@ def check_filter_params(
     Returns
     -------
     dict
-       key:val with all filter parameters specified, suitable for passing as
-       \*\*params to spudtr.filters FIR functions.
+       ``params`` with key:val for all filter parameters specified, suitable for passing as
+       ``**params`` to spudtr.filters FIR functions.
 
     """
 
