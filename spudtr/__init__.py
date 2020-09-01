@@ -2,11 +2,13 @@ from pathlib import Path
 import re
 
 # single source the python package version with a bit of error checking
-__version__ = "0.0.10.dev0"
+__version__ = "0.0.10.dev1"
+
+DATA_DIR = Path(__file__).parents[0] / "data"
+RESOURCES_DIR = Path(__file__).parents[0] / "resources"
 
 # DEPRECATED in v.0.0.9, to be removed v0.0.11
 # local EEG files for testing and docs in DATA_DIR
-DATA_DIR = Path(__file__).parents[0] / "data"
 P3_F = "gh_sub000p3.epochs.h5"
 P5_F = "gh_sub000p5.epochs.h5"
 WR_F = "gh_sub000wr.epochs.h5"
@@ -67,10 +69,6 @@ def get_demo_df(filename, url=DATA_URL):
     import io
     import os
     import requests  # URL IO
-
-    # touch dir for TravisCI docs
-    if not DATA_DIR.exists():
-        DATA_DIR.mkdir()
 
     # shortcut if previously downloaded
     if (DATA_DIR / filename).exists():

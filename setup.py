@@ -1,17 +1,9 @@
 # to work in development mode use:  pip install -e .
 
-# from Cython.Distutils import build_ext
-# from Cython.Build import cythonize
-# import numpy as np
-
 from setuptools import find_packages, setup  # , Extension
 from pathlib import Path
 import re
 from spudtr import get_ver
-
-# extensions = [
-#      Extension("_spudtr", ["src/_spudtr.pyx"], include_dirs=[np.get_include()])
-# ]
 
 __version__ = get_ver()
 
@@ -44,8 +36,5 @@ setup(
         "Intended Audience :: Science/Research",
     ],
     packages=find_packages(exclude=["tests"]),
-    package_data={"spudtr": ["data/gh_*"]},
-    #    scripts=["bin/stub"],
-    #    cmdclass={"build_ext": build_ext},
-    #    ext_modules=cythonize(extensions, language_level=3),
+    scripts=["bin/stub"],
 )

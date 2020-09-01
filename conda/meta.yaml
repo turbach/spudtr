@@ -1,6 +1,6 @@
-{% set version = "0.0.10.dev0" %}
-{% set py_pin = "3.6" %}  # pins for mkpy and fitgrid
-{% set np_pin = "1.16.4" %}
+{% set version = "0.0.10.dev1" %}
+# {% set py_pin = "3.6" %}  # pins for mkpy and fitgrid
+# {% set np_pin = "1.16.4" %}
 
 package:
     name: spudtr
@@ -17,25 +17,23 @@ build:
 requirements:
     # build ... all moved to host
     host:
-        - mkl  # should be default on anaconda
-        - blas =1.0  # anaconda mkl
-        - python ={{ py_pin }}  # else cython uses Python 3.7
-        - numpy =={{ np_pin }}
-        - numpy-base =={{ np_pin }}
-        - Cython
+      - python
+      - numpy
+      - pip
 
     run:
-        - python ={{ py_pin }}
-        - numpy =={{ np_pin }}  # these to pull from anaconda for mkl
-        - numpy-base =={{ np_pin }}
-        - scipy
-        - pandas <1.0
-        - matplotlib
-        - bottleneck
-        - pytables
-        - pyarrow
-        - patsy
-        - requests
+      - python 
+      - numpy 
+      - numpy-base
+      - scipy
+      - pandas >=1.0
+      - pyarrow >=1.0  # else defaults to 0.11.1 which crashes
+      - matplotlib
+      - bottleneck
+      - pytables
+      - patsy
+      - requests
+      - mne >=0.20.0
 
 test:
     imports:

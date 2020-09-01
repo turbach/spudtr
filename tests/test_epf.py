@@ -124,7 +124,7 @@ assert WR_100_FEATHER_DF.shape == (12425, 51)
 assert all(WR_100_FEATHER_DF.columns == WR_DF_COLS)
 
 P5_1500_FEATHER_DF = get_demo_df(P5_1500_FEATHER)
-assert P5_1500_FEATHER_DF.shape == (335250, 45)
+assert P5_1500_FEATHER_DF.shape == (335_250, 45)
 assert all(P5_1500_FEATHER_DF.columns == P5_DF_COLS)
 
 print("ok")
@@ -186,13 +186,8 @@ def test__validate_epochs_df(_epoch_id, _time):
             time="xfail",
             epoch_id="xfail",
         )
-        epf._validate_epochs_df(
-            xfail_epochs_df, epoch_id=_epoch_id, time=_time
-        )
-    if not (
-        excinfo.type is ValueError
-        and "column not found" in excinfo.value.args[0]
-    ):
+        epf._validate_epochs_df(xfail_epochs_df, epoch_id=_epoch_id, time=_time)
+    if not (excinfo.type is ValueError and "column not found" in excinfo.value.args[0]):
         raise Exception(f"uncaught exception {excinfo}")
 
 
@@ -200,9 +195,7 @@ def test__validate_epochs_df(_epoch_id, _time):
 def test_epochs_QC():
     epochs_df = WR_100_FEATHER_DF.copy()
     data_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
-    epf._epochs_QC(
-        epochs_df, data_streams, epoch_id="epoch_id", time="time_ms"
-    )
+    epf._epochs_QC(epochs_df, data_streams, epoch_id="epoch_id", time="time_ms")
 
 
 def test_epochs_QC_fails():
@@ -222,9 +215,8 @@ def test_epochs_QC_fails():
     with pytest.raises(ValueError) as excinfo:
         data_streams1 = ["A"]
         epf._epochs_QC(epochs_df, data_streams1)
-    assert (
-        "data_streams should all be present in the epochs dataframe,"
-        in str(excinfo.value)
+    assert "data_streams should all be present in the epochs dataframe," in str(
+        excinfo.value
     )
 
 
@@ -290,14 +282,10 @@ def test_duplicate_values_of_epoch_id():
 )
 @pytest.mark.parametrize(
     "_epoch_id",
-    [
-        "epoch_id",
-        pytest.param("epoch_id_xfail", marks=pytest.mark.xfail(strict=True)),
-    ],
+    ["epoch_id", pytest.param("epoch_id_xfail", marks=pytest.mark.xfail(strict=True)),],
 )
 @pytest.mark.parametrize(
-    "_time",
-    ["time", pytest.param("time_xfail", marks=pytest.mark.xfail(strict=True))],
+    "_time", ["time", pytest.param("time_xfail", marks=pytest.mark.xfail(strict=True))],
 )
 def test_check_epochs(data_streams, _epoch_id, _time):
     """test UI wrapper for epochs QC"""
@@ -365,14 +353,10 @@ def test_center_eeg():
         epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time="time"
     )
     zero_mns = (
-        centered_epochs_df.iloc[center_idxs, :]
-        .groupby(epoch_id)[eeg_streams]
-        .mean()
+        centered_epochs_df.iloc[center_idxs, :].groupby(epoch_id)[eeg_streams].mean()
     )
     assert np.allclose(0, zero_mns)
-    epf._epochs_QC(
-        centered_epochs_df, eeg_streams, epoch_id=epoch_id, time=time
-    )
+    epf._epochs_QC(centered_epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
 
 
 def test_drop_bad_epochs():
@@ -391,17 +375,10 @@ def test_drop_bad_epochs():
     group = epochs_df.groupby([time]).get_group(0)
     good_idx = list(group[epoch_id][group[bads_column] == 0])
     epochs_df_bad = epochs_df[~epochs_df[epoch_id].isin(good_idx)]
-    assert (
-        epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
-    )
-    epochs_df_good = epf.drop_bad_epochs(
-        epochs_df, bads_column, epoch_id, time
-    )
+    assert epochs_df_good.shape[0] + epochs_df_bad.shape[0] == epochs_df.shape[0]
+    epochs_df_good = epf.drop_bad_epochs(epochs_df, bads_column, epoch_id, time)
     epf._epochs_QC(
-        epochs_df_good,
-        epochs_df_good.columns.tolist(),
-        epoch_id=epoch_id,
-        time=time,
+        epochs_df_good, epochs_df_good.columns.tolist(), epoch_id=epoch_id, time=time,
     )
 
 
@@ -476,9 +453,7 @@ def test_fir_filter_epochs(trim_edges, df_shape):
     epochs_df = P5_1500_FEATHER_DF.copy()
 
     eeg_cols = ["MiPf", "MiCe", "MiCe", "MiOc"]
-    epf.check_epochs(
-        epochs_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
-    )
+    epf.check_epochs(epochs_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time)
 
     _fp = dict(
         ftype="lowpass",
@@ -490,16 +465,9 @@ def test_fir_filter_epochs(trim_edges, df_shape):
     )
 
     filt_test_df = epf.fir_filter_epochs(
-        epochs_df,
-        eeg_cols,
-        trim_edges=trim_edges,
-        epoch_id=epoch_id,
-        time=time,
-        **_fp,
+        epochs_df, eeg_cols, trim_edges=trim_edges, epoch_id=epoch_id, time=time, **_fp,
     )
-    epf.check_epochs(
-        filt_test_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time
-    )
+    epf.check_epochs(filt_test_df, data_streams=eeg_cols, epoch_id=epoch_id, time=time)
 
     filt_times = filt_test_df[time].unique()
     if trim_edges is False:

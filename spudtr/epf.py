@@ -93,8 +93,7 @@ def _epochs_QC(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     if not prev_group.index.is_unique:
         dupes = list_duplicates(list(prev_group.index))
         raise ValueError(
-            f"Duplicate values of epoch_id in each"
-            f"time group not allowed:\n{dupes}"
+            f"Duplicate values of epoch_id in each" f"time group not allowed:\n{dupes}"
         )
     return epochs_df
 
@@ -120,7 +119,7 @@ def _hdf_read_epochs(epochs_f, h5_group, epoch_id=EPOCH_ID, time=TIME):
         columns in INDEX_NAMES are pd.MultiIndex axis 0
     """
     warnings.warn(
-        "_hdf_read_epochs() is unused and deprecated in spudtr.epf v0.0.9 and will be removed in v0.0.11",
+        "_hdf_read_epochs() is unused, untested, and deprecated in spudtr.epf v0.0.9 and will be removed in v0.0.11",
         DeprecationWarning,
     )
 
@@ -143,8 +142,7 @@ def _find_subscript(times, start, stop):
     istart = np.where(times >= start)[0]
     if len(istart) == 0:
         raise ValueError(
-            "start is too large (%s), it exceeds the largest "
-            "time value" % (start,)
+            "start is too large (%s), it exceeds the largest " "time value" % (start,)
         )
     istart = int(istart[0])
 
@@ -195,9 +193,7 @@ def check_epochs(epochs_df, data_streams, epoch_id=EPOCH_ID, time=TIME):
     _ = _epochs_QC(epochs_df, data_streams, epoch_id=epoch_id, time=time)
 
 
-def center_eeg(
-    epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time=TIME
-):
+def center_eeg(epochs_df, eeg_streams, start, stop, epoch_id=EPOCH_ID, time=TIME):
 
     """center (a.k.a. "baseline") EEG amplitude on mean amplitude in [start, stop)
     
@@ -257,9 +253,7 @@ def center_eeg(
 
     # inflate the means to the shape of the data and subtract in place, not sure if view() saves memory
     centered_epochs_df = epochs_df.copy()
-    centered_epochs_df[eeg_streams] -= np.repeat(
-        mns.to_numpy().view(), n_times, axis=0
-    )
+    centered_epochs_df[eeg_streams] -= np.repeat(mns.to_numpy().view(), n_times, axis=0)
 
     return centered_epochs_df
 
@@ -304,9 +298,7 @@ def drop_bad_epochs(epochs_df, bads_column, epoch_id=EPOCH_ID, time=EPOCH_ID):
     return good_epochs_df
 
 
-def re_reference(
-    epochs_df, eeg_streams, ref, ref_type, epoch_id=EPOCH_ID, time=TIME
-):
+def re_reference(epochs_df, eeg_streams, ref, ref_type, epoch_id=EPOCH_ID, time=TIME):
     """Convert EEG data recorded with a common reference to a different reference
 
     .. warning::
@@ -511,27 +503,23 @@ def fir_filter_epochs(
     # needs to know about epoch boundaries and times
     _epochs_QC(epochs_df, data_columns, epoch_id=epoch_id, time=time)
 
-    # build and apply the filter
-    taps = _design_firwin_filter(
-        cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
-    )
-
-    # filt_epochs_df = _apply_firwin_filter(epochs_df, data_columns, taps)
-    filt_epochs_df = fir_filter_dt(
-        epochs_df,
-        data_columns,
+    _fparams = dict(
+        ftype=ftype,
         cutoff_hz=cutoff_hz,
         sfreq=sfreq,
-        ftype=ftype,
         width_hz=width_hz,
         ripple_db=ripple_db,
         window=window,
     )
 
-    # this trims edges in *each epoch*
+    # build and apply the filter
+    filt_epochs_df = fir_filter_dt(epochs_df, data_columns, **_fparams)
+
+    # this trims edges in *each epoch*, 1/2 length of the filter
     if trim_edges:
-        times = filt_epochs_df[time].unique()
+        taps = _design_firwin_filter(**_fparams)
         n_edge = int(np.floor(len(taps) / 2.0))
+        times = filt_epochs_df[time].unique()
         start_good = times[n_edge]  # first good sample
         stop_good = times[-(n_edge + 1)]  # last good sample
         qstr = f"{time} >= @start_good and {time} <= @stop_good"

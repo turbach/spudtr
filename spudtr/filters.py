@@ -23,13 +23,410 @@ FTYPES = ["lowpass", "highpass", "bandpass", "bandstop"]
 WINDOWS = ["kaiser", "hamming", "hann", "blackman"]
 
 
+# ------------------------------------------------------------
+# "private"-ish functions
+
+
+def _trans_bwidth_ripple(ftype=None, cutoff_hz=None, sfreq=None, window=None):
+
+    """
+    Calculate reasonable default transition width and ripple dB
+
+    Parameters
+    ----------
+
+    ftype : string
+        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    sfreq : float
+        sampling frequency per second, e.g., 250.0, 500.0
+    window : string
+        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
+
+    Returns
+    -------
+    width_hz : float
+        transition band width start to stop in Hz
+    ripple_db : float
+        attenuation in the stop band, in dB
+    """
+    for kwarg in [ftype, cutoff_hz, sfreq, window]:
+        assert kwarg is not None
+
+    if ftype.lower() == "lowpass":
+        width_hz = min(max(cutoff_hz * 0.25, 2), cutoff_hz)
+    elif ftype.lower() == "highpass":
+        width_hz = min(max(cutoff_hz * 0.25, 2.0), sfreq / 2.0 - cutoff_hz)
+    elif ftype.lower() == "bandpass" or ftype.lower() == "bandstop":
+        l = min(max(cutoff_hz[0] * 0.25, 2), cutoff_hz[0])
+        h = min(max(cutoff_hz[1] * 0.25, 2.0), sfreq / 2.0 - cutoff_hz[1])
+        width_hz = (l + h) / 2
+
+    if window.lower() == "kaiser" or window.lower() == "hamming":
+        ripple_db = 53
+    elif window.lower() == "hann":
+        ripple_db = 44
+    elif window.lower() == "blackman":
+        ripple_db = 74
+
+    return width_hz, ripple_db
+
+
+def _suggest_epoch_length(sfreq=None, width_hz=None, ripple_db=None):
+
+    """
+    Parameters
+    ----------
+    sfreq : float
+        sampling frequency, i.e. 250.0
+    width_hz : float
+        width of transition region in Hz
+    ripple_db : float
+        ripple in dB
+
+    Examples
+    --------
+    >>> sfreq = 250
+    >>> ripple_db = 60
+    >>> width_hz = 4
+    >>> suggest_epoch_length(sfreq, ripple_db, width_hz)
+    your epoch length should be  230  points, or  0.92  seconds at least.
+    """
+
+    for kwarg in [sfreq, width_hz, ripple_db]:
+        assert kwarg is not None
+
+    # Nyquist frequency
+    nyq_rate = sfreq / 2.0
+
+    # transition band width in normalizied frequency
+    width = width_hz / nyq_rate
+
+    # order and Kaiser parameter for the FIR filter.
+    # The parameters returned by this function are generally used for the window method with firwin.
+    N, beta = kaiserord(ripple_db, width)
+
+    N = N + 2
+
+    print(
+        "your epoch length should be ",
+        N,
+        " points, or ",
+        N / sfreq,
+        " seconds at least. ",
+    )
+    return N
+
+
+def _mfreqz(b=None, a=1, cutoff_hz=None, sfreq=None, width_hz=None):
+
+    """ Plot the frequency and phase response of a digital filter.
+
+    Parameters
+    ----------
+    b : array_like
+        numerator of a linear filter
+    a : array_like
+        denominator of a linear filter
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+    width_hz : float
+        transition band width start to stop in Hz
+
+    Returns
+    -------
+    fig : `~.figure.Figure`
+    """
+
+    for kwarg in [b, cutoff_hz, sfreq, width_hz, a]:
+        assert kwarg is not None
+
+    w, h = signal.freqz(b, a)
+    h_dB = 20 * np.log10(abs(h))
+
+    fig, (ax_freq, ax_freq_phase) = plt.subplots(2, 1)
+    # make a little extra space between the subplots
+    fig.subplots_adjust(hspace=0.6)
+
+    # frequency response plot
+    nyq_rate = sfreq / 2.0
+    ax_freq.plot((w / np.pi) * nyq_rate, abs(h))
+    cutoff_hz = np.atleast_1d(cutoff_hz)
+    lstyle = {"linestyle": "--", "lw": 1, "color": "r"}
+    if cutoff_hz.size == 1:
+        ax_freq.axvline(cutoff_hz + width_hz / 2, **lstyle)
+        ax_freq.axvline(cutoff_hz - width_hz / 2, **lstyle)
+    else:
+        ax_freq.axvline(cutoff_hz[0] + width_hz / 2, **lstyle)
+        ax_freq.axvline(cutoff_hz[0] - width_hz / 2, **lstyle)
+        ax_freq.axvline(cutoff_hz[1] + width_hz / 2, **lstyle)
+        ax_freq.axvline(cutoff_hz[1] - width_hz / 2, **lstyle)
+
+    ax_freq.set_ylabel("Gain")
+    ax_freq.set_xlabel("Frequency (Hz)")
+    ax_freq.set_title(r"Frequency Response")
+
+    # ax_freq.set_xlim(0, nyq_rate)
+    ax_freq.set_xlim(-10, nyq_rate / 2)
+    ax_freq.grid(linestyle="--")
+
+    # frequency-phase plot
+    ax_freq_phase.plot(w / max(w), h_dB, "b")
+    ax_freq_phase.set_ylim(-150, 5)
+    ax_freq_phase.set_ylabel("Magnitude (db)", color="b")
+    ax_freq_phase.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
+    ax_freq_phase.set_title(r"Frequency and Phase response")
+    ax_freq_phaseb = ax_freq_phase.twinx()
+    h_Phase = np.unwrap(np.arctan2(np.imag(h), np.real(h)))
+    ax_freq_phaseb.plot(w / max(w), h_Phase, "g")
+    ax_freq_phaseb.set_ylabel("Phase (radians)", color="g")
+    ax_freq_phase.grid(linestyle="--")
+
+    return fig
+
+
+def _impz(b=None, a=1):
+
+    """ Plot step and impulse response.
+
+    Parameters
+    ----------
+    b : array_like
+        numerator of a linear filter
+    a : array_like
+        denominator of a linear filter
+
+    Returns
+    -------
+    fig : `~.figure.Figure`
+    """
+
+    for kwarg in [b, a]:
+        assert kwarg is not None
+
+    l = len(b)
+    impulse = np.repeat(0.0, l)
+    impulse[0] = 1.0
+    x = np.arange(0, l)
+    response = signal.lfilter(b, a, impulse)
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+    # make a little extra space between the subplots
+    fig.subplots_adjust(hspace=0.6)
+
+    ax1.stem(x, response, use_line_collection=True)
+    ax1.set_ylabel("Amplitude")
+    ax1.set_xlabel(r"n (samples)")
+    ax1.set_title(r"Impulse response")
+
+    step = np.cumsum(response)
+    ax2.stem(x, step, use_line_collection=True)
+    ax2.set_ylabel("Amplitude")
+    ax2.set_xlabel(r"n (samples)")
+    ax2.set_title(r"Step response")
+    return fig
+
+
+def _design_firwin_filter(
+    ftype=None, cutoff_hz=None, sfreq=None, width_hz=None, ripple_db=None, window=None
+):
+    """calculate odd length, symmetric, linear phase FIR filter coefficients
+
+    FIRLS at https://scipy-cookbook.readthedocs.io/items/FIRFilter.html
+
+    Parameters
+    ----------
+
+    ftype : string
+        filter type, one of 'lowpass' , 'highpass', 'bandpass', 'bandstop'
+
+    cutoff_hz : float or 1D array_like
+        cutoff frequency in Hz, e.g., 5.0, 30.0 for lowpass or
+        highpass. 1D array_like, e.g. [10.0, 30.0] for bandpass or
+        bandstop
+
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
+
+    width_hz : float
+        transition band width start to stop in Hz
+
+    ripple_db : float
+        attenuation in the stop band, in dB, e.g., 24.0, 60.0
+
+
+    Returns
+    -------
+    taps : np.array
+        coefficients of FIR filter.
+
+    """
+
+    for kwarg in [ftype, cutoff_hz, sfreq, width_hz, ripple_db, window]:
+        assert kwarg is not None
+
+    check_filter_params(
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+    )
+
+    # Nyquist frequency
+    nyq_rate = sfreq / 2.0
+
+    # transition band width in normalizied frequency
+    width = width_hz / nyq_rate
+
+    # order and Kaiser parameter for the FIR filter.
+    N, beta = kaiserord(ripple_db, width)
+
+    if N % 2 == 0:
+        N = N + 1  # enforce odd number of taps
+
+    # create a FIR filter using firwin
+    if ftype.lower() == "lowpass":
+        if window.lower() == "kaiser":
+            taps = firwin(
+                N, cutoff_hz, window=("kaiser", beta), pass_zero="lowpass", fs=sfreq,
+            )
+        else:
+            taps = firwin(N, cutoff_hz, window=window, pass_zero="lowpass", fs=sfreq)
+    elif ftype.lower() == "highpass":
+        if window.lower() == "kaiser":
+            taps = firwin(
+                N, cutoff_hz, window=("kaiser", beta), pass_zero="highpass", fs=sfreq,
+            )
+        else:
+            taps = firwin(N, cutoff_hz, window=window, pass_zero="highpass", fs=sfreq)
+    elif ftype.lower() == "bandpass":
+        if window.lower() == "kaiser":
+            taps = firwin(
+                N, cutoff_hz, window=("kaiser", beta), pass_zero="bandpass", fs=sfreq,
+            )
+        else:
+            taps = firwin(N, cutoff_hz, window=window, pass_zero="bandpass", fs=sfreq)
+    elif ftype.lower() == "bandstop":
+        if window.lower() == "kaiser":
+            taps = firwin(
+                N, cutoff_hz, window=("kaiser", beta), pass_zero="bandstop", fs=sfreq,
+            )
+        else:
+            taps = firwin(N, cutoff_hz, window=window, pass_zero="bandstop", fs=sfreq)
+
+    return taps
+
+
+def _sins_test_data(
+    freq_list, amplitude_list, sampling_freq=250, duration=1.5, show_plot=False
+):
+    """creat a noisy signal to test the filter
+
+    Parameters
+    ----------
+    freq_list : float, list
+
+    amplitude_list : float, list
+
+    sampling_freq : float, optional
+        sampling frequency, default is 250.0
+
+    duration : float, optional
+        signal duration, default is 1.5 seconds
+
+    Returns
+    -------
+    t,x : float
+        time and values of a noisy signal  
+
+    Examples
+    --------
+    >>> freq_list = [10.0, 25.0, 45.0]
+    >>> amplitude_list = [1.0, 0.2, 0.3]
+    >>> t, y = _sins_test_data(freq_list, amplitude_list)
+
+    """
+    assert len(freq_list) == len(amplitude_list)
+
+    t = np.arange(0.0, duration, 1 / sampling_freq)
+    x_noise = 0.1 * np.sin(2 * np.pi * 60 * t) + 0.2 * np.random.normal(size=len(t))
+    # x = x_noise
+    x = 0.0
+    for i in range(len(freq_list)):
+        x += amplitude_list[i] * np.sin(2 * np.pi * freq_list[i] * t)
+
+    if show_plot:
+        fig, ax = plt.subplots(figsize=(18, 4))
+        ax.plot(t, x)
+
+    return t, x
+
+
+def _apply_firwin_filter_data(data, taps):
+    """apply and phase compensate the FIRLS filtering to each column
+
+    Parameters
+    ----------
+    data : array
+
+    taps : ndarray
+        Coefficients of FIR filter.
+
+    Returns
+    -------
+    filtered_data : filtered data (same size as data)
+        filtered array.
+
+    """
+
+    N = len(taps)
+    delay = int((len(taps) - 1) / 2)
+    a = 1.0
+
+    msg = f"""
+    applying linear phase delay compensated filter.
+    a: {a}, N: {N}, delay: {delay}
+    taps:
+    {taps}
+    """
+    data = np.asanyarray(data).astype("float64")
+
+    # add pads
+    yy = []
+    b = data[0:delay][::-1]
+    e = data[-delay:][::-1]
+    yy = np.append(b, data)
+    yy = np.append(yy, e)
+
+    # forward pass
+    filtered_data = lfilter(taps, a, yy)
+
+    # roll the phase shift by delay back to 0
+    filtered_data = np.roll(filtered_data, -delay)[delay:-delay]
+
+    if not len(data) == len(filtered_data):
+        raise ValueError(
+            f"filter I/O length mismatch: input={len(data)} output={len(filtered_data)}"
+        )
+
+    return filtered_data
+
+
+# ------------------------------------------------------------
+# public functions
+
+
 def check_filter_params(
     ftype=None,
     cutoff_hz=None,
+    sfreq=None,
     width_hz=None,
     ripple_db=None,
     window=None,
-    sfreq=None,
     allow_defaults=False,
 ):
     r"""type check FIR filter parameters and optionally provide defaults
@@ -48,14 +445,18 @@ def check_filter_params(
         filter type
     cutoff_hz : float or 1D-array-like of floats, length 2
         1/2 amplitude cutoff frequency in Hz
+    sfreq : float
+        sampling frequency, e.g., 250.0, 500.0
     width_hz : float
         pass-to-stop transition band width (Hz), symmetric for bandpass, bandstop
     ripple_db : float
         ripple, in dB, e.g., 53.0, 60.0
     window : str {'kaiser','hamming','hann','blackman'}
         window type for firwin
-    sfreq : float
-        sampling frequency, e.g., 250.0, 500.0
+    allow_defaults : bool {False, True}
+        If `True` this makes `width_hz`, `ripple_db`, `window` optional and
+        fills in sensible defaults for any left unspecified by the user.
+
 
     Returns
     -------
@@ -91,13 +492,11 @@ def check_filter_params(
         warnings.warn(f"using default window='{window}'")
 
     if window not in WINDOWS:
-        raise ValueError(
-            f"window={window}, must be one of " + " ".join(WINDOWS)
-        )
+        raise ValueError(f"window={window}, must be one of " + " ".join(WINDOWS))
 
     # compute default cutoff_hz and ripple_db for this window, ftype, sfreq
     _width_hz, _ripple_db = _trans_bwidth_ripple(
-        cutoff_hz, sfreq, ftype, window
+        ftype=ftype, cutoff_hz=cutoff_hz, sfreq=sfreq, window=window
     )
 
     if width_hz is None and allow_defaults:
@@ -125,100 +524,13 @@ def check_filter_params(
     return _params
 
 
-def _trans_bwidth_ripple(cutoff_hz, sfreq, ftype, window):
-
-    """
-    Calculate reasonable default transition width and ripple dB
-
-    Parameters
-    ----------
-
-    cutoff_hz : float or 1D array_like
-        cutoff frequency in Hz
-    sfreq : float
-        sampling frequency per second, e.g., 250.0, 500.0
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-    window : string
-        window type for firwin, e.g., 'kaiser','hamming','hann','blackman'
-
-    Returns
-    -------
-    width_hz : float
-        transition band width start to stop in Hz
-    ripple_db : float
-        attenuation in the stop band, in dB
-    """
-
-    if ftype.lower() == "lowpass":
-        width_hz = min(max(cutoff_hz * 0.25, 2), cutoff_hz)
-    elif ftype.lower() == "highpass":
-        width_hz = min(max(cutoff_hz * 0.25, 2.0), sfreq / 2.0 - cutoff_hz)
-    elif ftype.lower() == "bandpass" or ftype.lower() == "bandstop":
-        l = min(max(cutoff_hz[0] * 0.25, 2), cutoff_hz[0])
-        h = min(max(cutoff_hz[1] * 0.25, 2.0), sfreq / 2.0 - cutoff_hz[1])
-        width_hz = (l + h) / 2
-
-    if window.lower() == "kaiser" or window.lower() == "hamming":
-        ripple_db = 53
-    elif window.lower() == "hann":
-        ripple_db = 44
-    elif window.lower() == "blackman":
-        ripple_db = 74
-
-    return width_hz, ripple_db
-
-
-def _suggest_epoch_length(sfreq, ripple_db, width_hz):
-
-    """
-    Parameters
-    ----------
-    sfreq : float
-        sampling frequency, i.e. 250.0
-    ripple_db : float
-        ripple in dB
-    width_hz : float
-        width of transition region in hz
-
-    Examples
-    --------
-    >>> sfreq = 250
-    >>> ripple_db = 60
-    >>> width_hz = 4
-    >>> suggest_epoch_length(sfreq, ripple_db, width_hz)
-    your epoch length should be  230  points, or  0.92  seconds at least.
-    """
-
-    # Nyquist frequency
-    nyq_rate = sfreq / 2.0
-
-    # transition band width in normalizied frequency
-    width = width_hz / nyq_rate
-
-    # order and Kaiser parameter for the FIR filter.
-    # The parameters returned by this function are generally used for the window method with firwin.
-    N, beta = kaiserord(ripple_db, width)
-
-    N = N + 2
-
-    print(
-        "your epoch length should be ",
-        N,
-        " points, or ",
-        N / sfreq,
-        " seconds at least. ",
-    )
-    return N
-
-
 def show_filter(
     ftype=None,
     cutoff_hz=None,
+    sfreq=None,
     width_hz=None,
     ripple_db=None,
     window=None,
-    sfreq=None,
     show_output=True,
 ):
 
@@ -314,10 +626,7 @@ def show_filter(
 
     print(f"{_fp['ftype']} filter")
     print(f"sampling rate (samples / s): {_fp['sfreq']:0.3f}")
-    print(
-        "1/2 amplitude cutoff (Hz): "
-        + " ".join([f"hz:0.3f" for hz in _cutoff_hz])
-    )
+    print("1/2 amplitude cutoff (Hz): " + " ".join([f"{hz:0.3f}" for hz in _cutoff_hz]))
     print(f"transition width (Hz): {_fp['width_hz']:0.3f}")
     print(f"ripple (dB): {_fp['ripple_db']:0.3f}")
     print(f"window: {_fp['window']}")
@@ -330,9 +639,13 @@ def show_filter(
     )
 
     freq_phase = _mfreqz(
-        taps, _fp["sfreq"], _fp["cutoff_hz"], _fp["width_hz"], a=1
+        b=taps,
+        a=1,
+        cutoff_hz=_fp["cutoff_hz"],
+        sfreq=_fp["sfreq"],
+        width_hz=_fp["width_hz"],
     )
-    imp_step = _impz(taps, a=1)
+    imp_step = _impz(b=taps, a=1)
 
     if show_output:
         io_fig, io_ax = filters_effect(**_fp)
@@ -346,283 +659,15 @@ def show_filter(
     return freq_phase, imp_step, s_edge, n_edge
 
 
-def _mfreqz(b, sfreq, cutoff_hz, width_hz, a=1):
-
-    """ Plot the frequency and phase response of a digital filter.
-
-    Parameters
-    ----------
-    cutoff_hz : float or 1D array_like
-        cutoff frequency in Hz
-    width_hz : float
-        transition band width start to stop in Hz
-    ripple_db : float
-        attenuation in the stop band, in dB, e.g., 24.0, 60.0
-    sfreq : float
-        sampling frequency, e.g., 250.0, 500.0
-    ftype : string
-        filter type, e.g., 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-    b : array_like
-        numerator of a linear filter
-    a : array_like
-        denominator of a linear filter
-
-    Returns
-    -------
-    fig : `~.figure.Figure`
-    """
-    w, h = signal.freqz(b, a)
-    h_dB = 20 * np.log10(abs(h))
-
-    fig, (ax_freq, ax_freq_phase) = plt.subplots(2, 1)
-    # make a little extra space between the subplots
-    fig.subplots_adjust(hspace=0.6)
-
-    # frequency response plot
-    nyq_rate = sfreq / 2.0
-    ax_freq.plot((w / np.pi) * nyq_rate, abs(h))
-    cutoff_hz = np.atleast_1d(cutoff_hz)
-    lstyle = {"linestyle": "--", "lw": 1, "color": "r"}
-    if cutoff_hz.size == 1:
-        ax_freq.axvline(cutoff_hz + width_hz / 2, **lstyle)
-        ax_freq.axvline(cutoff_hz - width_hz / 2, **lstyle)
-    else:
-        ax_freq.axvline(cutoff_hz[0] + width_hz / 2, **lstyle)
-        ax_freq.axvline(cutoff_hz[0] - width_hz / 2, **lstyle)
-        ax_freq.axvline(cutoff_hz[1] + width_hz / 2, **lstyle)
-        ax_freq.axvline(cutoff_hz[1] - width_hz / 2, **lstyle)
-
-    ax_freq.set_ylabel("Gain")
-    ax_freq.set_xlabel("Frequency (Hz)")
-    ax_freq.set_title(r"Frequency Response")
-
-    # ax_freq.set_xlim(0, nyq_rate)
-    ax_freq.set_xlim(-10, nyq_rate / 2)
-    ax_freq.grid(linestyle="--")
-
-    # frequency-phase plot
-    ax_freq_phase.plot(w / max(w), h_dB, "b")
-    ax_freq_phase.set_ylim(-150, 5)
-    ax_freq_phase.set_ylabel("Magnitude (db)", color="b")
-    ax_freq_phase.set_xlabel(r"Normalized Frequency (x$\pi$rad/sample)")
-    ax_freq_phase.set_title(r"Frequency and Phase response")
-    ax_freq_phaseb = ax_freq_phase.twinx()
-    h_Phase = np.unwrap(np.arctan2(np.imag(h), np.real(h)))
-    ax_freq_phaseb.plot(w / max(w), h_Phase, "g")
-    ax_freq_phaseb.set_ylabel("Phase (radians)", color="g")
-    ax_freq_phase.grid(linestyle="--")
-
-    return fig
-
-
-def _impz(b, a=1):
-
-    """ Plot step and impulse response.
-
-    Parameters
-    ----------
-    b : array_like
-        numerator of a linear filter
-    a : array_like
-        denominator of a linear filter
-
-    Returns
-    -------
-    fig : `~.figure.Figure`
-    """
-    l = len(b)
-    impulse = np.repeat(0.0, l)
-    impulse[0] = 1.0
-    x = np.arange(0, l)
-    response = signal.lfilter(b, a, impulse)
-    fig, (ax1, ax2) = plt.subplots(2, 1)
-    # make a little extra space between the subplots
-    fig.subplots_adjust(hspace=0.6)
-
-    ax1.stem(x, response, use_line_collection=True)
-    ax1.set_ylabel("Amplitude")
-    ax1.set_xlabel(r"n (samples)")
-    ax1.set_title(r"Impulse response")
-
-    step = np.cumsum(response)
-    ax2.stem(x, step, use_line_collection=True)
-    ax2.set_ylabel("Amplitude")
-    ax2.set_xlabel(r"n (samples)")
-    ax2.set_title(r"Step response")
-    return fig
-
-
-def _design_firwin_filter(
-    cutoff_hz, width_hz, ripple_db, sfreq, ftype, window
-):
-    """calculate odd length, symmetric, linear phase FIR filter coefficients
-
-    FIRLS at https://scipy-cookbook.readthedocs.io/items/FIRFilter.html
-
-    Parameters
-    ----------
-
-    cutoff_hz : float or 1D array_like
-        cutoff frequency in Hz, e.g., 5.0, 30.0 for lowpass or
-        highpass. 1D array_like, e.g. [10.0, 30.0] for bandpass or
-        bandstop
-
-    width_hz : float
-        transition band width start to stop in Hz
-
-    ripple_db : float
-        attenuation in the stop band, in dB, e.g., 24.0, 60.0
-
-    sfreq : float
-        sampling frequency, e.g., 250.0, 500.0
-
-    ftype : string
-        filter type, one of 'lowpass' , 'highpass', 'bandpass', 'bandstop'
-
-    Returns
-    -------
-    taps : np.array
-        coefficients of FIR filter.
-
-    """
-    check_filter_params(
-        cutoff_hz=cutoff_hz,
-        width_hz=width_hz,
-        ripple_db=ripple_db,
-        sfreq=sfreq,
-        ftype=ftype,
-        window=window,
-    )
-
-    # Nyquist frequency
-    nyq_rate = sfreq / 2.0
-
-    # transition band width in normalizied frequency
-    width = width_hz / nyq_rate
-
-    # order and Kaiser parameter for the FIR filter.
-    N, beta = kaiserord(ripple_db, width)
-
-    if N % 2 == 0:
-        N = N + 1  # enforce odd number of taps
-
-    # create a FIR filter using firwin
-    if ftype.lower() == "lowpass":
-        if window.lower() == "kaiser":
-            taps = firwin(
-                N,
-                cutoff_hz,
-                window=("kaiser", beta),
-                pass_zero="lowpass",
-                fs=sfreq,
-            )
-        else:
-            taps = firwin(
-                N, cutoff_hz, window=window, pass_zero="lowpass", fs=sfreq
-            )
-    elif ftype.lower() == "highpass":
-        if window.lower() == "kaiser":
-            taps = firwin(
-                N,
-                cutoff_hz,
-                window=("kaiser", beta),
-                pass_zero="highpass",
-                fs=sfreq,
-            )
-        else:
-            taps = firwin(
-                N, cutoff_hz, window=window, pass_zero="highpass", fs=sfreq
-            )
-    elif ftype.lower() == "bandpass":
-        if window.lower() == "kaiser":
-            taps = firwin(
-                N,
-                cutoff_hz,
-                window=("kaiser", beta),
-                pass_zero="bandpass",
-                fs=sfreq,
-            )
-        else:
-            taps = firwin(
-                N, cutoff_hz, window=window, pass_zero="bandpass", fs=sfreq
-            )
-    elif ftype.lower() == "bandstop":
-        if window.lower() == "kaiser":
-            taps = firwin(
-                N,
-                cutoff_hz,
-                window=("kaiser", beta),
-                pass_zero="bandstop",
-                fs=sfreq,
-            )
-        else:
-            taps = firwin(
-                N, cutoff_hz, window=window, pass_zero="bandstop", fs=sfreq
-            )
-
-    return taps
-
-
-def _sins_test_data(
-    freq_list,
-    amplitude_list,
-    sampling_freq=250,
-    duration=1.5,
-    show_plot=False,
-):
-    """creat a noisy signal to test the filter
-
-    Parameters
-    ----------
-    freq_list : float, list
-
-    amplitude_list : float, list
-
-    sampling_freq : float, optional
-        sampling frequency, default is 250.0
-
-    duration : float, optional
-        signal duration, default is 1.5 seconds
-
-    Returns
-    -------
-    t,x : float
-        time and values of a noisy signal  
-
-    Examples
-    --------
-    >>> freq_list = [10.0, 25.0, 45.0]
-    >>> amplitude_list = [1.0, 0.2, 0.3]
-    >>> t, y = _sins_test_data(freq_list, amplitude_list)
-
-    """
-    assert len(freq_list) == len(amplitude_list)
-
-    t = np.arange(0.0, duration, 1 / sampling_freq)
-    x_noise = 0.1 * np.sin(2 * np.pi * 60 * t) + 0.2 * np.random.normal(
-        size=len(t)
-    )
-    # x = x_noise
-    x = 0.0
-    for i in range(len(freq_list)):
-        x += amplitude_list[i] * np.sin(2 * np.pi * freq_list[i] * t)
-
-    if show_plot:
-        fig, ax = plt.subplots(figsize=(18, 4))
-        ax.plot(t, x)
-
-    return t, x
-
-
 def fir_filter_dt(
     dt,
     col_names,
     ftype=None,
     cutoff_hz=None,
+    sfreq=None,
     width_hz=None,
     ripple_db=None,
     window=None,
-    sfreq=None,
 ):
 
     """apply FIRLS filtering to columns of dataframe-like synchronized discrete time series
@@ -693,9 +738,7 @@ def fir_filter_dt(
     ):
         pass
     else:
-        raise TypeError(
-            "dt must be pandas.DataFrame or structured numpy.ndarray"
-        )
+        raise TypeError("dt must be pandas.DataFrame or structured numpy.ndarray")
 
     filt_dt = dt.copy()
     for column in col_names:
@@ -707,9 +750,9 @@ def fir_filter_dt(
 
 def fir_filter_data(
     data,
+    ftype=None,
     cutoff_hz=None,
     sfreq=None,
-    ftype=None,
     width_hz=None,
     ripple_db=None,
     window=None,
@@ -751,66 +794,8 @@ def fir_filter_data(
     return filt_data
 
 
-def _apply_firwin_filter_data(data, taps):
-    """apply and phase compensate the FIRLS filtering to each column
-
-    Parameters
-    ----------
-    data : array
-
-    taps : ndarray
-        Coefficients of FIR filter.
-
-    Returns
-    -------
-    filtered_data : filtered data (same size as data)
-        filtered array.
-
-    """
-
-    # assert len(taps) % 2 == 1  # enforce odd number of taps
-
-    N = len(taps)
-
-    delay = int((len(taps) - 1) / 2)
-    a = 1.0
-
-    msg = f"""
-    applying linear phase delay compensated filter.
-    a: {a}, N: {N}, delay: {delay}
-    taps:
-    {taps}
-    """
-    data = np.asanyarray(data).astype("float64")
-
-    # add pads
-    yy = []
-    b = data[0:delay][::-1]
-    e = data[-delay:][::-1]
-    yy = np.append(b, data)
-    yy = np.append(yy, e)
-
-    # forward pass
-    filtered_data = lfilter(taps, a, yy)
-
-    # roll the phase shift by delay back to 0
-    filtered_data = np.roll(filtered_data, -delay)[delay:-delay]
-
-    if not len(data) == len(filtered_data):
-        raise ValueError(
-            f"filter I/O length mismatch: input={len(data)} output={len(filtered_data)}"
-        )
-
-    return filtered_data
-
-
 def filters_effect(
-    ftype=None,
-    cutoff_hz=None,
-    width_hz=None,
-    ripple_db=None,
-    window=None,
-    sfreq=None,
+    ftype=None, cutoff_hz=None, sfreq=None, width_hz=None, ripple_db=None, window=None,
 ):
 
     """
@@ -875,36 +860,44 @@ def filters_effect(
         y_freqs = [lo_hz, mid_hz, hi_hz]
         y1_freqs = [lo_hz, hi_hz]  # out-of-band signals to pass
 
+    _fparams = dict(
+        ftype=ftype,
+        cutoff_hz=cutoff_hz,
+        sfreq=sfreq,
+        width_hz=width_hz,
+        ripple_db=ripple_db,
+        window=window,
+    )
+
     # generate y, y1, and filter y
     y_amplitude_list = [1.0] * len(y_freqs)
     y1_amplitude_list = [1.0] * len(y1_freqs)
-    duration = max(1.5, 1 / lo_hz)  # seconds
+
+    # duration = 1/2 filter len + 3 cycles of low Hz + 1/2 filter len
+    taps = _design_firwin_filter(**_fparams)
+    duration = (3 * (1 / lo_hz)) + (len(taps) / sfreq)
 
     t, y = _sins_test_data(y_freqs, y_amplitude_list, sfreq, duration)
     t1, y1 = _sins_test_data(y1_freqs, y1_amplitude_list, sfreq, duration)
-    y_filt = fir_filter_data(
-        y, cutoff_hz, sfreq, ftype, width_hz, ripple_db, window
-    )
+    y_filt = fir_filter_data(y, **_fparams)  # apply the filter
 
     fig, ax = plt.subplots(figsize=(16, 4))
-
     ax.plot(t, y, ".-", color="c", linestyle="-", label="input")
     ax.plot(t, y1, ".-", color="b", linestyle="-", label="ideal output")
     ax.plot(
-        t,
-        y_filt,
-        ".-",
-        color="r",
-        linestyle="-",
-        label="%s filter output" % ftype,
+        t, y_filt, ".-", color="r", linestyle="-", label="%s filter output" % ftype,
     )
+
+    # format for the title
+    cutoff_hz_str = " ".join([f"{hz:.3f}" for hz in np.atleast_1d(cutoff_hz)])
     ax.set_title(
         (
-            f"{ftype} filter cutoff={cutoff_hz} Hz, transition width={width_hz} Hz, "
-            f"ripple={ripple_db}, dB window={window}"
+            f"{ftype} filter cutoff={cutoff_hz_str} Hz, transition width={width_hz:.3f} Hz, "
+            f"ripple={ripple_db:.3f}, dB window={window}"
         ),
         fontsize=20,
     )
     ax.set_xlabel("Time", fontsize=20)
     ax.legend(fontsize=16, loc="upper left", bbox_to_anchor=(1.05, 1.0))
+
     return fig, ax
