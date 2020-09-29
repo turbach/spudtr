@@ -73,7 +73,6 @@ deploy:
     script: bash ./ci/conda_upload.sh
     on:
       all_branches: true
-      condition: $PYV == "3.8"
 
   - provider: pypi
     skip_cleanup: true
