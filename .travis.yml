@@ -52,7 +52,7 @@ deploy:
     skip_cleanup: true
     script: pip install codecov && codecov
     on:
-      branch: master
+      branch: main
       condition: $PYV == "3.8"
 
   # homegrown replacement for pages provider
@@ -60,12 +60,12 @@ deploy:
     skip_cleanup: true
     script: bash ./ci/ghpages_upload.sh
     on:
-      branch: master   # for normal operation
+      branch: main   # for normal operation
       condition: $PYV == "3.8"
       # all_branches: true  # for testing deploy only
 
   # conda_upload.sh switches anaconda upload on $TRAVIS_BRANCH
-  #    master M.N.P or M.N.P.devX -> /pre-release
+  #    main M.N.P or M.N.P.devX -> /pre-release
   #    tagged vM.N.P -> /main
   #    else dry run, no conda upload
   - provider: script
@@ -81,6 +81,6 @@ deploy:
     password: $PYPI_TOKEN
     on:
       # only upload tagged vM.N.P github releases to PyPI
-      branch: master
+      branch: main
       tags: true
       condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ && $PYV == "3.8"

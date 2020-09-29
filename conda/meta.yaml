@@ -1,9 +1,5 @@
 {% set data = load_setup_py_data() %}
 
-# deprecated {% set version = "0.0.10.dev1" %} 
-# deprecated {% set py_pin = "3.6" %}  # old pins for mkpy and fitgrid
-# deprecated {% set np_pin = "1.16.4" %}
-
 package:
   name: spudtr
   version: {{ data.get('version') }}

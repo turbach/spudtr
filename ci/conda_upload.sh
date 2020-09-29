@@ -39,7 +39,7 @@ version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
 # just the numeric major.minor.patch portion of version, possibly empty
 mmp=`echo $version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
-# Are we refreshing master or building a release version according to
+# Are we refreshing main or building a release version according to
 # the convention that releases are tagged vMajor.Minor.Release?
 #
 # * if $version = $mmp then version is a strict numeric
@@ -57,7 +57,7 @@ label="dry-run"
 #if [[ "${version}" = "$mmp" ]]; then
 if [[ "${version}" =~ ^${mmp}(.dev[0-9]+){0,1}$ ]]; then
 
-    # commit to master uploads to /pre-release
+    # commit to dev uploads to /pre-release
     if [[ $TRAVIS_BRANCH = "dev" ]]; then
 	label="pre-release"
     fi
