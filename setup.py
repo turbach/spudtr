@@ -7,17 +7,6 @@ from spudtr import get_ver
 
 __version__ = get_ver()
 
-# enforce conda meta.yaml and __init__.py version are the same
-jinja_version = f'{{% set version = "{__version__}" %}}'
-meta_yaml_f = Path("./conda/meta.yaml")
-with open(meta_yaml_f) as f:
-    if not re.match(r"^" + jinja_version, f.read()):
-        fail_msg = (
-            "conda/meta.yaml must start with a jinja variable line exactly like this: "
-            f"{jinja_version}"
-        )
-        raise Exception(fail_msg)
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 

@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 # single source the python package version with a bit of error checking
-__version__ = "0.0.10.dev1"
+__version__ = "0.0.10.dev2"
 
 DATA_DIR = Path(__file__).parents[0] / "data"
 RESOURCES_DIR = Path(__file__).parents[0] / "resources"
@@ -73,6 +73,8 @@ def get_demo_df(filename, url=DATA_URL):
     # shortcut if previously downloaded
     if (DATA_DIR / filename).exists():
         return pd.read_feather(DATA_DIR / filename)
+    else:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # otherwise download
     print(f"downloading ./spudtr/data/{filename} from {url} ... please wait")

@@ -155,7 +155,7 @@ def categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
 
     # mne array: n-events x 3
     mne_events = np.stack(
-        [events_df["epoch_id"].to_numpy(), np.zeros(len(events_df)), dm_col_code,],
+        [events_df["epoch_id"].to_numpy(), np.zeros(len(events_df)), dm_col_code],
         axis=1,
     ).astype("int")
     # pdb.set_trace()
@@ -236,7 +236,7 @@ def spudtr_to_mne_epochs(
         epoch1 = epochs_df[montage.ch_names][epochs_df.epoch_id == epoch_i].to_numpy()
         epochs_data.append(epoch1.T)
     epochs = mne.EpochsArray(
-        epochs_data, info=info, tmin=tmin, events=mne_events, event_id=mne_event_ids,
+        epochs_data, info=info, tmin=tmin, events=mne_events, event_id=mne_event_ids
     )
 
     return epochs

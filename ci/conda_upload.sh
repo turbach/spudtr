@@ -58,7 +58,7 @@ label="dry-run"
 if [[ "${version}" =~ ^${mmp}(.dev[0-9]+){0,1}$ ]]; then
 
     # commit to master uploads to /pre-release
-    if [[ $TRAVIS_BRANCH = "master" ]]; then
+    if [[ $TRAVIS_BRANCH = "dev" ]]; then
 	label="pre-release"
     fi
 
