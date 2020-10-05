@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 
-# single source the python package version with a bit of error checking
+# single source the python package version
 __version__ = "0.0.10"
 
 DATA_DIR = Path(__file__).parents[0] / "data"
