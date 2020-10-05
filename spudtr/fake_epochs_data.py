@@ -6,7 +6,7 @@ from patsy import balanced, demo_data
 
 
 def _generate(
-    n_epochs, n_samples, n_categories, n_channels, time=None, epoch_id=None, seed=None,
+    n_epochs, n_samples, n_categories, n_channels, time=None, epoch_id=None, seed=None
 ):
     """Return Pandas DataFrame with fake EEG data, and a list of channels."""
 
@@ -59,7 +59,7 @@ def _get_df(n_a=2, n_b=3, n_epochs=4, n_streams=3):
     data = np.arange(n_obs * n_streams).reshape(n_streams, n_obs).T
 
     df = pd.concat(
-        [pd.DataFrame(arry) for arry in [epoch_id, time, factors, data]], axis=1,
+        [pd.DataFrame(arry) for arry in [epoch_id, time, factors, data]], axis=1
     )
     df.columns = ["epoch_id", "time", "a", "b", "x", "y", "z"]
     return df

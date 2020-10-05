@@ -68,13 +68,9 @@ def test_spudtr_to_mne_epochs():
     )
 
     epochs = mneutils.spudtr_to_mne_epochs(
-        epochs_df, **epoch_params, mne_events=mne_events, mne_event_ids=mne_event_ids,
+        epochs_df, **epoch_params, mne_events=mne_events, mne_event_ids=mne_event_ids
     )
-    assert epochs.event_id == {
-        "stim[cal]": 1,
-        "stim[standard]": 2,
-        "stim[target]": 3,
-    }
+    assert epochs.event_id == {"stim[cal]": 1, "stim[standard]": 2, "stim[target]": 3}
     assert epochs.ch_names == epoch_params["eeg_streams"]
 
     # 3. fail with event_id but no events
@@ -103,11 +99,7 @@ def test_categories2eventid():
 
     event_id_1_head = np.array([[0, 0, 3], [1, 0, 3], [2, 0, 3], [3, 0, 3], [4, 0, 3]])
 
-    assert mne_event_id == {
-        "stim[cal]": 1,
-        "stim[standard]": 2,
-        "stim[target]": 3,
-    }
+    assert mne_event_id == {"stim[cal]": 1, "stim[standard]": 2, "stim[target]": 3}
     assert np.array_equal(event_id_1_head, mne_events[0:5])
 
     # gold standard

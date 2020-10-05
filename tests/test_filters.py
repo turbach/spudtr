@@ -26,7 +26,7 @@ xfve = pytest.mark.xfail(strict=True, reason=ValueError)
 )
 def test_check_filter_params_obligatory(_ftype, _cutoff, _srate, _allow_defaults):
     filt_params = filters.check_filter_params(
-        ftype=_ftype, cutoff_hz=_cutoff, sfreq=_srate, allow_defaults=_allow_defaults,
+        ftype=_ftype, cutoff_hz=_cutoff, sfreq=_srate, allow_defaults=_allow_defaults
     )
 
 
@@ -166,7 +166,7 @@ def test_mfreqz():
         window=window,
     )
     _ = filters._mfreqz(
-        b=taps2, a=1, cutoff_hz=cutoff_hz, sfreq=sfreq, width_hz=width_hz,
+        b=taps2, a=1, cutoff_hz=cutoff_hz, sfreq=sfreq, width_hz=width_hz
     )
 
 
@@ -305,12 +305,7 @@ def test__trans_bwidth_ripple2(_ft, _cthz, _win, _ripdb):
 
 @pytest.mark.parametrize(
     "_ftype,_cutoff_hz",
-    [
-        ["lowpass", 20],
-        ["highpass", 20],
-        ["bandpass", [22, 40]],
-        ["bandstop", [18, 35]],
-    ],
+    [["lowpass", 20], ["highpass", 20], ["bandpass", [22, 40]], ["bandstop", [18, 35]]],
 )
 def test_filters_effect(_ftype, _cutoff_hz):
 

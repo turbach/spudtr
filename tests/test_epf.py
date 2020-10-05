@@ -1,4 +1,5 @@
-import pytest
+import numpy as np
+import pandas as pd
 
 # local HDF5 files to be deprecated in v0.0.11 with _hdf_read_epochs
 from spudtr import DATA_DIR  # , P3_F, P5_F, WR_F
@@ -7,11 +8,9 @@ from spudtr import DATA_DIR  # , P3_F, P5_F, WR_F
 from spudtr import get_demo_df, WR_100_FEATHER, P5_1500_FEATHER
 from spudtr import epf
 import spudtr.fake_epochs_data as fake_data
-
 from spudtr.epf import EPOCH_ID, TIME
 
-import numpy as np
-import pandas as pd
+import pytest
 
 # ------------------------------------------------------------
 # test epochs Zenodo https://doi.org/10.5281/zenodo.3968485
