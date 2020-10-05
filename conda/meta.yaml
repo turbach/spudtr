@@ -24,7 +24,7 @@ requirements:
     - numpy-base
     - scipy
     - pandas >=1.0
-    - pyarrow >=1.0
+    - pyarrow >=1.0,!=1.0.1
     - matplotlib
     - bottleneck
     - pytables
