@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import patsy
 import mne
+from mne.epochs import EpochsArray
 from collections import OrderedDict
 
 from spudtr.epf import _epochs_QC
@@ -22,7 +23,8 @@ def _streams2mne_digmont(eeg_streams, eeg_locations_f=EEG_LOCATIONS_F):
 
     df = eeg_locs.set_index("stream").loc[eeg_streams, :].reset_index()
     ch_names = df.stream.tolist()
-    pos = df[["x", "y", "z"]].values
+    # pos = df[["x", "y", "z"]].values
+    pos = 0.095 * df[["x", "y", "z"]].values
     dig_ch_pos = OrderedDict(zip(ch_names, pos))
     montage = mne.channels.make_dig_montage(ch_pos=dig_ch_pos, coord_frame="head")
     return montage
@@ -151,7 +153,7 @@ def categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
     assert dm_col_code.max() == dm.shape[1]
 
     # 1-base mne event code dict with column labels from patsy
-    mne_event_id = dict([(dm_col, i + 1) for i, dm_col in enumerate(dm_cols)])
+    mne_event_id1 = dict([(dm_col, i + 1) for i, dm_col in enumerate(dm_cols)])
 
     # mne array: n-events x 3
     mne_events = np.stack(
@@ -159,30 +161,85 @@ def categories2eventid(epochs_df, categories, epoch_id, time, time_stamp):
         axis=1,
     ).astype("int")
     # pdb.set_trace()
+    real_event_id = np.unique(mne_events[:, 2])
+    mne_event_id = {
+        key: value for key, value in mne_event_id1.items() if value in real_event_id
+    }
     return mne_event_id, mne_events
 
 
-def spudtr_to_mne_epochs(
-    epochs_df,
+class EpochsSpudtr(EpochsArray):
+    def __init__(
+        self,
+        input_fname,
+        eeg_streams,
+        categories,
+        time_stamp,
+        epoch_id=None,
+        time=None,
+        time_unit=None,
+    ):
+
+        epochs_df = pd.read_feather(input_fname)
+        # check dataframe format
+        _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
+
+        mne_event_ids, mne_events = categories2eventid(
+            epochs_df, categories, epoch_id, time, time_stamp
+        )
+
+        # no point to an event ids dict without the actual events
+        if mne_event_ids is not None and mne_events is None:
+            raise ValueError("mne_events must also be specified to use mne_event_ids")
+
+        # compute sfreq samples / second from the time-stamps. _epochs_QC should
+        # ensure regular sampling interval but check anyway ...
+        timestamps = epochs_df[time].unique()
+        sampling_interval = list(set((timestamps - np.roll(timestamps, 1))[1:]))
+        assert len(sampling_interval) == 1  # should be guaranteed by _epochs_QC
+        sfreq = 1.0 / (sampling_interval[0] * time_unit)  # samples per second
+
+        montage = _streams2mne_digmont(eeg_streams)
+        info = mne.create_info(montage.ch_names, sfreq=sfreq, ch_types="eeg")
+        info.set_montage(montage)  # for mne >0.19
+
+        tmin = epochs_df[time].min() * time_unit
+        epochs_data = []
+        # import pdb; pdb.set_trace()
+        for epoch_i in epochs_df[epoch_id].unique():
+            epoch1 = epochs_df[montage.ch_names][
+                epochs_df.epoch_id == epoch_i
+            ].to_numpy()
+            epochs_data.append(epoch1.T)
+        super().__init__(
+            epochs_data, info=info, tmin=tmin, events=mne_events, event_id=mne_event_ids
+        )
+
+
+# API
+def read_spudtr_epochs(
+    input_fname,
     eeg_streams,
+    categories,
+    time_stamp,
     epoch_id=None,
     time=None,
     time_unit=None,
-    mne_events=None,
-    mne_event_ids=None,
 ):
-    """construct mne.Epochs from a spudtr format epochs pandas.Dataframe
-    
-    Parameters
-    ----------
-    epochs_df : pandas.DataFrame
-        spudtr format epochs in rows (epoch x time stamp) and columns
-        (categories ... data streams). Epoch indices must be unique, time stamps are
-        integers, the same in each epoch. Categories are experimental variables,
-        string labels are allowed. Data stream columns hold the EEG (or other) data. 
+
+    """Parameters
+    ------------
+    convert spudtr format epochs data to MNE Epochs
+    input_fname : file name of spudtr format epochs data. 
 
     eeg_streams : list of str
         column names of the data streams
+
+    categories : str or iterable of str
+        The column name(s) of the categorical variables.
+
+    time_stamp : int The time stamp in the epoch to look up the
+        categorical variable values, e.g., ``0``
 
     epoch_id : str
         name of the epoch index
@@ -194,49 +251,12 @@ def spudtr_to_mne_epochs(
         time stamp unit in seconds, e.g., 0.001 for milliseconds, 1.0
         for seconds
 
-    mne_events : np.array of int, shape=(n, 3), optional
-        standard MNE event array: first column is the 0-base row index
-        of the event in epochs_df, second column is all 0's (legacy,
-        not used), third column is the integer event code at that
-        row. Negative event codes are unsafe.
-
-    mne_event_ids : dict, optional
-        keys and values are 1-1, keys string labels of the integer event codes
-
-    
     Returns
     -------
     epochs : mne.Epochs
 
     """
 
-    # check dataframe format
-    _epochs_QC(epochs_df, eeg_streams, epoch_id=epoch_id, time=time)
-
-    # no point to an event ids dict without the actual events
-    if mne_event_ids is not None and mne_events is None:
-        raise ValueError("mne_events must also be specified to use mne_event_ids")
-
-    # compute sfreq samples / second from the time-stamps. _epochs_QC should
-    # ensure regular sampling interval but check anyway ...
-    timestamps = epochs_df[time].unique()
-    sampling_interval = list(set((timestamps - np.roll(timestamps, 1))[1:]))
-    assert len(sampling_interval) == 1  # should be guaranteed by _epochs_QC
-    sfreq = 1.0 / (sampling_interval[0] * time_unit)  # samples per second
-
-    montage = _streams2mne_digmont(eeg_streams)
-    info = mne.create_info(montage.ch_names, sfreq=sfreq, ch_types="eeg")
-    info.set_montage(montage)  # for mne >0.19
-
-    tmin = epochs_df[time].min() * time_unit
-    epochs_data = []
-    # import pdb; pdb.set_trace()
-    for epoch_i in epochs_df[epoch_id].unique():
-        # epoch1 = epochs_df[info["ch_names"]][
-        epoch1 = epochs_df[montage.ch_names][epochs_df.epoch_id == epoch_i].to_numpy()
-        epochs_data.append(epoch1.T)
-    epochs = mne.EpochsArray(
-        epochs_data, info=info, tmin=tmin, events=mne_events, event_id=mne_event_ids
+    return EpochsSpudtr(
+        input_fname, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
     )
-
-    return epochs
