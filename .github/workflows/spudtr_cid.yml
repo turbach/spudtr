@@ -100,7 +100,7 @@ jobs:
         run: |
           conda install -q anaconda
           conda convert -p osx-64 -p win-64 $TARBALL -o $CONDA_BLD_PATH
-          anaconda upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 --token "$ANACONDA_TOKEN" --label $CONDA_LABEL --skip-existing
+          anaconda -t "$ANACONDA_TOKEN" upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 -l $CONDA_LABEL --skip-existing
 
       # ensure docs build
       - name: make sphinx docs
