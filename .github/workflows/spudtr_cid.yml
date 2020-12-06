@@ -61,8 +61,8 @@ jobs:
           PKG_VERSION=`echo $TARBALL | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
           PKG_MNP=`echo $PKG_VERSION | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
-          # if on branch dev with package version M.N.P.devX, set deploy-type "pre-release" 
-          if [[ $GITHUB_REF =~ ^refs/heads/dev$ && $PKG_VERSION =~ ^([0-9]+\.){3}dev[0-9]+$ ]]; then DEPLOY_TYPE="pre-release"; fi
+          # if on branch dev with package version M.N.P.devX or M.N.P, set deploy-type "pre-release" 
+          if [[ $GITHUB_REF =~ ^refs/heads/dev$ && $PKG_VERSION =~ ^([0-9]+\.){2}[0-9]+(\.dev[0-9]+){0,1}$ ]]; then DEPLOY_TYPE="pre-release"; fi
 
           # if on tag vM.N.P with package version M.N.P, set deploy-type "main" 
           if [[ $GITHUB_REF =~ ^refs/tags/v([0-9]+\.){2}[0-9]+$ && $PKG_VERSION == $PKG_MNP ]]; then DEPLOY_TYPE="main"; fi
