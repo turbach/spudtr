@@ -9,7 +9,7 @@
 # 'main'
 
 name: spudtr-cid
-on: [push]
+on: [push, pull_request, release]
 
 env:
   PACKAGE_NAME: spudtr
@@ -128,7 +128,7 @@ jobs:
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
-      # Python packaging
+      # PyPI uploads permanently burns version strings, so run last
       # https://packaging.python.org/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows
       - name: build python package sdist
         if: ${{ matrix.py_ver == '3.8' }}
