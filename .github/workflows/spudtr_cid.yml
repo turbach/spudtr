@@ -12,8 +12,8 @@ name: spudtr-cid
 on:
   push:
   pull_request:
-  release:
-    types: [published]
+  # release:
+  #  types: [published]
 
 env:
   PACKAGE_NAME: spudtr
