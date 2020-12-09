@@ -58,7 +58,10 @@ jobs:
       # python package
       - name: build python package sdist
         if: ${{ matrix.py_ver == '3.8' }}
-        run: conda activate && python setup.py sdist
+        run: | 
+          conda activate
+          python setup.py sdist
+          ls -R dist/*
 
       - name: deploy to test.pypi.org
         # if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'pre-release' }}
@@ -66,12 +69,13 @@ jobs:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
         run: |
           conda activate && conda install twine
+          ls -R 
           twine upload \
-          --repository-url https://test.pypi.org/legacy/ \
-          -u __token__ \
-          -p "${TEST_PYPI_TOKEN}" \
-          --skip-existing \
-          dist/*
+            --repository-url https://test.pypi.org/legacy/ \
+            -u __token__ \
+            -p "$TEST_PYPI_TOKEN" \
+            --skip-existing \
+            dist/*
 
       # ============================================================
     
