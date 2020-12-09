@@ -53,32 +53,6 @@ jobs:
           conda shell.bash hook >> ~/.bash_profile
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
 
-      # ============================================================
-      # ------------------------------------------------------------
-      # python package
-      - name: build python package sdist
-        if: ${{ matrix.py_ver == '3.8' }}
-        run: | 
-          python setup.py sdist
-          ls -R dist/*
-
-      - name: deploy to test.pypi.org
-        # if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'pre-release' }}
-        if: ${{ matrix.py_ver == '3.8' }}
-        env:
-          TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
-        run: |
-          conda install twine
-          ls -R 
-          twine upload \
-            --repository-url https://test.pypi.org/legacy/ \
-            -u __token__ \
-            -p "$TEST_PYPI_TOKEN" \
-            --skip-existing \
-            dist/*
-
-      # ============================================================
-    
       - name: build conda package tarball
         id: conda-bld
         run: |
@@ -102,7 +76,7 @@ jobs:
           # black --check --verbose .
           # pytest --cov=$PACKAGE_NAME 
 
-
+      # ------------------------------------------------------------
       # DEPLOY_TYPE selects conda, python package, and docs uploads
       - name: set DEPLOY_TYPE=<pre-release|main|cid_test>
         run: |
@@ -142,24 +116,20 @@ jobs:
           conda activate env_$PY_VER
           printenv | sort
 
-      # Note: all python versions deploy to Anaconda Cloud
+      # ------------------------------------------------------------
+      # deploy conda py3X packages
       - name: deploy conda packages
-        # if: ${{ env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release' }}
-        if: ${{ env.DEPLOY_TYPE == 'cid_test' }}
+        if: ${{ env.DEPLOY_TYPE == 'pre-release' || env.DEPLOY_TYPE == 'main' }}
         env:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
-
         run: |
           conda install -q anaconda
           conda convert -p osx-64 -p win-64 $TARBALL -o $CONDA_BLD_PATH
-          anaconda -t "$ANACONDA_TOKEN" upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 -l $DEPLOY_TYPE --skip-existing
-
-      # ------------------------------------------------------------
-      # deploy codecov
-      - name: deploy codecov
-        if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
-        run: |
-          conda install -q codecov && codecov
+          anaconda \
+            -t "$ANACONDA_TOKEN" upload \
+            $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 \
+            -l $DEPLOY_TYPE \
+            --skip-existing
 
       # ------------------------------------------------------------
       # sphinx docs
@@ -171,6 +141,8 @@ jobs:
           conda install -q pandoc -c conda-forge
           make -C docs html
 
+      # ============================================================
+    
       # - name: deploy sphinx docs to gh-pages
       #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
       #   uses: peaceiris/actions-gh-pages@v3
@@ -181,16 +153,41 @@ jobs:
       #     enable_jekyll: false  # enforce current default, as in touch .jekyll
       #     # TODO??? destination_dir: ... switch to segregate pre-release and main doc versions
 
-      # - name: deploy to test.pypi.org
-      #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'pre-release' }}
-      #   uses: pypa/gh-action-pypi-publish@master
-      #   with:
-      #     password: ${{ secrets.test_pypi_token }}
-      #     repository_url: https://test.pypi.org/legacy/  # trailing slash is required
+      # ------------------------------------------------------------
+      # codecov
+      - name: deploy codecov
+        if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
+        run: |
+          conda install -q codecov && codecov
 
-      # run PyPI upload last or risk burning version number
-      # - name: deploy to pypi.org main  deploys python package to pypi.org
-      #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
-      #   uses: pypa/gh-action-pypi-publish@master
-      #   with:
-      #     password: ${{ secrets.pypi_token }}
+      # ------------------------------------------------------------
+      # deploy python package ... trailing / on repos is required
+      - name: build python package sdist
+        if: ${{ matrix.py_ver == '3.8' }}
+        run: |
+          conda install twine
+          python setup.py sdist
+
+      - name: deploy pre-release sdist
+        if: ${{ matrix.py_ver == '3.8' && ( env.DEPLOY_TYPE == 'pre-release'}
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
+        run: >-
+          twine upload
+            --repository-url https://test.pypi.org/legacy/
+            -u __token__
+            -p "$TEST_PYPI_TOKEN"
+            --skip-existing
+            dist/*
+
+        # run last to avoid burning version strings on PyPI
+        # - name: deploy main sdist
+        #   if: ${{ matrix.py_ver == '3.8' && ( env.DEPLOY_TYPE == 'main'}
+        #   env:
+        #     PYPI_TOKEN: ${{ secrets.pypi_token }}
+        #   run: >-
+        #     twine upload
+        #       --repository-url https://pypi.org/
+        #       -u __token__
+        #       -p "$PYPI_TOKEN"
+        #       dist/*
