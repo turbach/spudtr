@@ -65,7 +65,7 @@ jobs:
           conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify
           conda info -a
-          export GIT_ABBREV_COMMIT=g${GITHUB_SHA:0:8}  # meta.yaml builds this into pkg name
+          export GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}  # meta.yaml builds this into pkg name
           conda build --python=$PY_VER -c defaults -c conda-forge conda
           tarball=$(conda build conda --output)
           echo "TARBALL=$tarball" >> $GITHUB_ENV
@@ -138,8 +138,17 @@ jobs:
           conda activate env_$PY_VER
           printenv | sort
 
-      # deploy conda packages 
-      - name: convert and deploy pre-release or main conda packages
+      - name: pre-deploy package installs
+        run: |
+          conda activate env_$PY_VER
+          conda install -q \
+            anaconda \
+            codecov \
+            sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" pandoc \
+            -c defaults -c conda-forge
+
+
+      - name: deploy conda packages
         # set deploy-type == 'ci-test' to upload any push to label 'ci-test' for testing
         # if: ${{ steps.conda-bld.outputs.deploy-type == 'main' || steps.conda-bld.outputs.deploy-type == 'pre-release'}}
         if: ${{ env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release'}}
@@ -150,7 +159,8 @@ jobs:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
 
         run: |
-          conda install -q anaconda
+          conda activate env_$PY_VER
+          # conda install -q anaconda
           conda convert -p osx-64 -p win-64 $TARBALL -o $CONDA_BLD_PATH
           # anaconda -t "$ANACONDA_TOKEN" upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 -l $CONDA_LABEL --skip-existing
           anaconda -t "$ANACONDA_TOKEN" upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 -l $DEPLOY_TYPE --skip-existing
@@ -160,8 +170,8 @@ jobs:
       - name: codecov
         if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
         run: |
-          conda activate env_$PY_VER
-          conda install -q codecov && codecov
+          conda activate env_$PY_VER && codecov
+          # conda install -q codecov && codecov
 
       # ------------------------------------------------------------
       # make and deploy docs
@@ -169,8 +179,8 @@ jobs:
         if: ${{ matrix.py_ver == '3.8' }}
         run: |
           conda activate env_$PY_VER
-          conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
-          conda install -q pandoc -c conda-forge
+          # conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
+          # conda install -q pandoc -c conda-forge
           make -C docs html
 
       # - name: tagged release deploys docs to gh-pages
