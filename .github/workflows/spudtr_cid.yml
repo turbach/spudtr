@@ -169,7 +169,7 @@ jobs:
           python setup.py sdist
 
       - name: deploy pre-release sdist
-        if: ${{ matrix.py_ver == '3.8' && ( env.DEPLOY_TYPE == 'pre-release'}
+        if: ${{ matrix.py_ver == '3.8' && ( env.DEPLOY_TYPE == 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
         run: >-
