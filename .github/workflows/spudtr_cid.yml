@@ -140,9 +140,9 @@ jobs:
           conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
           conda install -q pandoc -c conda-forge
           make -C docs html
+          touch docs/build/html/.nojekyll
 
       # ============================================================
-    
       # - name: deploy sphinx docs to gh-pages
       #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
       #   uses: peaceiris/actions-gh-pages@v3
@@ -152,6 +152,21 @@ jobs:
       #     force_orphan: true
       #     enable_jekyll: false  # enforce current default, as in touch .jekyll
       #     # TODO??? destination_dir: ... switch to segregate pre-release and main doc versions
+
+      - name: deploy sphinx docs
+        env:
+        if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'main' }}
+        run: |
+          # copy fresh docs to working dir
+          # tmp_docs=$/tmp/work/${TRAVIS_BRANCH}-$(date +%F-%N)
+          # cp -rT $HOME/docs/build/html $TMP_DOCS_HTML   # T option else dotfiles .nojeckyll left behind
+          # cd $TMP_DOCS_HTML
+          cd docs/build/html
+          ls -lR 
+          git checkout --orphan gh-pages
+          git add -A
+          git commit -a -m "spudtr_cid docs bot'
+          git push -u origin gh-pages --force
 
       # ------------------------------------------------------------
       # codecov
