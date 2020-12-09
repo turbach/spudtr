@@ -53,12 +53,33 @@ jobs:
           conda shell.bash hook >> ~/.bash_profile
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
 
+      # ============================================================
+      # ------------------------------------------------------------
+      # python package
+      - name: build python package sdist
+        if: ${{ matrix.py_ver == '3.8' }}
+        run: conda activate && python setup.py sdist
+
+      - name: deploy to test.pypi.org
+        # if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'pre-release' }}
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
+        run:
+          # conda install twine
+          echo twine upload \
+            --repository-url https://test.pypi.org/legacy/  \ # trailing slash is required
+            -u __token__ \
+            -p "${TEST_PYPI_TOKEN}" \
+            --skip-existing 
+      # ============================================================
+    
       - name: build conda package tarball
         id: conda-bld
         run: |
           conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify
           conda info -a
+
           export GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}  # meta.yaml builds this into pkg name
           conda build --python=$PY_VER -c defaults -c conda-forge conda
           tarball=$(conda build conda --output)
@@ -101,7 +122,7 @@ jobs:
           fi
 
           # else set to default deploy type
-          deploy_type=${deploy_type:cid_test}
+          deploy_type=${deploy_type:-cid_test}
 
           #  update env for deployment
           echo "DEPLOY_TYPE=${deploy_type}" >> $GITHUB_ENV
@@ -115,14 +136,11 @@ jobs:
           conda activate env_$PY_VER
           printenv | sort
 
+      # Note: all python versions deploy to Anaconda Cloud
       - name: deploy conda packages
-        # twiddle the deploy type and condition
         # if: ${{ env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release' }}
         if: ${{ env.DEPLOY_TYPE == 'cid_test' }}
         env:
-          # channel label should be pre-release, main, or ci-test (default)
-          # CONDA_LABEL: ${{ steps.conda-bld.outputs.deploy-type }}
-          # TARBALL: ${{ steps.conda-bld.outputs.conda-tarball }}
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
 
         run: |
@@ -138,7 +156,7 @@ jobs:
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
-      # build and deploy docs
+      # sphinx docs
       - name: build sphinx docs
         if: ${{ matrix.py_ver == '3.8' }}
         run: |
@@ -147,7 +165,7 @@ jobs:
           conda install -q pandoc -c conda-forge
           make -C docs html
 
-      # - name: tagged release deploys docs to gh-pages
+      # - name: deploy sphinx docs to gh-pages
       #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
       #   uses: peaceiris/actions-gh-pages@v3
       #   with:
@@ -156,12 +174,6 @@ jobs:
       #     force_orphan: true
       #     enable_jekyll: false  # enforce current default, as in touch .jekyll
       #     # TODO??? destination_dir: ... switch to segregate pre-release and main doc versions
-
-      # ------------------------------------------------------------
-      # build and deploy python package
-      - name: build python package sdist
-        if: ${{ matrix.py_ver == '3.8' }}
-        run: conda activate env_$PY_VER && python setup.py sdist
 
       # - name: deploy to test.pypi.org
       #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'pre-release' }}
