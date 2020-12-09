@@ -1,19 +1,23 @@
 # spudt continous integration and deployment workflow
-# 
-# CI: 
-#   - build and pytest the conda package for python 3.6, 3.7, 3.8
+#
+# CI: parallel jobs for Python 3.6, 3.7, 3.8
+#
+#   - conda build, install, and pytest the conda package
 #   - build python package sdist
 #   - build sphinx docs
-# 
-# Deployment switches on pre-release vs. main (tagged stable release)
 #
-#   dev branch package versions M.N.P.devX deploys
-#     - oys conda package to Anaconda Cloud label pre-release
-#     - dupload python package sdist to test.pypi.org
-#   release tagged vM.N.P with package version M.N.P
-#     - upload conda package to Anaconda Cloud label main
-#     - upload python package sdist to pypi.org
+# Deployment:
 #
+#   Development: package versions M.N.P.devX on dev branch deploy 
+#     - conda package py36, py37, py38 to Anaconda Cloud label pre-release
+#     - python package sdist to test.pypi.org
+#
+#   Stable releases: package versions M.N.P on release tag vM.N.P deploy
+#     - codecov (py38 only) 
+#     - sphinx docs to gh-pages
+#     - conda package to Anaconda Cloud label pre-release (cap M.N.P.devX sequence)
+#     - conda package to Anaconda Cloud label main
+#     - python package sdist to pypi.org
 
 name: spudtr-cid
 on:
@@ -154,7 +158,12 @@ jobs:
         run: |
           cd docs/build/html
           ls -lR 
+          
           git checkout --orphan gh-pages
+          # git config --local user.email "${{ github.event.head_commit.author.email }}"
+          # git config --local user.name "${{ github.event.head_commit.author.name }}"
+          git config --local user.email spudtr_cid@ghpages.actions.bot
+          git config --local user.name spudtr_ci_bot
           git add -A
           git ls-files
           git commit -a -m "spudtr_cid docs bot"
