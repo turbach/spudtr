@@ -64,11 +64,12 @@ jobs:
         # if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
-        run: >-
-          echo twine upload
-          --repository-url https://test.pypi.org/legacy/
-          -u __token__
-          -p "${TEST_PYPI_TOKEN}"
+        run: |
+          conda activate && conda install twine
+          twine upload \
+          --repository-url https://test.pypi.org/legacy/ \
+          -u __token__ \
+          -p "${TEST_PYPI_TOKEN}" \
           --skip-existing
 
       # ============================================================
