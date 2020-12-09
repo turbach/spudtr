@@ -1,13 +1,20 @@
-# The conda-bld step sets the action deploy-type output
+# spudt continous integration and deployment workflow
+# 
+# CI: 
+#   - build and pytest the conda package
+#   - build sdist
+#   - build sphinx docs
+# 
+# Deployment:
+#   dev branch package versions M.N.P.devX:
+#     - deploys conda package to Anaconda Cloud label pre-release
+#     - upload python package sdist to test.pypi.org
+#   release tagged vM.N.P with package version M.N.P
+#     - upload conda package to Anaconda Cloud label main
+#     - upload python package sdist to pypi.org
 #
-#   "pre-release" if package version is M.N.P.devX and branch is dev
-#   "main" if package version is M.N.P and tag is vM.N.P
-#
-# The conda package uploads to the corresponding channel label if
-# deploy-type == 'pre-release' or 'main' (and this can be relaxed for
-# testing). The gh-pages and PyPI package upload if deploy=type ==
-# 'main'
 
+vX to conda label pre-release and test.pypi
 name: spudtr-cid
 on:
   # any pushed branch, exclude pushed tags to prevent double runs on tagged release
@@ -142,17 +149,6 @@ jobs:
           make -C docs html
           touch docs/build/html/.nojekyll
 
-      # ============================================================
-      # - name: deploy sphinx docs to gh-pages
-      #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: docs/build/html
-      #     force_orphan: true
-      #     enable_jekyll: false  # enforce current default, as in touch .jekyll
-      #     # TODO??? destination_dir: ... switch to segregate pre-release and main doc versions
-
       - name: deploy sphinx docs
         if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'main' }}
         run: |
@@ -160,7 +156,8 @@ jobs:
           ls -lR 
           git checkout --orphan gh-pages
           git add -A
-          git commit -a -m "spudtr_cid docs bot'
+          git ls-files
+          git commit -a -m "spudtr_cid docs bot"
           git push -u origin gh-pages --force
 
       # ------------------------------------------------------------
