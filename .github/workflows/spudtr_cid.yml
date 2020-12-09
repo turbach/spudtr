@@ -154,13 +154,8 @@ jobs:
       #     # TODO??? destination_dir: ... switch to segregate pre-release and main doc versions
 
       - name: deploy sphinx docs
-        env:
         if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'main' }}
         run: |
-          # copy fresh docs to working dir
-          # tmp_docs=$/tmp/work/${TRAVIS_BRANCH}-$(date +%F-%N)
-          # cp -rT $HOME/docs/build/html $TMP_DOCS_HTML   # T option else dotfiles .nojeckyll left behind
-          # cd $TMP_DOCS_HTML
           cd docs/build/html
           ls -lR 
           git checkout --orphan gh-pages
