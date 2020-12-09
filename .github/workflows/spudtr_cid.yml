@@ -151,22 +151,19 @@ jobs:
           conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
           conda install -q pandoc -c conda-forge
           make -C docs html
-          touch docs/build/html/.nojekyll
 
       - name: deploy sphinx docs
         if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'main' }}
         run: |
           cd docs/build/html
-          ls -lR 
-          
+          touch .nojekyll
+          git init 
+          git config --local user.email spudtr_cid@users.noreply.github.com
+          git config --local user.name spudtr_cid
           git checkout --orphan gh-pages
-          # git config --local user.email "${{ github.event.head_commit.author.email }}"
-          # git config --local user.name "${{ github.event.head_commit.author.name }}"
-          git config --local user.email spudtr_cid@ghpages.actions.bot
-          git config --local user.name spudtr_ci_bot
           git add -A
           git ls-files
-          git commit -a -m "spudtr_cid docs bot"
+          git commit -a -m "spudtr CID workflow docs update"
           git push -u origin gh-pages --force
 
       # ------------------------------------------------------------
