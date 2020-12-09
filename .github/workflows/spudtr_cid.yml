@@ -89,8 +89,8 @@ jobs:
 
       - name: conda install and pytest
         run: |
-          conda activate env_$PY_VER
           conda create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c file://$CONDA_BLD_PATH -c defaults -c conda-forge
+          conda activate env_$PY_VER
           conda install -q black pytest pytest-cov
           conda list
           lscpu
