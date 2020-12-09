@@ -22,7 +22,6 @@ env:
   PACKAGE_NAME: spudtr
   SPHINX_DOCS_PATH: $HOME/docs
   SPHIX_DOCS_HTML: $HOME/docs/build/html
-  # DEPLOY_TYPE: "cid_test"  # default conda channel label
 
 defaults:
   run:
@@ -39,11 +38,6 @@ jobs:
     env:
       PY_VER: ${{ matrix.py_ver }}
       CONDA_BLD_PATH: /tmp/ci_conda_bld
-
-    # outputs:
-    #   # ci-test, pre-release, or main
-    #   deploy-type: ${{ steps.conda-bld.outputs.deploy-type }}
-    #   conda-tarball: ${{ steps.conda-bld.outputs.conda-tarball }}
 
     steps:
 
@@ -70,23 +64,6 @@ jobs:
           tarball=$(conda build conda --output)
           echo "TARBALL=$tarball" >> $GITHUB_ENV
 
-          # full version string and M.N.P substring (may be empty)
-          # PKG_VERSION=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
-          # PKG_MNP=`echo $PKG_VERSION | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
-
-          # if on branch dev with package version M.N.P.devX or M.N.P, set deploy-type "pre-release" 
-          # if [[ $GITHUB_REF =~ ^refs/heads/dev$ && $PKG_VERSION =~ ^([0-9]+\.){2}[0-9]+(\.dev[0-9]+){0,1}$ ]]; then DEPLOY_TYPE="pre-release"; fi
-
-          # if on tag vM.N.P with package version M.N.P, set deploy-type "main" 
-          # if [[ $GITHUB_REF =~ ^refs/tags/v([0-9]+\.){2}[0-9]+$ && $PKG_VERSION == $PKG_MNP ]]; then DEPLOY_TYPE="main"; fi
-
-          # else fall back deploy-type is default $DEPLOY_TYPE="ci-test"
-          # echo "::set-output name=deploy-type::$DEPLOY_TYPE"
-
-          # capture conda tarball and build path as croot 
-          # echo "::set-output name=conda-tarball::$TARBALL"
-          # echo "::set-output name=bld_path::$(conda config --show croot | cut -d' ' -f2)"
-
       - name: conda install and pytest
         run: |
           conda create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c file://$CONDA_BLD_PATH -c defaults -c conda-forge
@@ -103,8 +80,8 @@ jobs:
       - name: set DEPLOY_TYPE=<pre-release|main|cid_test>
         run: |
           # extract version string from the conda package tarball
-          PKG_VERSION=`echo $TARBALL | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
-          PKG_MNP=`echo $PKG_VERSION | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
+          pkg_version=`echo $TARBALL | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
+          pkg_mnp=`echo $pkg_version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
           # pre-release if package version M.N.P.dev on dev branch
           if [[ \
@@ -118,19 +95,19 @@ jobs:
           if [[ \
             $GITHUB_REF =~ refs/tag/v[0-9]+\.[0-9]+\.[0-9] && \
             $TARBALL =~ $PACKAGE_NAME-([0-9]+\.){2}[0-9]+-${PY_VER} && \
-            $PKG_VERSION == $PKG_MNP \
+            $pkg_version == $pkg_mnp \
           ]]; then \
             deploy_type="main"; \
           fi
 
-          # else unset deploy_type defaults to cid_test
-          deploy_type=${deploy_type:-cid_test}
+          # else set to default deploy type
+          deploy_type=${deploy_type:cid_test}
 
-          # update runner env for deploy stage
-          echo "DEPLOY_TYPE=${deploy_type:-cid_test}" >> $GITHUB_ENV
+          #  update env for deployment
+          echo "DEPLOY_TYPE=${deploy_type}" >> $GITHUB_ENV
 
           # debugging
-          echo  deploy type: $deploy_type $PACKAGE_NAME $TARBALL $PKG_VERSION $PKG_MNP
+          echo  deploy type: $deploy_type $PACKAGE_NAME $TARBALL $pkg_version $pkg_mnp
 
       # debugging 
       - name: env check
@@ -138,20 +115,10 @@ jobs:
           conda activate env_$PY_VER
           printenv | sort
 
-      - name: pre-deploy package installs
-        run: |
-          conda activate env_$PY_VER
-          conda install -q \
-            anaconda \
-            codecov \
-            sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" pandoc \
-            -c defaults -c conda-forge
-
-
       - name: deploy conda packages
-        # set deploy-type == 'ci-test' to upload any push to label 'ci-test' for testing
-        # if: ${{ steps.conda-bld.outputs.deploy-type == 'main' || steps.conda-bld.outputs.deploy-type == 'pre-release'}}
-        if: ${{ env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release'}}
+        # twiddle the deploy type and condition
+        # if: ${{ env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release' }}
+        if: ${{ env.DEPLOY_TYPE == 'cid_test' }}
         env:
           # channel label should be pre-release, main, or ci-test (default)
           # CONDA_LABEL: ${{ steps.conda-bld.outputs.deploy-type }}
@@ -159,32 +126,29 @@ jobs:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
 
         run: |
-          conda activate env_$PY_VER
-          # conda install -q anaconda
+          conda install -q anaconda
           conda convert -p osx-64 -p win-64 $TARBALL -o $CONDA_BLD_PATH
-          # anaconda -t "$ANACONDA_TOKEN" upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 -l $CONDA_LABEL --skip-existing
           anaconda -t "$ANACONDA_TOKEN" upload $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 -l $DEPLOY_TYPE --skip-existing
 
       # ------------------------------------------------------------
-      # run and deploy codecov
-      - name: codecov
+      # deploy codecov
+      - name: deploy codecov
         if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
         run: |
-          conda activate env_$PY_VER && codecov
-          # conda install -q codecov && codecov
+          conda install -q codecov && codecov
 
       # ------------------------------------------------------------
-      # make and deploy docs
-      - name: make sphinx docs
+      # build and deploy docs
+      - name: build sphinx docs
         if: ${{ matrix.py_ver == '3.8' }}
         run: |
-          conda activate env_$PY_VER
-          # conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
-          # conda install -q pandoc -c conda-forge
+          conda activate env_$PY_VER  # required to run doc demos
+          conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
+          conda install -q pandoc -c conda-forge
           make -C docs html
 
       # - name: tagged release deploys docs to gh-pages
-      #   if: ${{ matrix.py_ver == '3.8' && $DEPLOY_TYPE == 'main' }}
+      #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
       #   uses: peaceiris/actions-gh-pages@v3
       #   with:
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -194,21 +158,20 @@ jobs:
       #     # TODO??? destination_dir: ... switch to segregate pre-release and main doc versions
 
       # ------------------------------------------------------------
-      # build and deploy python package. Note: PyPI uploads
-      # permanently burns version strings. Run last to ensure
-      # only if everything succeeds.
+      # build and deploy python package
       - name: build python package sdist
         if: ${{ matrix.py_ver == '3.8' }}
         run: conda activate env_$PY_VER && python setup.py sdist
 
-      # - name: pre-release deploys python package to test.pypi.org
+      # - name: deploy to test.pypi.org
       #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'pre-release' }}
       #   uses: pypa/gh-action-pypi-publish@master
       #   with:
       #     password: ${{ secrets.test_pypi_token }}
       #     repository_url: https://test.pypi.org/legacy/  # trailing slash is required
 
-      # - name: main  deploys python package to pypi.org
+      # run PyPI upload last or risk burning version number
+      # - name: deploy to pypi.org main  deploys python package to pypi.org
       #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
       #   uses: pypa/gh-action-pypi-publish@master
       #   with:
