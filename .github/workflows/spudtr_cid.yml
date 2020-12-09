@@ -1,20 +1,20 @@
 # spudt continous integration and deployment workflow
 # 
 # CI: 
-#   - build and pytest the conda package
-#   - build sdist
+#   - build and pytest the conda package for python 3.6, 3.7, 3.8
+#   - build python package sdist
 #   - build sphinx docs
 # 
-# Deployment:
-#   dev branch package versions M.N.P.devX:
-#     - deploys conda package to Anaconda Cloud label pre-release
-#     - upload python package sdist to test.pypi.org
+# Deployment switches on pre-release vs. main (tagged stable release)
+#
+#   dev branch package versions M.N.P.devX deploys
+#     - oys conda package to Anaconda Cloud label pre-release
+#     - dupload python package sdist to test.pypi.org
 #   release tagged vM.N.P with package version M.N.P
 #     - upload conda package to Anaconda Cloud label main
 #     - upload python package sdist to pypi.org
 #
 
-vX to conda label pre-release and test.pypi
 name: spudtr-cid
 on:
   # any pushed branch, exclude pushed tags to prevent double runs on tagged release
