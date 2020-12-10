@@ -72,18 +72,14 @@ jobs:
           # so conda activate works in non-interactive login shells via bash -l {0}
           conda shell.bash hook >> ~/.bash_profile
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
+          echo "GIT_ABBREV_COMMIT=${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
 
       - name: build conda package tarball
-        env:
-          GH_SHA: ${{ env.GITHUB_SHA }}
         run: |
           conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify
           conda info -a
-
-          export GIT_ABBREV_COMMIT="_g${GH_SHA:0:8}"  # meta.yaml builds this into pkg name
           conda build --python=$PY_VER -c defaults -c conda-forge conda
-
 
       - name: conda install and pytest
         run: |
