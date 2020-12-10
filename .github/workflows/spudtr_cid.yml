@@ -61,6 +61,11 @@ jobs:
       PY_VER: ${{ matrix.py_ver }}
       CONDA_BLD_PATH: /tmp/ci_conda_bld
 
+    outputs:
+      # tarballs are py3X job-specific, set the value
+      # as an output or in job.env
+      conda-tarball: ${{ steps.conda-bld.outputs.conda-tarball }}
+
     steps:
 
       # verified on github
@@ -68,6 +73,7 @@ jobs:
 
       # instead of 3rd party action setup-miniconda
       - name: setup miniconda
+        id: conda-setup
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
           bash miniconda.sh -b -p $HOME/miniconda
@@ -77,11 +83,13 @@ jobs:
           echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
 
       - name: build conda package tarball
+        id: conda-bld
         run: |
           conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify
           conda info -a
           conda build --python=$PY_VER -c defaults -c conda-forge conda
+          echo "::set-output name=conda-tarball::$(conda build conda --output)"
 
       - name: conda install and pytest
         run: |
@@ -102,7 +110,7 @@ jobs:
       # pkg_mnp is M.N.P only
       - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
         run: |
-          tarball=$(conda build conda --output)
+          tarball=${{ steps.conda-bld.outputs.conda-tarball }}
           pkg_version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
           pkg_mnp=`echo $pkg_version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
@@ -126,12 +134,11 @@ jobs:
           deploy_type=${deploy_type:-no_deploy}
 
           #  update env for deployment
-          echo "TARBALL=${tarball}" >> $GITHUB_ENV
           echo "PKG_VERSION=${pkg_version}" >> $GITHUB_ENV
           echo "PKG_MNP=${pkg_mnp}" >> $GITHUB_ENV
           echo "DEPLOY_TYPE=${deploy_type}" >> $GITHUB_ENV
 
-          # debugging
+          # logging
           echo $PACKAGE_NAME $deploy_type $tarball $pkg_version $pkg_mnp
 
       # logging
