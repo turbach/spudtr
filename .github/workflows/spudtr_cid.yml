@@ -72,7 +72,7 @@ jobs:
           # so conda activate works in non-interactive login shells via bash -l {0}
           conda shell.bash hook >> ~/.bash_profile
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
-          echo "GIT_ABBREV_COMMIT=${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
+          echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
 
       - name: build conda package tarball
         run: |
