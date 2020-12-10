@@ -200,14 +200,14 @@ jobs:
             --skip-existing
             dist/*
 
-        # route main to pypi.org, run last to avoid burning version strings
-        - name: deploy main sdist
-          if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
-          env:
-            PYPI_TOKEN: ${{ secrets.pypi_token }}
-          run: >-
-            twine upload
-              --repository-url https://pypi.org/
-              -u __token__
-              -p "$PYPI_TOKEN"
-              dist/*
+      # route main to pypi.org, run last to avoid burning version strings
+      - name: deploy main sdist
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        env:
+          PYPI_TOKEN: ${{ secrets.pypi_token }}
+        run: >-
+          twine upload
+            --repository-url https://pypi.org/
+            -u __token__
+            -p "$PYPI_TOKEN"
+            dist/*
