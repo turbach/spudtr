@@ -31,8 +31,7 @@ on:
 
 env:
   PACKAGE_NAME: spudtr
-  SPHINX_DOCS_PATH: $HOME/docs
-  SPHIX_DOCS_HTML: $HOME/docs/build/html
+  DEPLOY_PY_VER: "3.8"  # codecov, docs, pypi deploy on job only
 
 defaults:
   run:
@@ -145,7 +144,7 @@ jobs:
       # ------------------------------------------------------------
       # sphinx docs
       - name: build sphinx docs
-        if: ${{ matrix.py_ver == '3.8' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
           conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
@@ -153,39 +152,38 @@ jobs:
           make -C docs html
           touch docs/build/html/.nojekyll
 
+      # push docs dir from the top-level html to gh-pages
       - name: deploy sphinx docs
-        if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'cid_test' }} # 'main' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}  # use this for testing 'cid_test' }}
         run: |
-          cd docs/build/html
+          cd /docs/build/html  # where sphinx writes the html, depends on the repo
           git init 
           user_name="docs_${GITHUB_EVENT_NAME}_bot"
-          git config --global user.email "${user_name}@the.cloud.org"
-          git config --global user.name "$user_name"
-          git config -l
+          git config user.email "${user_name}@the.cloud.org"
+          git config user.name "$user_name"
+          git remote add origin "https://${user_name}:${{ secrets.github_token }}@github.com/${GITHUB_REPOSITORY}"
           git checkout --orphan gh-pages
           git add -A
-          git ls-files
-          git commit -a -m "spudtr CID workflow docs update"
-          git remote add origin "https://${user_name}:${{ secrets.github_token }}@github.com/${GITHUB_REPOSITORY}"
+          git commit -a -m "commit docs update for deployment"
           git push -u origin gh-pages --force
 
       # ------------------------------------------------------------
       # codecov
       - name: deploy codecov
-        if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
         run: |
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
       # deploy python package ... trailing / on repos is required
       - name: build python package sdist
-        if: ${{ matrix.py_ver == '3.8' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver }}
         run: |
           conda install twine
           python setup.py sdist
 
       - name: deploy pre-release sdist
-        if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'pre-release' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
         run: >-
@@ -198,7 +196,7 @@ jobs:
 
         # run last to avoid burning version strings on PyPI
         # - name: deploy main sdist
-        #   if: ${{ matrix.py_ver == '3.8' && env.DEPLOY_TYPE == 'main' }}
+        #   if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
         #   env:
         #     PYPI_TOKEN: ${{ secrets.pypi_token }}
         #   run: >-
