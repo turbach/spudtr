@@ -3,6 +3,7 @@
 # * job matrix runs on linux for Python 3.6, 3.7, 3.8
 # * each job builds, installs, pytests, and deploys its own conda py3X package
 # * one job deploys codecov, python package sdist, and docs (same for all jobs)
+# * Actions scheduler cron runs daily to conda build, install, pytest latest main
 #
 # CI:
 #
@@ -31,6 +32,10 @@ on:
   pull_request:
   release:
     types: [published]
+
+  schedule:
+    # run daily
+    - cron: '0 */15 * * *'
 
 env:
   PACKAGE_NAME: spudtr
