@@ -66,6 +66,8 @@ jobs:
 
       # instead of 3rd party action setup-miniconda
       - name: setup miniconda
+        env:
+          GH_SHA: ${{ env.GITHUB_SHA }}
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
           bash miniconda.sh -b -p $HOME/miniconda
@@ -80,7 +82,8 @@ jobs:
           conda install -q conda-build conda-verify
           conda info -a
 
-          export GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}  # meta.yaml builds this into pkg name
+          export GIT_ABBREV_COMMIT="_g${GH_SHA:0:8}"  # meta.yaml builds this into pkg name
+          printenv GIT_ABBREV_COMMIT
           conda build --python=$PY_VER -c defaults -c conda-forge conda
 
 
