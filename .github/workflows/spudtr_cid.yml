@@ -1,5 +1,7 @@
 # spudtr continous integration and deployment workflow
 #
+# 
+# * canonical package semantic version strings are M.N.P and M.N.P.devX
 # * job matrix runs on linux for Python 3.6, 3.7, 3.8
 # * each job builds, installs, pytests, and deploys its own conda py3X package
 # * one job deploys codecov, python package sdist, and docs (same for all jobs)
@@ -94,29 +96,27 @@ jobs:
 
       # ------------------------------------------------------------
       # DEPLOY_TYPE selects conda, python package, and docs uploads
+      # canonical version strings are M.N.P.devX and M.N.P
+      # tarballs are path_to/PACKAGE_NAME-.+-py3X_g[a-z0-9]{8}.tar.bz2
+      # pkg_version is entire M.N.P.devX version string
+      # pkg_mnp is M.N.P only
       - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
         run: |
-          # tarballs are path_to/PACKAGE_NAME-.+-py3X_g.+.tar.bz2
           tarball=$(conda build conda --output)
-
-          # extract entire M.N.P.devX version string
           pkg_version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
-
-          # extract just M.N.P
           pkg_mnp=`echo $pkg_version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
           # pre-release if package version M.N.P.devX on dev branch
           if [[ \
-            $GITHUB_REF == refs/branch/dev && \
-            $tarball =~ $PACKAGE_NAME-([0-9]+\.){3}dev[0-9]+- \
+            $GITHUB_REF =~ ^refs/heads/dev$ && \
+            $pkg_version =~ ^([0-9]+\.){2}[0-9]+(\.dev[0-9]+){0,1}$ \
           ]]; then \
             deploy_type="pre-release"; \
           fi
 
-          # main if package version M.N.P on tagged release vM.N.P
+          # main if package version is M.N.P on tagged release vM.N.P
           if [[ \
-            $GITHUB_REF =~ refs/tag/v[0-9]+\.[0-9]+\.[0-9] && \
-            $tarball =~ $PACKAGE_NAME-([0-9]+\.){2}[0-9]+- && \
+            $GITHUB_REF =~ ^refs/tags/v([0-9]+\.){2}[0-9]+$ && \
             $pkg_version == $pkg_mnp \
           ]]; then \
             deploy_type="main"; \
