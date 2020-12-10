@@ -158,8 +158,9 @@ jobs:
           cd docs/build/html
           touch .nojekyll
           git init 
-          git config --local user.email spudtr_cid@users.noreply.github.com
-          git config --local user.name spudtr_cid
+          git remote add origin ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
+          git config --local user.email "spudtr_cid@users.noreply.github.com"
+          git config --local user.name "spudtr CID"
           git checkout --orphan gh-pages
           git add -A
           git ls-files
