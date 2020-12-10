@@ -28,7 +28,7 @@
 name: spudtr-cid
 on:
   push:
-    branches: ["*"]
+    branches: ['*']
     tags-ignore:
       - v[0-9].[0-9].[0-9]  # prevent double runs on vM.N.P release
   pull_request:
@@ -36,14 +36,14 @@ on:
     types: [published]
 
   schedule:
-    # run daily
-    - cron: '0 */15 * * *'
+    # min hour day month year
+    - cron: '0 */30 * * *'
 
 env:
   PACKAGE_NAME: spudtr
 
   # deploy codecov, docs, pypi sdist on this version
-  DEPLOY_PY_VER: "3.8"
+  DEPLOY_PY_VER: 3.8
 
 defaults:
   run:
@@ -165,14 +165,14 @@ jobs:
       # ------------------------------------------------------------
       # deploy codecov
       - name: deploy codecov
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         run: |
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
       # build sphinx docs, deploy if main
       - name: build sphinx docs
-        if: ${{ matrix.py_ver == env.deploy_py_ver }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
           conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
@@ -182,7 +182,7 @@ jobs:
 
       # push docs dir from the top-level html to gh-pages
       - name: deploy sphinx docs
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         run: |
           cd /docs/build/html  # wherever sphinx writes the html, repo specific
           git init 
@@ -198,14 +198,14 @@ jobs:
       # ------------------------------------------------------------
       # build and deploy python package ... trailing / on repos is required
       - name: build python package sdist
-        if: ${{ matrix.py_ver == env.deploy_py_ver }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
           conda install twine
           python setup.py sdist
 
       # route pre-release to test.pypi.org
       - name: deploy pre-release sdist
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'pre-release' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
         run: >-
@@ -218,7 +218,7 @@ jobs:
 
       # route main to pypi.org, run last to avoid burning version strings
       - name: deploy main sdist
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         env:
           PYPI_TOKEN: ${{ secrets.pypi_token }}
         run: >-
