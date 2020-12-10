@@ -1,6 +1,10 @@
-# spudt continous integration and deployment workflow
+# spudtr continous integration and deployment workflow
 #
-# CI: parallel jobs for Python 3.6, 3.7, 3.8
+# * job matrix runs on linux for Python 3.6, 3.7, 3.8
+# * each job builds, installs, pytests, and deploys its own conda py3X package
+# * one job deploys codecov, python package sdist, and docs (same for all jobs)
+#
+# CI:
 #
 #   - conda build, install, and pytest the conda package
 #   - build python package sdist
@@ -8,30 +12,31 @@
 #
 # Deployment:
 #
-#   Development: package versions M.N.P.devX on dev branch deploy 
-#     - conda package py36, py37, py38 to Anaconda Cloud label pre-release
+#   Development versions M.N.P.devX on dev branch deploy
+#     - conda packages py36, py37, py38 to Anaconda Cloud label pre-release
 #     - python package sdist to test.pypi.org
 #
-#   Stable releases: package versions M.N.P on release tag vM.N.P deploy
-#     - codecov (py38 only) 
+#   Stable release versions M.N.P on release tagged vM.N.P deploy
+#     - conda packages py36, py37, py38 to Anaconda Cloud label main
+#     - codecov
 #     - sphinx docs to gh-pages
-#     - conda package to Anaconda Cloud label pre-release (cap M.N.P.devX sequence)
-#     - conda package to Anaconda Cloud label main
 #     - python package sdist to pypi.org
 
 name: spudtr-cid
 on:
-  # any pushed branch, exclude pushed tags to prevent double runs on tagged release
   push:
-    branches:  # same as branches: ["*"]
+    branches: ["*"]
     tags-ignore:
+      - v[0-9].[0-9].[0-9]  # prevent double runs on vM.N.P release
   pull_request:
   release:
     types: [published]
 
 env:
   PACKAGE_NAME: spudtr
-  DEPLOY_PY_VER: "3.8"  # codecov, docs, pypi deploy on job only
+
+  # deploy codecov, docs, pypi sdist on this version
+  DEPLOY_PY_VER: "3.8"
 
 defaults:
   run:
@@ -54,7 +59,7 @@ jobs:
       # verified on github
       - uses: actions/checkout@v2
 
-      # v0.2.1 or use release tag as above
+      # instead of 3rd party action setup-miniconda
       - name: setup miniconda
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -83,8 +88,8 @@ jobs:
           conda list
           lscpu
           python -c 'import numpy; numpy.show_config()'
-          # black --check --verbose .
-          # pytest --cov=$PACKAGE_NAME 
+          black --check --verbose .
+          pytest --cov=$PACKAGE_NAME 
 
       # ------------------------------------------------------------
       # DEPLOY_TYPE selects conda, python package, and docs uploads
@@ -120,7 +125,7 @@ jobs:
           # debugging
           echo  deploy type: $deploy_type $PACKAGE_NAME $TARBALL $pkg_version $pkg_mnp
 
-      # debugging 
+      # logging
       - name: env check
         run: |
           conda activate env_$PY_VER
@@ -142,7 +147,14 @@ jobs:
             --skip-existing
 
       # ------------------------------------------------------------
-      # sphinx docs
+      # deploy codecov
+      - name: deploy codecov
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        run: |
+          conda install -q codecov && codecov
+
+      # ------------------------------------------------------------
+      # build and deploy sphinx docs
       - name: build sphinx docs
         if: ${{ matrix.py_ver == env.deploy_py_ver }}
         run: |
@@ -164,24 +176,18 @@ jobs:
           git remote add origin "https://${user_name}:${{ secrets.github_token }}@github.com/${GITHUB_REPOSITORY}"
           git checkout --orphan gh-pages
           git add -A
-          git commit -a -m "commit docs update for deployment"
+          git commit -a -m "deploy type $DEPLOY_TYPE python $DEPLOY_PY_VER"
           git push -u origin gh-pages --force
 
       # ------------------------------------------------------------
-      # codecov
-      - name: deploy codecov
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
-        run: |
-          conda install -q codecov && codecov
-
-      # ------------------------------------------------------------
-      # deploy python package ... trailing / on repos is required
+      # build and deploy python package ... trailing / on repos is required
       - name: build python package sdist
         if: ${{ matrix.py_ver == env.deploy_py_ver }}
         run: |
           conda install twine
           python setup.py sdist
 
+      # route pre-release to test.pypi.org
       - name: deploy pre-release sdist
         if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'pre-release' }}
         env:
@@ -194,14 +200,14 @@ jobs:
             --skip-existing
             dist/*
 
-        # run last to avoid burning version strings on PyPI
-        # - name: deploy main sdist
-        #   if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
-        #   env:
-        #     PYPI_TOKEN: ${{ secrets.pypi_token }}
-        #   run: >-
-        #     twine upload
-        #       --repository-url https://pypi.org/
-        #       -u __token__
-        #       -p "$PYPI_TOKEN"
-        #       dist/*
+        # route main to pypi.org, run last to avoid burning version strings
+        - name: deploy main sdist
+          if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+          env:
+            PYPI_TOKEN: ${{ secrets.pypi_token }}
+          run: >-
+            twine upload
+              --repository-url https://pypi.org/
+              -u __token__
+              -p "$PYPI_TOKEN"
+              dist/*
