@@ -72,18 +72,14 @@ jobs:
           # so conda activate works in non-interactive login shells via bash -l {0}
           conda shell.bash hook >> ~/.bash_profile
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
+          echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
 
       - name: build conda package tarball
-        id: conda-bld
         run: |
           conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify
           conda info -a
-
-          export GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}  # meta.yaml builds this into pkg name
           conda build --python=$PY_VER -c defaults -c conda-forge conda
-          tarball=$(conda build conda --output)
-          echo "TARBALL=$tarball" >> $GITHUB_ENV
 
       - name: conda install and pytest
         run: |
@@ -98,16 +94,21 @@ jobs:
 
       # ------------------------------------------------------------
       # DEPLOY_TYPE selects conda, python package, and docs uploads
-      - name: set DEPLOY_TYPE=<pre-release|main|cid_test>
+      - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
         run: |
-          # extract version string from the conda package tarball
-          pkg_version=`echo $TARBALL | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
+          # tarballs are path_to/PACKAGE_NAME-.+-py3X_g.+.tar.bz2
+          tarball=$(conda build conda --output)
+
+          # extract entire M.N.P.devX version string
+          pkg_version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
+
+          # extract just M.N.P
           pkg_mnp=`echo $pkg_version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
-          # pre-release if package version M.N.P.dev on dev branch
+          # pre-release if package version M.N.P.devX on dev branch
           if [[ \
             $GITHUB_REF == refs/branch/dev && \
-            $TARBALL =~ $PACKAGE_NAME-([0-9]+\.){3}dev[0-9]+-${PY_VER} \
+            $tarball =~ $PACKAGE_NAME-([0-9]+\.){3}dev[0-9]+- \
           ]]; then \
             deploy_type="pre-release"; \
           fi
@@ -115,23 +116,26 @@ jobs:
           # main if package version M.N.P on tagged release vM.N.P
           if [[ \
             $GITHUB_REF =~ refs/tag/v[0-9]+\.[0-9]+\.[0-9] && \
-            $TARBALL =~ $PACKAGE_NAME-([0-9]+\.){2}[0-9]+-${PY_VER} && \
+            $tarball =~ $PACKAGE_NAME-([0-9]+\.){2}[0-9]+- && \
             $pkg_version == $pkg_mnp \
           ]]; then \
             deploy_type="main"; \
           fi
 
           # else set to default deploy type
-          deploy_type=${deploy_type:-cid_test}
+          deploy_type=${deploy_type:-no_deploy}
 
           #  update env for deployment
+          echo "TARBALL=${tarball}" >> $GITHUB_ENV
+          echo "PKG_VERSION=${pkg_version}" >> $GITHUB_ENV
+          echo "PKG_MNP=${pkg_mnp}" >> $GITHUB_ENV
           echo "DEPLOY_TYPE=${deploy_type}" >> $GITHUB_ENV
 
           # debugging
-          echo  deploy type: $deploy_type $PACKAGE_NAME $TARBALL $pkg_version $pkg_mnp
+          echo $PACKAGE_NAME $deploy_type $tarball $pkg_version $pkg_mnp
 
       # logging
-      - name: env check
+      - name: show package env
         run: |
           conda activate env_$PY_VER
           printenv | sort
@@ -159,7 +163,7 @@ jobs:
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
-      # build and deploy sphinx docs
+      # build sphinx docs, deploy if main
       - name: build sphinx docs
         if: ${{ matrix.py_ver == env.deploy_py_ver }}
         run: |
@@ -171,9 +175,9 @@ jobs:
 
       # push docs dir from the top-level html to gh-pages
       - name: deploy sphinx docs
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}  # use this for testing 'cid_test' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
         run: |
-          cd /docs/build/html  # where sphinx writes the html, depends on the repo
+          cd /docs/build/html  # wherever sphinx writes the html, repo specific
           git init 
           user_name="docs_${GITHUB_EVENT_NAME}_bot"
           git config user.email "${user_name}@the.cloud.org"
