@@ -158,13 +158,15 @@ jobs:
         run: |
           cd docs/build/html
           git init 
-          git remote add origin ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
-          git config --local user.email "spudtr_cid@inthe.cloud.org"
-          git config --local user.name "spudtr CID"
-          git config --local -l
+          user_name="docs_${GITHUB_EVENT_NAME}_bot"
+          git config --global user.email "${user_name}@the.cloud.org"
+          git config --global user.name "$user_name"
+          git config -l
           git checkout --orphan gh-pages
           git add -A
+          git ls-files
           git commit -a -m "spudtr CID workflow docs update"
+          git remote add origin "https://${user_name}:${{ secrets.github_token }}@github.com/${GITHUB_REPOSITORY}"
           git push -u origin gh-pages --force
 
       # ------------------------------------------------------------
