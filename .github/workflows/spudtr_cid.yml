@@ -97,7 +97,7 @@ jobs:
 
       # ------------------------------------------------------------
       # DEPLOY_TYPE selects conda, python package, and docs uploads
-      - name: set DEPLOY_TYPE=<pre-release|main|cid_test>
+      - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
         run: |
           # tarballs are path_to/PACKAGE_NAME-.+-py3X_g.+.tar.bz2
           tarball=$(conda build conda --output)
@@ -126,7 +126,7 @@ jobs:
           fi
 
           # else set to default deploy type
-          deploy_type=${deploy_type:-cid_test}
+          deploy_type=${deploy_type:-no_deploy}
 
           #  update env for deployment
           echo "TARBALL=${tarball}" >> $GITHUB_ENV
@@ -138,7 +138,7 @@ jobs:
           echo $PACKAGE_NAME $deploy_type $tarball $pkg_version $pkg_mnp
 
       # logging
-      - name: env check
+      - name: show package env
         run: |
           conda activate env_$PY_VER
           printenv | sort
@@ -166,7 +166,7 @@ jobs:
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
-      # build and deploy sphinx docs
+      # build sphinx docs, deploy if main
       - name: build sphinx docs
         if: ${{ matrix.py_ver == env.deploy_py_ver }}
         run: |
@@ -178,9 +178,9 @@ jobs:
 
       # push docs dir from the top-level html to gh-pages
       - name: deploy sphinx docs
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}  # use this for testing 'cid_test' }}
+        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
         run: |
-          cd /docs/build/html  # where sphinx writes the html, depends on the repo
+          cd /docs/build/html  # wherever sphinx writes the html, repo specific
           git init 
           user_name="docs_${GITHUB_EVENT_NAME}_bot"
           git config user.email "${user_name}@the.cloud.org"
