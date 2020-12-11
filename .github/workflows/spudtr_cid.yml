@@ -80,17 +80,18 @@ jobs:
           # so conda activate works in non-interactive login shells via bash -l {0}
           conda shell.bash hook >> ~/.bash_profile
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
-          echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
+          hash -r
+          source ~/.bash_profile && conda_activate
+          conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
+          conda install -q conda-build conda-verify anaconda
+          conda info -a
 
       - name: build conda package tarball
         id: conda-bld
         run: |
-          conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
-          conda install -q conda-build conda-verify
-          conda info -a
+          echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used in conda/meta.yaml
           conda build --python=$PY_VER -c defaults -c conda-forge conda
-          conda convert -p osx-64 -p win-64 $tarball -o $CONDA_BLD_PATH
-          echo "::set-output name=conda-tarball::$(conda build conda --output)"
+          echo "::set-output name=conda-tarball::$(conda build --python=$PY_VER conda --output)"
 
       - name: conda install and pytest
         run: |
@@ -101,14 +102,14 @@ jobs:
           lscpu
           python -c 'import numpy; numpy.show_config()'
           black --check --verbose .
-          pytest --cov=$PACKAGE_NAME 
+          pytest --cov=$PACKAGE_NAME # test as installed by conda
 
       # ------------------------------------------------------------
       # DEPLOY_TYPE selects conda, python package, and docs uploads
-      # canonical version strings are M.N.P.devX and M.N.P
-      # tarballs are path_to/PACKAGE_NAME-.+-py3X_g[a-z0-9]{8}.tar.bz2
-      # pkg_version is entire M.N.P.devX version string
-      # pkg_mnp is M.N.P only
+      # - canonical version strings are M.N.P.devX and M.N.P
+      # - tarballs are $CONDA_BLD_PATH/linux-64/PACKAGE_NAME-.+-py3[678]_g[a-z0-9]{8}.tar.bz2
+      # - pkg_version is entire M.N.P.devX version string
+      # - pkg_mnp is M.N.P only
       - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
         run: |
           tarball=${{ steps.conda-bld.outputs.conda-tarball }}
@@ -155,7 +156,8 @@ jobs:
         env:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
-          conda install -q anaconda
+          tarball=${{ steps.conda-bld.outputs.conda-tarball }}
+          conda convert -p osx-64 -p win-64 -o $CONDA_BLD_PATH $tarball
           anaconda \
             -t "$ANACONDA_TOKEN" upload \
             $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 \
