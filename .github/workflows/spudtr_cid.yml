@@ -28,7 +28,7 @@
 name: spudtr-cid
 on:
   push:
-    branches: ["*"]
+    branches: ['*']
     tags-ignore:
       - v[0-9].[0-9].[0-9]  # prevent double runs on vM.N.P release
   pull_request:
@@ -36,14 +36,14 @@ on:
     types: [published]
 
   schedule:
-    # run daily
-    - cron: '0 */15 * * *'
+    # min hour day month year, digit = when, / = step by, * = all
+    - cron: '0 0 */1 * *'
 
 env:
   PACKAGE_NAME: spudtr
 
   # deploy codecov, docs, pypi sdist on this version
-  DEPLOY_PY_VER: "3.8"
+  DEPLOY_PY_VER: 3.8
 
 defaults:
   run:
@@ -61,6 +61,11 @@ jobs:
       PY_VER: ${{ matrix.py_ver }}
       CONDA_BLD_PATH: /tmp/ci_conda_bld
 
+    outputs:
+      # tarballs are py3X job-specific, set the value
+      # as an output or in job.env
+      conda-tarball: ${{ steps.conda-bld.outputs.conda-tarball }}
+
     steps:
 
       # verified on github
@@ -68,6 +73,7 @@ jobs:
 
       # instead of 3rd party action setup-miniconda
       - name: setup miniconda
+        id: conda-setup
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
           bash miniconda.sh -b -p $HOME/miniconda
@@ -77,11 +83,13 @@ jobs:
           echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV  # used by conda/meta.yaml
 
       - name: build conda package tarball
+        id: conda-bld
         run: |
           conda config --set always_yes yes --set changeps1 no --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify
           conda info -a
           conda build --python=$PY_VER -c defaults -c conda-forge conda
+          echo "::set-output name=conda-tarball::$(conda build conda --output)"
 
       - name: conda install and pytest
         run: |
@@ -102,7 +110,7 @@ jobs:
       # pkg_mnp is M.N.P only
       - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
         run: |
-          tarball=$(conda build conda --output)
+          tarball=${{ steps.conda-bld.outputs.conda-tarball }}
           pkg_version=`echo $tarball | sed -n "s/.*${PACKAGE_NAME}-\(.\+\)-.*/\1/p"`
           pkg_mnp=`echo $pkg_version | sed -n "s/\(\([0-9]\+\.\)\{1,2\}[0-9]\+\).*/\1/p"`
 
@@ -126,12 +134,11 @@ jobs:
           deploy_type=${deploy_type:-no_deploy}
 
           #  update env for deployment
-          echo "TARBALL=${tarball}" >> $GITHUB_ENV
           echo "PKG_VERSION=${pkg_version}" >> $GITHUB_ENV
           echo "PKG_MNP=${pkg_mnp}" >> $GITHUB_ENV
           echo "DEPLOY_TYPE=${deploy_type}" >> $GITHUB_ENV
 
-          # debugging
+          # logging
           echo $PACKAGE_NAME $deploy_type $tarball $pkg_version $pkg_mnp
 
       # logging
@@ -158,14 +165,14 @@ jobs:
       # ------------------------------------------------------------
       # deploy codecov
       - name: deploy codecov
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         run: |
           conda install -q codecov && codecov
 
       # ------------------------------------------------------------
       # build sphinx docs, deploy if main
       - name: build sphinx docs
-        if: ${{ matrix.py_ver == env.deploy_py_ver }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
           conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
@@ -175,7 +182,7 @@ jobs:
 
       # push docs dir from the top-level html to gh-pages
       - name: deploy sphinx docs
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         run: |
           cd /docs/build/html  # wherever sphinx writes the html, repo specific
           git init 
@@ -191,14 +198,14 @@ jobs:
       # ------------------------------------------------------------
       # build and deploy python package ... trailing / on repos is required
       - name: build python package sdist
-        if: ${{ matrix.py_ver == env.deploy_py_ver }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
           conda install twine
           python setup.py sdist
 
       # route pre-release to test.pypi.org
       - name: deploy pre-release sdist
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'pre-release' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
         run: >-
@@ -211,7 +218,7 @@ jobs:
 
       # route main to pypi.org, run last to avoid burning version strings
       - name: deploy main sdist
-        if: ${{ matrix.py_ver == env.deploy_py_ver && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         env:
           PYPI_TOKEN: ${{ secrets.pypi_token }}
         run: >-
