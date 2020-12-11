@@ -105,7 +105,7 @@ jobs:
 
       # ------------------------------------------------------------
       # 2. CI
-      - name: build conda package tarballs
+      - name: conda build --python=${{ env.PY_VER }} conda
         id: conda-bld
         run: |
           # short SHA gets baked into the conda package filename in conda/meta.yaml
@@ -117,7 +117,13 @@ jobs:
           echo "::set-output name=conda-tarball::tarball"
 
       # black and pytest in the py3X conda env
-      - name: conda install -c local and pytest
+      - name: >-
+          conda create -n
+          env_${{ env.PY_VER }}
+          python=${{ env.PY_VER }}
+          ${{ env.PACKAGE_NAME}}
+          -c local -c defaults -c conda-forge
+
         run: |
           conda create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
           conda activate env_$PY_VER
@@ -195,8 +201,9 @@ jobs:
         run: |
           conda activate env_$PY_VER
           printenv | sort
+          conda list --explicit
 
-      - name: deploy conda package py${{ matrix.py_ver}} ${{ env.DEPLOY_TYPE }}
+      - name: deploy conda package python ${{ matrix.py_ver}} ${{ env.DEPLOY_TYPE }}
         if: ${{ env.DEPLOY_TYPE == 'pre-release' || env.DEPLOY_TYPE == 'main' }}
         env:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
@@ -225,7 +232,7 @@ jobs:
           git commit -a -m "deploy type $DEPLOY_TYPE python $DEPLOY_PY_VER"
           git push -u origin gh-pages --force
 
-      - name: deploy M.N.P.devX pre-release to test.pypi.org 
+      - name: deploy python package M.N.P.devX to test.pypi.org 
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
@@ -239,7 +246,7 @@ jobs:
           dist/*
 
       # upload to pypi.org last to avoid burning stable version strings
-      - name: deploy vM.N.P stable release to pypi.org
+      - name: deploy python package release vM.N.P to pypi.org
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
         env:
           PYPI_TOKEN: ${{ secrets.pypi_token }}
