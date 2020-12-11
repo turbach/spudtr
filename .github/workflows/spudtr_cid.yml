@@ -36,8 +36,8 @@ on:
     types: [published]
 
   schedule:
-    # min hour day month year
-    - cron: '0 */30 * * *'
+    # min hour day month year, digit = when, / = step by, * = all
+    - cron: '0 0 */1 * *'
 
 env:
   PACKAGE_NAME: spudtr
