@@ -186,12 +186,17 @@ jobs:
           # logging
           echo $PACKAGE_NAME $deploy_type $tarball $pkg_version $pkg_mnp
 
-      - name: show package env  # logging
+      - name: >-
+          show ${{ env.PACKAGE_NAME }}
+          ${{ env.PKG_VERSION }}
+          env_${{ env.PY_VER }}
+          deploy_type=${{ env.DEPLOY_TYPE }}
+
         run: |
           conda activate env_$PY_VER
           printenv | sort
 
-      - name: deploy conda py3X packages
+      - name: deploy conda package py${{ matrix.py_ver}} ${{ env.DEPLOY_TYPE }}
         if: ${{ env.DEPLOY_TYPE == 'pre-release' || env.DEPLOY_TYPE == 'main' }}
         env:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
