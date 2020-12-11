@@ -154,8 +154,9 @@ jobs:
         env:
           ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
+          tarball=${{ steps.conda-bld.outputs.conda-tarball }}
           conda install -q anaconda
-          conda convert -p osx-64 -p win-64 $TARBALL -o $CONDA_BLD_PATH
+          conda convert -p osx-64 -p win-64 $tarball -o $CONDA_BLD_PATH
           anaconda \
             -t "$ANACONDA_TOKEN" upload \
             $CONDA_BLD_PATH/**/${PACKAGE_NAME}*.tar.bz2 \
