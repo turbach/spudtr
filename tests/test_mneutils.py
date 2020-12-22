@@ -4,6 +4,8 @@ import pandas as pd
 import patsy
 from spudtr import DATA_DIR, mneutils, get_demo_df
 
+epochs_df = get_demo_df("sub000p3.ms100.epochs.feather")
+
 
 def test__streams2mne_digmont():
 
@@ -42,6 +44,9 @@ def test__streams2mne_digmont():
     montage = mneutils._streams2mne_digmont(eeg_streams)
     assert montage.ch_names == eeg_streams
 
+    montage = mneutils._streams2mne_digmont(eeg_streams, scale=0.011)
+    assert montage.ch_names == eeg_streams
+
     eeg_streams = ["lle", "lhz", "MiPf", "LLPf", "RLPf", "aa"]
 
     with pytest.raises(ValueError) as excinfo:
@@ -49,38 +54,31 @@ def test__streams2mne_digmont():
     assert "eeg_streams not found in cap" in str(excinfo.value)
 
 
-# def test_spudtr_to_mne_epochs():
+def test_read_spudtr_epochs():
 
-#     epochs_df = get_demo_df("sub000p3.ms100.epochs.feather")
-#     epoch_params = dict(
-#         eeg_streams=["MiPf", "MiCe", "MiPa", "MiOc"],
-#         epoch_id="epoch_id",
-#         time="time_ms",
-#         time_unit=0.001,
-#     )
+    input_fname = DATA_DIR / "sub000p3.ms100.epochs.feather"
+    eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
+    categories = "stim"
+    epoch_id = "epoch_id"
+    time = "time_ms"
+    sfreq = 250
+    time_unit = 0.001
+    time_stamp = 0
+    scale = 0.0097
 
-#     # 1. without events or event_ids
-#     epochs = mneutils.spudtr_to_mne_epochs(epochs_df, **epoch_params)
+    epochs = mneutils.read_spudtr_epochs(
+        input_fname,
+        eeg_streams,
+        categories,
+        time_stamp,
+        epoch_id,
+        time,
+        time_unit,
+        scale,
+    )
 
-#     # 2. with events and event_ids
-#     mne_event_ids, mne_events = mneutils.categories2eventid(
-#         epochs_df, categories="stim", epoch_id="epoch_id", time="time_ms", time_stamp=0
-#     )
-
-#     epochs = mneutils.spudtr_to_mne_epochs(
-#         epochs_df, **epoch_params, mne_events=mne_events, mne_event_ids=mne_event_ids
-#     )
-#     assert epochs.event_id == {"stim[cal]": 1, "stim[standard]": 2, "stim[target]": 3}
-#     assert epochs.ch_names == epoch_params["eeg_streams"]
-
-#     # 3. fail with event_id but no events
-#     with pytest.raises(ValueError) as excinfo:
-#         epochs = mneutils.spudtr_to_mne_epochs(
-#             epochs_df, **epoch_params, mne_events=None, mne_event_ids=mne_event_ids
-#         )
-#     assert (
-#         str(excinfo.value) == "mne_events must also be specified to use mne_event_ids"
-#     )
+    assert epochs.event_id == {"stim[cal]": 1, "stim[standard]": 2, "stim[target]": 3}
+    assert epochs.ch_names == eeg_streams
 
 
 def test_categories2eventid():

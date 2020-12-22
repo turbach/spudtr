@@ -150,9 +150,10 @@ time_unit = config_data["time_unit"]
 categories = config_data["categories"]
 time_stamp = config_data["time_stamp"]
 key = config_data["key"]
+scale = config_data["scale"]
 
 epochs = mneutils.read_spudtr_epochs(
-    f_eeg, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
+    f_eeg, eeg_streams, categories, time_stamp, epoch_id, time, time_unit, scale
 )
 
 mne_event_id = epochs.event_id
