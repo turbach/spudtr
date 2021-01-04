@@ -1,0 +1,49 @@
+---
+eeg_streams: [
+    "lle",
+    "lhz",
+    "MiPf",
+    "LLPf",
+    "RLPf",
+    "LMPf",
+    "RMPf",
+    "LDFr",
+    "RDFr",
+    "LLFr",
+    "RLFr",
+    "LMFr",
+    "RMFr",
+    "LMCe",
+    "RMCe",
+    "MiCe",
+    "MiPa",
+    "LDCe",
+    "RDCe",
+    "LDPa",
+    "RDPa",
+    "LMOc",
+    "RMOc",
+    "LLTe",
+    "RLTe",
+    "LLOc",
+    "RLOc",
+    "MiOc",
+    "rle",
+    "rhz",
+]
+
+epoch_id: "epoch_id"
+time: "time_ms"
+sfreq: 250
+time_unit: 0.001
+time_stamp: 0
+
+categories: "stim"
+#categories: "tone"
+#categories: "accuracy"
+#categories: "bin"
+#categories: ["stim", "accuracy"]
+#categories: ["stim", "tone"]
+
+key: ms100
+scale: 0.0134

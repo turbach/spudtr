@@ -31,6 +31,7 @@ requirements:
     - patsy
     - requests
     - mne >=0.20.0
+    - PyYAML
 
 test:
   imports:
