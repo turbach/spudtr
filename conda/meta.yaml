@@ -30,7 +30,7 @@ requirements:
     - pytables
     - patsy
     - requests
-    - mne >=0.20.0
+    - mne >=0.20.0=py3*
     - PyYAML
 
 test:
