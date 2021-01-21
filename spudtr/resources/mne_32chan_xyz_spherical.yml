@@ -1,0 +1,385 @@
+common_ref: A1
+fiducials:
+  lpa:
+    x: -0.08075
+    y: 0.0
+    z: 0.0
+  nasion:
+    x: 0.0
+    y: 0.11875
+    z: 0.0
+  rpa:
+    x: 0.08075
+    y: 0.0
+    z: 0.0
+gain10K: 10000
+gain20K: 20000
+hp: 0.01
+license: Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA) 4.0
+lp: 100.0
+mne_montage_name: 26chan
+name: apparatus
+notes: This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike
+  4.0 International License. https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+sensors:
+  A1:
+    x: -0.06595584418141398
+    y: -0.030755715241871127
+    z: -0.06106482292022124
+  A2:
+    x: 0.06595584418141398
+    y: -0.03075571524187112
+    z: -0.06106482292022124
+  LDCe:
+    x: -0.08143089356670068
+    y: 9.972408315816878e-18
+    z: 0.048928617116455145
+  LDFr:
+    x: -0.0658789767625984
+    y: 0.0478638783195047
+    z: 0.048928617116455145
+  LDPa:
+    x: -0.06587897676259843
+    y: -0.04786387831950467
+    z: 0.048928617116455145
+  LLFr:
+    x: -0.0903503690480396
+    y: 0.029356614465620014
+    z: 5.817072295949928e-18
+  LLOc:
+    x: -0.05583959896778496
+    y: -0.07685661446562
+    z: 5.817072295949928e-18
+  LLPf:
+    x: -0.05583959896778494
+    y: 0.07685661446562
+    z: 5.817072295949928e-18
+  LLTe:
+    x: -0.0903503690480396
+    y: -0.029356614465619994
+    z: 5.817072295949928e-18
+  LMCe:
+    x: -0.03960699489240548
+    y: -0.012869092749138656
+    z: 0.08538543439842086
+  LMFr:
+    x: -0.024478469035750065
+    y: 0.03369172222161984
+    z: 0.08538543439842086
+  LMOc:
+    x: -0.025163529979248096
+    y: -0.07744538195434778
+    z: 0.048928617116455145
+  LMPf:
+    x: -0.02516352997924808
+    y: 0.07744538195434778
+    z: 0.048928617116455145
+  MiCe:
+    x: 0.0
+    y: 0.0
+    z: 0.095
+  MiOc:
+    x: -1.7451216887849778e-17
+    y: -0.095
+    z: 5.817072295949928e-18
+  MiPa:
+    x: -7.650109959991622e-18
+    y: -0.041645258944962356
+    z: 0.08538543439842086
+  MiPf:
+    x: 5.817072295949928e-18
+    y: 0.095
+    z: 5.817072295949928e-18
+  RDCe:
+    x: 0.08143089356670068
+    y: 0.0
+    z: 0.048928617116455145
+  RDFr:
+    x: 0.06587897676259842
+    y: 0.047863878319504685
+    z: 0.048928617116455145
+  RDPa:
+    x: 0.0658789767625984
+    y: -0.0478638783195047
+    z: 0.048928617116455145
+  RLFr:
+    x: 0.0903503690480396
+    y: 0.029356614465620004
+    z: 5.817072295949928e-18
+  RLOc:
+    x: 0.055839598967784926
+    y: -0.07685661446562002
+    z: 5.817072295949928e-18
+  RLPf:
+    x: 0.05583959896778495
+    y: 0.07685661446562
+    z: 5.817072295949928e-18
+  RLTe:
+    x: 0.0903503690480396
+    y: -0.029356614465620025
+    z: 5.817072295949928e-18
+  RMCe:
+    x: 0.03960699489240547
+    y: -0.012869092749138668
+    z: 0.08538543439842086
+  RMFr:
+    x: 0.024478469035750072
+    y: 0.03369172222161984
+    z: 0.08538543439842086
+  RMOc:
+    x: 0.025163529979248065
+    y: -0.07744538195434778
+    z: 0.048928617116455145
+  RMPf:
+    x: 0.025163529979248086
+    y: 0.07744538195434778
+    z: 0.048928617116455145
+  gnd:
+    x: 5.5323645128231885e-18
+    y: 0.0903503690480396
+    z: 0.029356614465620007
+  lhz:
+    x: -0.05807609775468607
+    y: 0.06921239814299963
+    z: -0.029356614465619994
+  lle:
+    x: -0.030532411460110615
+    y: 0.05288368792650986
+    z: -0.0727742220963029
+  rhz:
+    x: 0.05807609775468607
+    y: 0.06921239814299963
+    z: -0.029356614465619994
+  rle:
+    x: 0.03053241146011063
+    y: 0.052883687926509854
+    z: -0.0727742220963029
+space:
+  coordinates: cartesian
+  distance_unit: cm
+  orientation: ras
+streams:
+  A2:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: A2
+  HEOG:
+    gain: 10000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eog
+    neg: rhz
+    pos: lhz
+  LDCe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LDCe
+  LDFr:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LDFr
+  LDPa:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LDPa
+  LLFr:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LLFr
+  LLOc:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LLOc
+  LLPf:
+    gain: 10000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LLPf
+  LLTe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LLTe
+  LMCe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LMCe
+  LMFr:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LMFr
+  LMOc:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LMOc
+  LMPf:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: LMPf
+  MiCe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: MiCe
+  MiOc:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: MiOc
+  MiPa:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: MiPa
+  MiPf:
+    gain: 10000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: MiPf
+  RDCe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RDCe
+  RDFr:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RDFr
+  RDPa:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RDPa
+  RLFr:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RLFr
+  RLOc:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RLOc
+  RLPf:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RLPf
+  RLTe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RLTe
+  RMCe:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RMCe
+  RMFr:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RMFr
+  RMOc:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RMOc
+  RMPf:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: RMPf
+  lhz:
+    gain: 10000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: lhz
+  lle:
+    gain: 10000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: lle
+  rhz:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: rhz
+  rle:
+    gain: 20000
+    hphz: 0.01
+    lphz: 100.0
+    mne_type: eeg
+    neg: A1
+    pos: rle
