@@ -44,7 +44,7 @@ def test__streams2mne_digmont():
     montage = mneutils._streams2mne_digmont(eeg_streams)
     assert montage.ch_names == eeg_streams
 
-    montage = mneutils._streams2mne_digmont(eeg_streams, scale=0.011)
+    montage = mneutils._streams2mne_digmont(eeg_streams)
     assert montage.ch_names == eeg_streams
 
     eeg_streams = ["lle", "lhz", "MiPf", "LLPf", "RLPf", "aa"]
@@ -64,17 +64,9 @@ def test_read_spudtr_epochs():
     sfreq = 250
     time_unit = 0.001
     time_stamp = 0
-    scale = 0.0097
 
     epochs = mneutils.read_spudtr_epochs(
-        input_fname,
-        eeg_streams,
-        categories,
-        time_stamp,
-        epoch_id,
-        time,
-        time_unit,
-        scale,
+        input_fname, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
     )
 
     assert epochs.event_id == {"stim[cal]": 1, "stim[standard]": 2, "stim[target]": 3}

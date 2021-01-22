@@ -12,54 +12,10 @@ import yaml
 # RESOURCES_DIR
 
 # default
-EEG_LOCATIONS_3d = RESOURCES_DIR / "mne_32chan_xyz.yml"
-EEG_LOCATIONS_2d = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
+EEG_LOCATIONS_F = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
 
 
-def _streams2mne_digmont_2d(eeg_streams, eeg_locations_f=EEG_LOCATIONS_2d):
-
-    """Parameters
-    ------------
-    eeg_streams : list of str
-        column names of the data streams
-    eeg_locations_f : path and file of mne_32chan_apparatus.yml
-
-    Examples
-    --------
-    eg.1
-    montage = mneutils._streams2mne_digmont_2d(eeg_streams)
-    montage.plot(kind='topomap', show_names=True);
-    """
-
-    with open(eeg_locations_f, "r") as stream:
-        mne_32chan = yaml.safe_load(stream)
-    mne_streams = mne_32chan["sensors"]
-    eeg_locs = list(mne_streams.keys())
-    missing_streams = set(eeg_streams) - set(eeg_locs)
-    if missing_streams:
-        raise ValueError(f"eeg_streams not found in cap: {missing_streams}")
-
-    ch_names = []
-    pos = []
-    for key in eeg_streams:
-        if key in mne_streams:
-            ch_names.append(key)
-            val = mne_streams[key]
-            pos.append(list(val.values()))
-    dig_ch_pos = OrderedDict(zip(ch_names, np.array(pos)))
-
-    fiducials = mne_32chan["fiducials"]
-    lpa = np.array(list(fiducials["lpa"].values()))
-    rpa = np.array(list(fiducials["rpa"].values()))
-    nasion = np.array(list(fiducials["nasion"].values()))
-
-    montage = mne.channels.make_dig_montage(
-        nasion=nasion, lpa=lpa, rpa=rpa, ch_pos=dig_ch_pos, coord_frame="head"
-    )
-    return montage
-
-
-def _streams2mne_digmont_3d(eeg_streams, eeg_locations_f=EEG_LOCATIONS_3d):
+def _streams2mne_digmont(eeg_streams, eeg_locations_f=EEG_LOCATIONS_F):
 
     """Parameters
     ------------
@@ -70,7 +26,7 @@ def _streams2mne_digmont_3d(eeg_streams, eeg_locations_f=EEG_LOCATIONS_3d):
     Examples
     --------
     eg.1
-    montage = mneutils._streams2mne_digmont_3d(eeg_streams)
+    montage = mneutils._streams2mne_digmont(eeg_streams)
     montage.plot(kind='topomap', show_names=True);
     """
 
@@ -271,7 +227,7 @@ class EpochsSpudtr(EpochsArray):
         assert len(sampling_interval) == 1  # should be guaranteed by _epochs_QC
         sfreq = 1.0 / (sampling_interval[0] * time_unit)  # samples per second
 
-        montage = _streams2mne_digmont_2d(eeg_streams)
+        montage = _streams2mne_digmont(eeg_streams)
         info = mne.create_info(montage.ch_names, sfreq=sfreq, ch_types="eeg")
         info.set_montage(montage)  # for mne >0.19
 
