@@ -15,18 +15,18 @@ import yaml
 EEG_LOCATIONS_F = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
 
 
-def _streams2mne_digmont(eeg_streams, eeg_locations_f=EEG_LOCATIONS_F):
+def _streams2mne_digmont(eeg_streams, eeg_locations_f):
 
     """Parameters
     ------------
     eeg_streams : list of str
         column names of the data streams
-    eeg_locations_f : path and file of mne_32chan_apparatus.yml
+    eeg_locations_f : path and file of mne_32chan_xyz_spherical.yml
 
     Examples
     --------
     eg.1
-    montage = mneutils._streams2mne_digmont(eeg_streams)
+    montage = mneutils._streams2mne_digmont(eeg_streams, eeg_locations_f)
     montage.plot(kind='topomap', show_names=True);
     """
 
@@ -201,6 +201,7 @@ class EpochsSpudtr(EpochsArray):
         self,
         input_fname,
         eeg_streams,
+        eeg_locations_f,
         categories,
         time_stamp,
         epoch_id=None,
@@ -227,7 +228,7 @@ class EpochsSpudtr(EpochsArray):
         assert len(sampling_interval) == 1  # should be guaranteed by _epochs_QC
         sfreq = 1.0 / (sampling_interval[0] * time_unit)  # samples per second
 
-        montage = _streams2mne_digmont(eeg_streams)
+        montage = _streams2mne_digmont(eeg_streams, eeg_locations_f)
         info = mne.create_info(montage.ch_names, sfreq=sfreq, ch_types="eeg")
         info.set_montage(montage)  # for mne >0.19
 
@@ -248,6 +249,7 @@ class EpochsSpudtr(EpochsArray):
 def read_spudtr_epochs(
     input_fname,
     eeg_streams,
+    eeg_locations_f,
     categories,
     time_stamp,
     epoch_id=None,
@@ -262,6 +264,8 @@ def read_spudtr_epochs(
 
     eeg_streams : list of str
         column names of the data streams
+
+    eeg_locations_f : path and file of mne_32chan_xyz_spherical.yml
 
     categories : str or iterable of str
         The column name(s) of the categorical variables.
@@ -286,5 +290,12 @@ def read_spudtr_epochs(
     """
 
     return EpochsSpudtr(
-        input_fname, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
+        input_fname,
+        eeg_streams,
+        eeg_locations_f,
+        categories,
+        time_stamp,
+        epoch_id,
+        time,
+        time_unit,
     )

@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import patsy
-from spudtr import DATA_DIR, mneutils, get_demo_df
+from spudtr import DATA_DIR, mneutils, get_demo_df, RESOURCES_DIR
 
 epochs_df = get_demo_df("sub000p3.ms100.epochs.feather")
 
@@ -41,16 +41,14 @@ def test__streams2mne_digmont():
         "rle",
         "rhz",
     ]
-    montage = mneutils._streams2mne_digmont(eeg_streams)
-    assert montage.ch_names == eeg_streams
-
-    montage = mneutils._streams2mne_digmont(eeg_streams)
+    eeg_locations_f = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
+    montage = mneutils._streams2mne_digmont(eeg_streams, eeg_locations_f)
     assert montage.ch_names == eeg_streams
 
     eeg_streams = ["lle", "lhz", "MiPf", "LLPf", "RLPf", "aa"]
 
     with pytest.raises(ValueError) as excinfo:
-        mneutils._streams2mne_digmont(eeg_streams)
+        mneutils._streams2mne_digmont(eeg_streams, eeg_locations_f)
     assert "eeg_streams not found in cap" in str(excinfo.value)
 
 
@@ -58,6 +56,7 @@ def test_read_spudtr_epochs():
 
     input_fname = DATA_DIR / "sub000p3.ms100.epochs.feather"
     eeg_streams = ["MiPf", "MiCe", "MiPa", "MiOc"]
+    eeg_locations_f = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
     categories = "stim"
     epoch_id = "epoch_id"
     time = "time_ms"
@@ -66,7 +65,14 @@ def test_read_spudtr_epochs():
     time_stamp = 0
 
     epochs = mneutils.read_spudtr_epochs(
-        input_fname, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
+        input_fname,
+        eeg_streams,
+        eeg_locations_f,
+        categories,
+        time_stamp,
+        epoch_id,
+        time,
+        time_unit,
     )
 
     assert epochs.event_id == {"stim[cal]": 1, "stim[standard]": 2, "stim[target]": 3}
