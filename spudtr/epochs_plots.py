@@ -152,8 +152,17 @@ time_stamp = config_data["time_stamp"]
 key = config_data["key"]
 scale = config_data["scale"]
 
+eeg_locations_f = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
+
 epochs = mneutils.read_spudtr_epochs(
-    f_eeg, eeg_streams, categories, time_stamp, epoch_id, time, time_unit, scale
+    f_eeg,
+    eeg_streams,
+    eeg_locations_f,
+    categories,
+    time_stamp,
+    epoch_id,
+    time,
+    time_unit,
 )
 
 mne_event_id = epochs.event_id
