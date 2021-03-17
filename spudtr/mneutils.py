@@ -7,26 +7,54 @@ from collections import OrderedDict
 
 from spudtr.epf import _epochs_QC
 from spudtr import RESOURCES_DIR
+import yaml
 
 # RESOURCES_DIR
 
 # default
-EEG_LOCATIONS_F = RESOURCES_DIR / "eeg32.csv"
+EEG_LOCATIONS_F = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
 
 
-def _streams2mne_digmont(eeg_streams, eeg_locations_f=EEG_LOCATIONS_F):
+def _streams2mne_digmont(eeg_streams, eeg_locations_f):
 
-    eeg_locs = pd.read_csv(eeg_locations_f)
-    missing_streams = set(eeg_streams) - set(eeg_locs["stream"])
+    """Parameters
+    ------------
+    eeg_streams : list of str
+        column names of the data streams
+    eeg_locations_f : path and file of mne_32chan_xyz_spherical.yml
+
+    Examples
+    --------
+    eg.1
+    montage = mneutils._streams2mne_digmont(eeg_streams, eeg_locations_f)
+    montage.plot(kind='topomap', show_names=True);
+    """
+
+    with open(eeg_locations_f, "r") as stream:
+        mne_32chan = yaml.safe_load(stream)
+    mne_streams = mne_32chan["sensors"]
+    eeg_locs = list(mne_streams.keys())
+    missing_streams = set(eeg_streams) - set(eeg_locs)
     if missing_streams:
         raise ValueError(f"eeg_streams not found in cap: {missing_streams}")
 
-    df = eeg_locs.set_index("stream").loc[eeg_streams, :].reset_index()
-    ch_names = df.stream.tolist()
-    # pos = df[["x", "y", "z"]].values
-    pos = 0.095 * df[["x", "y", "z"]].values
-    dig_ch_pos = OrderedDict(zip(ch_names, pos))
-    montage = mne.channels.make_dig_montage(ch_pos=dig_ch_pos, coord_frame="head")
+    ch_names = []
+    pos = []
+    for key in eeg_streams:
+        if key in mne_streams:
+            ch_names.append(key)
+            val = mne_streams[key]
+            pos.append(list(val.values()))
+    dig_ch_pos = OrderedDict(zip(ch_names, np.array(pos)))
+
+    fiducials = mne_32chan["fiducials"]
+    lpa = np.array(list(fiducials["lpa"].values()))
+    rpa = np.array(list(fiducials["rpa"].values()))
+    nasion = np.array(list(fiducials["nasion"].values()))
+
+    montage = mne.channels.make_dig_montage(
+        nasion=nasion, lpa=lpa, rpa=rpa, ch_pos=dig_ch_pos, coord_frame="head"
+    )
     return montage
 
 
@@ -173,6 +201,7 @@ class EpochsSpudtr(EpochsArray):
         self,
         input_fname,
         eeg_streams,
+        eeg_locations_f,
         categories,
         time_stamp,
         epoch_id=None,
@@ -199,7 +228,7 @@ class EpochsSpudtr(EpochsArray):
         assert len(sampling_interval) == 1  # should be guaranteed by _epochs_QC
         sfreq = 1.0 / (sampling_interval[0] * time_unit)  # samples per second
 
-        montage = _streams2mne_digmont(eeg_streams)
+        montage = _streams2mne_digmont(eeg_streams, eeg_locations_f)
         info = mne.create_info(montage.ch_names, sfreq=sfreq, ch_types="eeg")
         info.set_montage(montage)  # for mne >0.19
 
@@ -220,6 +249,7 @@ class EpochsSpudtr(EpochsArray):
 def read_spudtr_epochs(
     input_fname,
     eeg_streams,
+    eeg_locations_f,
     categories,
     time_stamp,
     epoch_id=None,
@@ -234,6 +264,8 @@ def read_spudtr_epochs(
 
     eeg_streams : list of str
         column names of the data streams
+
+    eeg_locations_f : path and file of mne_32chan_xyz_spherical.yml
 
     categories : str or iterable of str
         The column name(s) of the categorical variables.
@@ -258,5 +290,12 @@ def read_spudtr_epochs(
     """
 
     return EpochsSpudtr(
-        input_fname, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
+        input_fname,
+        eeg_streams,
+        eeg_locations_f,
+        categories,
+        time_stamp,
+        epoch_id,
+        time,
+        time_unit,
     )

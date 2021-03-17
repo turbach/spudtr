@@ -7,7 +7,7 @@ import tkinter
 import tkinter.filedialog
 import yaml
 from tkinter import font as tkFont
-from spudtr import mneutils, DATA_DIR
+from spudtr import mneutils, DATA_DIR, RESOURCES_DIR
 
 root = tkinter.Tk()
 helv16 = tkFont.Font(family="Helvetica", size=16, weight=tkFont.BOLD)
@@ -24,14 +24,14 @@ def OpenFile():
     print(f_eeg)
 
 
-config_file = DATA_DIR / "default.yml"
+config_file = RESOURCES_DIR / "default.yml"
 
 
 def OpenYaml_config():
     global config_file
     config_file = tkinter.filedialog.askopenfilename(
         parent=root,
-        initialdir=DATA_DIR,
+        initialdir=RESOURCES_DIR,
         title="Choose yaml file",
         filetypes=[("yaml files", "*.yml"), ("all files", "*.*")],
     )
@@ -150,9 +150,19 @@ time_unit = config_data["time_unit"]
 categories = config_data["categories"]
 time_stamp = config_data["time_stamp"]
 key = config_data["key"]
+scale = config_data["scale"]
+
+eeg_locations_f = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
 
 epochs = mneutils.read_spudtr_epochs(
-    f_eeg, eeg_streams, categories, time_stamp, epoch_id, time, time_unit
+    f_eeg,
+    eeg_streams,
+    eeg_locations_f,
+    categories,
+    time_stamp,
+    epoch_id,
+    time,
+    time_unit,
 )
 
 mne_event_id = epochs.event_id
