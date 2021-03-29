@@ -62,6 +62,12 @@ on:
 env:
   PACKAGE_NAME: spudtr
   DEPLOY_PY_VER: 3.8  # only this job deploys codecov, docs, sdist
+  GH_USER_NAME: robo_kutaslab
+
+  GH_PAGES_BRANCH: gh-pages
+  # alternate repo for dev version docs
+  GH_PAGES_DEV_REPOSITORY: kutaslab/spudtr-dev-docs
+  GH_PAGES_DEV_BRANCH: gh-pages-dev
 
 defaults:
   run:
@@ -218,18 +224,34 @@ jobs:
         run: conda install -q codecov && codecov
 
       - name: deploy sphinx docs to gh-pages
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
+        #if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release') }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
+          # set docs version repo/branch
+          if [[ env.DEPLOY_TYPE == 'main' ]]; then \
+            gh-pages-repo=$GITHUB_REPOSITORY; \
+            gh-pages-branch=$GH_PAGES_BRANCH; \
+          fi
+          gh-pages-repo=$GH_PAGES_DEV_REPOSITORY
+          gh-pages-branch=$GH_PAGES_DEV_BRANCH
+
           cd $GITHUB_WORKSPACE/docs/build/html  # wherever sphinx writes the html, repo specific
           git init 
-          user_name="docs_${GITHUB_EVENT_NAME}_bot"
-          git config user.email "${user_name}@the.cloud.org"
-          git config user.name "$user_name"
-          git remote add origin "https://${user_name}:${{ secrets.github_token }}@github.com/${GITHUB_REPOSITORY}"
-          git checkout --orphan gh-pages
+          # user_name="docs_${GITHUB_EVENT_NAME}_bot"
+          # git config user.email "${user_name}@the.cloud.org"
+          # git config user.name "$user_name"
+          # git remote add origin "https://${user_name}:${{ secrets.github_token }}@github.com/${GITHUB_REPOSITORY}"
+          user_name=$GH_USER_NAME
+          git config user.email "robo.kutaslab@gmail.com"
+          git config user.name "$GH_USER_NAME
+          git remote add origin "https://$API_TOKEN_GITHUB@github.com/$GH_USER_NAME/$gh-pages-repo"
+
+          git checkout --orphan $gh-pages-branch
           git add -A
           git commit -a -m "deploy type $DEPLOY_TYPE python $DEPLOY_PY_VER"
-          git push -u origin gh-pages --force
+          #git push -u origin gh-pages --force
+          git push -u origin $gh-pages-branch --force
+          
 
       - name: deploy python package M.N.P.devX to test.pypi.org
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'pre-release' }}
