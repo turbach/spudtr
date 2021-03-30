@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        py_ver: [3.6, 3.7, 3.8]
+        py_ver: [3.6, 3.7, 3.8]  # production
 
     env:
       PY_VER: ${{ matrix.py_ver }}
@@ -96,10 +96,10 @@ jobs:
           echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
           bash miniconda.sh -b -p $HOME/miniconda
+          hash -r
           conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
           source ~/.bash_profile && conda_activate
-          hash -r
           conda config --set always_yes yes --set changeps1 no
           conda config --set bld_path $CONDA_BLD_PATH
           conda install -q conda-build conda-verify anaconda twine
@@ -236,28 +236,31 @@ jobs:
 
         run: |
           # set docs version repo/branch
-          if [[ env.DEPLOY_TYPE == main ]]; then \
-            DOCS_REPO="$GITHUB_REPOSITORY"; \
-            DOCS_BRANCH="$GH_PAGES_BRANCH"; \
+          if [[ ${{ env.DEPLOY_TYPE }} == main ]]; then \
+            DOCS_REPO=$GITHUB_REPOSITORY; \
+            DOCS_BRANCH=$GH_PAGES_BRANCH; \
           fi
 
-          if [[ env.DEPLOY_TYPE == pre-release ]]; then \
-            DOCS_REPO="$GH_PAGES_DEV_REPOSITORY"; \
-            DOCS_BRANCH="$GH_PAGES_DEV_BRANCH"; \
+          if [[ ${{ env.DEPLOY_TYPE }} == pre-release ]]; then \
+            DOCS_REPO=$GH_PAGES_DEV_REPOSITORY; \
+            DOCS_BRANCH=$GH_PAGES_DEV_BRANCH; \
           fi
+
+          echo "deploy type ${{ env.DEPLOY_TYPE }}: sphinx docs on $DOCS_REPO/$DOCS_BRANCH"
+
+          git config --global user.name $GH_USER_NAME
+          git config --global user.email $GH_USER_EMAIL
+          git config --global init.defaultBranch main
 
           # wherever sphinx wrote the html, repo specific
           cd $GITHUB_WORKSPACE/docs/build/html
           git init
 
-          git config user.name "$GH_USER_NAME"
-          git config user.email "$GH_USER_EMAIL"
           git remote add origin "https://$GH_PAGES_TOKEN@github.com/${DOCS_REPO}"
-
-          git checkout --orphan "$DOCS_BRANCH"
+          git checkout --orphan $DOCS_BRANCH
           git add -A
           git commit -a -m "deploy type $DEPLOY_TYPE python $DEPLOY_PY_VER"
-          git push -u origin "$DOCS_BRANCH" --force
+          git push -u origin $DOCS_BRANCH --force
 
       - name: deploy python package M.N.P.devX to test.pypi.org
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'pre-release' }}
