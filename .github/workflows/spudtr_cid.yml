@@ -99,6 +99,7 @@ jobs:
           bash miniconda.sh -b -p $HOME/miniconda
           conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
+          hash
           source ~/.bash_profile && conda_activate
           hash -r
           conda config --set always_yes yes --set changeps1 no
@@ -220,8 +221,8 @@ jobs:
 
       - name: deploy sphinx docs to gh-pages
         # switch docs deployment repo/branch on deploy type
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release') }}
-        # if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}  # testing only
+        # if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release') }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}  # testing only
         env:
           # machine user account PAT
           GH_USER_NAME: robo-kutaslab
