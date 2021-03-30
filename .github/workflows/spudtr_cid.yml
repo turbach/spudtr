@@ -220,8 +220,8 @@ jobs:
 
       - name: deploy sphinx docs to gh-pages
         # switch docs deployment repo/branch on deploy type
-        # if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release') }}
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}  # testing only
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release') }}
+        # if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}  # testing only
         env:
           # machine user account PAT
           GH_USER_NAME: robo-kutaslab
@@ -247,23 +247,17 @@ jobs:
             DOCS_BRANCH=$GH_PAGES_DEV_BRANCH; \
           fi
 
-          if [[ ${{ env.DEPLOY_TYPE }} == no_deploy ]]; then \
-            DOCS_REPO=$GH_PAGES_DEV_REPOSITORY; \
-            DOCS_BRANCH=$GH_PAGES_DEV_BRANCH; \
-          fi
-
           echo "deploy type ${{ env.DEPLOY_TYPE }}: sphinx docs to $DOCS_REPO $DOCS_BRANCH"
 
-          # wherever sphinx wrote the html, repo specific
           git config --global user.name $GH_USER_NAME
           git config --global user.email $GH_USER_EMAIL
           git config --global init.defaultBranch main
 
+          # wherever sphinx wrote the html, repo specific
           cd $GITHUB_WORKSPACE/docs/build/html
           git init
 
           git remote add origin "https://$GH_PAGES_TOKEN@github.com/${DOCS_REPO}"
-
           git checkout --orphan $DOCS_BRANCH
           git add -A
           git commit -a -m "deploy type $DEPLOY_TYPE python $DEPLOY_PY_VER"
