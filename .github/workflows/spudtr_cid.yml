@@ -99,10 +99,9 @@ jobs:
           if [[ ${{ runner.os }} == macOS ]]; then \
             miniconda_url='https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh'; \
           fi
-          wget $miniconda_url -O miniconda.sh;
-          # bash miniconda.sh -b -p $HOME/miniconda
           wget $miniconda_url -O ~/miniconda.sh;
-          bash miniconda.sh -b -p ~/miniconda
+          # bash miniconda.sh -b -p $HOME/miniconda
+          bash ~/miniconda.sh -b -p ~/miniconda
           hash -r
           conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
           mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
