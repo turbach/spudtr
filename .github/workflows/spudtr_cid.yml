@@ -71,7 +71,7 @@ defaults:
 
 jobs:
   conda-ci:
-    runs-on: [ubuntu-latest, macos-10.15]
+    runs-on: [ubuntu-latest, macos-latest]
     strategy:
       matrix:
         py_ver: [3.6, 3.7, 3.8]  # production
