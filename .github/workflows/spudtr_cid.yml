@@ -100,10 +100,10 @@ jobs:
             sudo mkdir -p /usr/local/miniconda
             sudo chown -R 501:20 /usr/local/miniconda
           fi
-          wget $miniconda_url -O $HOME/miniconda.sh;
+          wget $miniconda_url -O $HOME/miniconda.sh
           bash ~/miniconda.sh -b -p $HOME/miniconda
           hash -r
-          conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
+          $HOME/miniconda/bin/conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
           source ~/.bash_profile
           # conda activate
           conda config --set always_yes yes --set changeps1 no
