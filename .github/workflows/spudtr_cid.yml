@@ -79,7 +79,6 @@ jobs:
 
     env:
       PY_VER: ${{ matrix.py_ver }}
-      CONDA_BLD_PATH: /tmp/ci_conda_bld
     outputs:
       # tarballs are py3X job-specific
       conda-tarball: ${{ steps.conda-bld.outputs.conda-tarball }}
@@ -99,15 +98,15 @@ jobs:
           if [[ ${{ runner.os }} == macOS ]]; then \
             miniconda_url='https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh'; \
           fi
-          wget $miniconda_url -O ~/miniconda.sh;
+          wget $miniconda_url -O $HOME/miniconda.sh;
           # bash miniconda.sh -b -p $HOME/miniconda
-          bash ~/miniconda.sh -b -p ~/miniconda
+          bash ~/miniconda.sh -b -p $HOME/miniconda
           hash -r
           conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
-          mkdir -p $CONDA_BLD_PATH && rm miniconda.sh
           source ~/.bash_profile && conda_activate
           conda config --set always_yes yes --set changeps1 no
-          conda config --set bld_path $CONDA_BLD_PATH
+          conda config --set bld_path $HOME/ci_conda_bld
+          mkdir -p $HOME/ci_conda_bld && rm $HOME/miniconda.sh
           conda install -q conda-build conda-verify anaconda twine
           conda info -a
 
