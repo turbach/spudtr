@@ -71,12 +71,13 @@ defaults:
 
 jobs:
   conda-ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest macos-10.15
     strategy:
       matrix:
         py_ver: [3.6, 3.7, 3.8]  # production
 
     env:
+      OS: ${{ runner.os }}   # Linux, macOS
       PY_VER: ${{ matrix.py_ver }}
       CONDA_BLD_PATH: /tmp/ci_conda_bld
 
@@ -151,6 +152,8 @@ jobs:
       #
       # DEPLOY_TYPE selects conda, python package, and docs uploads
       #
+      # Only Linux jobs can deply, macOS are all no_deply
+      #
       # for regex matching
       # . canonical version strings are M.N.P.devX and M.N.P
       # . tarballs are $CONDA_BLD_PATH/linux-64/PACKAGE_NAME-.+-py3[678]_g[a-z0-9]{8}.tar.bz2
@@ -166,6 +169,7 @@ jobs:
 
           # pre-release if package version is M.N.P.devX on dev branch
           if [[ \
+            $OS == "Linux"" && \
             $GITHUB_REF =~ ^refs/heads/dev$ && \
             $pkg_version =~ ^([0-9]+\.){2}[0-9]+(\.dev[0-9]+){0,1}$ \
           ]]; then \
@@ -174,6 +178,7 @@ jobs:
 
           # main if package version is M.N.P on release tag vM.N.P
           if [[ \
+            $OS == "Linux"" && \
             $GITHUB_REF =~ ^refs/tags/v([0-9]+\.){2}[0-9]+$ && \
             $pkg_version == $pkg_mnp \
           ]]; then \
