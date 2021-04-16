@@ -62,7 +62,7 @@ on:
 env:
   PACKAGE_NAME: spudtr
   DEPLOY_PY_VER: 3.8  # only this job deploys codecov, docs, sdist
-
+  CONDA_BLD_PATH: /tmp/ci_conda_bld
 defaults:
   run:
     # login shell to source the conda hook in .bash_profile
@@ -91,8 +91,6 @@ jobs:
         run: |
           # short SHA gets baked into the conda package filename in conda/meta.yaml
           echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV
-          export CONDA_BLD_PATH="$HOME/ci_conda_bld"
-          mkdir -p $CONDA_BLD_PATH
 
           if [[ ${{ runner.os }} == Linux ]]; then \
             miniconda_url='https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh'; \
@@ -107,7 +105,7 @@ jobs:
           hash -r
           conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
           source ~/.bash_profile
-          conda activate
+          # conda activate
           conda config --set always_yes yes --set changeps1 no
           conda config --set bld_path $CONDA_BLD_PATH
           conda info -a
