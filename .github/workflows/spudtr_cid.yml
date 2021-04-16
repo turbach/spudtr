@@ -103,7 +103,8 @@ jobs:
           bash ~/miniconda.sh -b -p $HOME/miniconda
           hash -r
           conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
-          source ~/.bash_profile && conda_activate
+          source ~/.bash_profile
+          conda activate
           conda config --set always_yes yes --set changeps1 no
           conda config --set bld_path $HOME/ci_conda_bld
           mkdir -p $HOME/ci_conda_bld && rm $HOME/miniconda.sh
