@@ -71,10 +71,11 @@ defaults:
 
 jobs:
   conda-ci:
-    runs-on: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         py_ver: [3.6, 3.7, 3.8]  # production
+        os: [ubuntu-latest, macos-10.15]  # Intel macs
 
     env:
       PY_VER: ${{ matrix.py_ver }}
