@@ -77,7 +77,6 @@ jobs:
         py_ver: [3.6, 3.7, 3.8]  # production
 
     env:
-      OS: ${{ runner.os }}   # Linux, macOS
       PY_VER: ${{ matrix.py_ver }}
       CONDA_BLD_PATH: /tmp/ci_conda_bld
 
@@ -160,6 +159,8 @@ jobs:
       # . pkg_version is entire M.N.P.devX version string
       # . pkg_mnp is M.N.P only
       - name: set DEPLOY_TYPE=<pre-release|main|no_deploy>
+        env:
+          OS: ${{ runner.os }}   # Linux, macOS
         run: |
 
           # lookup the conda tarball package version and M.N.P string (if any)
