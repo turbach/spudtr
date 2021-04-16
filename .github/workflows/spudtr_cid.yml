@@ -99,8 +99,7 @@ jobs:
           fi
           if [[ ${{ runner.os }} == macOS ]]; then \
             miniconda_url='https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh'; \
-            sudo mkdir -p /usr/local/miniconda
-            # sudo chown -R 501:20 /usr/local/miniconda
+            sudo chown -R 501:20 /usr/local/miniconda
           fi
           wget $miniconda_url -O $HOME/miniconda.sh;
           bash ~/miniconda.sh -b -p $HOME/miniconda
