@@ -110,7 +110,6 @@ jobs:
           conda config --set bld_path $CONDA_BLD_PATH
           conda info -a
           conda install -q conda-build conda-verify anaconda-client twine
-          conda install -q mamba -c conda-forge
 
       # ------------------------------------------------------------
       # 2. CI
@@ -131,11 +130,9 @@ jobs:
           -c local -c defaults -c conda-forge
 
         run: |
-          # conda create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
-          mamba create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
+          conda create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
           conda activate env_$PY_VER
-          # conda install -q black pytest pytest-cov
-          mamba install -q black pytest pytest-cov
+          conda install -q black pytest pytest-cov
           conda list
           lscpu
           python -c 'import numpy; numpy.show_config()'
@@ -146,10 +143,8 @@ jobs:
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
-          # conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
-          # conda install -q pandoc -c conda-forge
-          mamba install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
-          mamba install -q pandoc -c conda-forge
+          conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
+          conda install -q pandoc -c conda-forge
           make -C docs html
           touch docs/build/html/.nojekyll
 
