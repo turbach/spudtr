@@ -109,7 +109,8 @@ jobs:
           conda config --set always_yes yes --set changeps1 no
           conda config --set bld_path $CONDA_BLD_PATH
           conda info -a
-          conda install -q conda-build conda-verify anaconda-client twine mamba
+          conda install -q conda-build conda-verify anaconda-client twine
+          conda install -q mamba -c conda-forge
 
       # ------------------------------------------------------------
       # 2. CI
