@@ -75,7 +75,7 @@ jobs:
     strategy:
       matrix:
         py_ver: [3.6, 3.7, 3.8]  # production
-        os: [ubuntu-latest, macos-10.15]  # Intel macs
+        os: [ubuntu-latest] # , macos-10.15]  # Intel macs
 
     env:
       PY_VER: ${{ matrix.py_ver }}
@@ -110,6 +110,7 @@ jobs:
           conda config --set bld_path $CONDA_BLD_PATH
           conda info -a
           conda install -q conda-build conda-verify anaconda-client twine
+          conda install -n base mamba -c conda-forge
 
       # ------------------------------------------------------------
       # 2. CI
@@ -123,7 +124,7 @@ jobs:
 
       # black and pytest in the py3X conda env
       - name: >-
-          conda create -n
+          mamba create -n
           env_${{ env.PY_VER }}
           python=${{ env.PY_VER }}
           ${{ env.PACKAGE_NAME}}
@@ -131,9 +132,9 @@ jobs:
 
         run: |
           conda clean -a
-          conda create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
+          mamba create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
           conda activate env_$PY_VER
-          conda install -q black pytest pytest-cov
+          mamba install -q black pytest pytest-cov
           conda list
           lscpu
           python -c 'import numpy; numpy.show_config()'
@@ -144,8 +145,8 @@ jobs:
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
-          conda install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
-          conda install -q pandoc -c conda-forge
+          mamba install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
+          mamba install -q pandoc -c conda-forge
           make -C docs html
           touch docs/build/html/.nojekyll
 
@@ -228,7 +229,7 @@ jobs:
 
       - name: deploy codecov
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
-        run: conda install -q codecov && codecov
+        run: mamba install -q codecov && codecov
 
       - name: deploy sphinx docs to gh-pages
         # switch docs deployment repo/branch on deploy type
