@@ -131,8 +131,7 @@ jobs:
           -c local -c defaults -c conda-forge
 
         run: |
-          conda clean -a
-          mamba create -n env_$PY_VER python=$PY_VER $PACKAGE_NAME -c local -c defaults -c conda-forge
+          mamba create -n env_$PY_VER python=$PY_VER "blas=*=mkl*" $PACKAGE_NAME -c local -c defaults -c conda-forge
           conda activate env_$PY_VER
           mamba install -q black pytest pytest-cov
           conda list
