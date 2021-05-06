@@ -61,8 +61,10 @@ on:
 
 env:
   PACKAGE_NAME: spudtr
-  DEPLOY_PY_VER: 3.8  # only this job deploys codecov, docs, sdist
   CONDA_BLD_PATH: /tmp/ci_conda_bld
+  # only this job deploys codecov, docs, sdist  
+  DEPLOY_PY_VER: 3.9
+  DEPLOY_OS: ubuntu-latest
 defaults:
   run:
     # login shell to source the conda hook in .bash_profile
@@ -141,7 +143,7 @@ jobs:
           pytest --cov=$PACKAGE_NAME # test as installed by conda
 
       - name: build sphinx docs
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && matrix.os == env.DEPLOY_OS }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
           mamba install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
@@ -150,7 +152,7 @@ jobs:
           touch docs/build/html/.nojekyll
 
       - name: build python package sdist
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER  && matrix.os == env.DEPLOY_OS }}
         run: python setup.py sdist
 
       # ------------------------------------------------------------
@@ -227,12 +229,17 @@ jobs:
           --skip-existing
 
       - name: deploy codecov
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && matrix.os == env.DEPLOY_OS && env.DEPLOY_TYPE == 'main' }}
         run: mamba install -q codecov && codecov
 
       - name: deploy sphinx docs to gh-pages
         # switch docs deployment repo/branch on deploy type
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release') }}
+        if: >-
+          ${{
+          matrix.py_ver == env.DEPLOY_PY_VER
+          && matrix.os == env.DEPLOY_OS
+          && (env.DEPLOY_TYPE == 'main' || env.DEPLOY_TYPE == 'pre-release')
+          }}
         # if: ${{ matrix.py_ver == env.DEPLOY_PY_VER }}  # testing only
         env:
           # machine user account PAT
@@ -276,7 +283,7 @@ jobs:
           git push -u origin $DOCS_BRANCH --force
 
       - name: deploy python package M.N.P.devX to test.pypi.org
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'pre-release' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER  && matrix.os == env.DEPLOY_OS && env.DEPLOY_TYPE == 'pre-release' }}
         env:
           TEST_PYPI_TOKEN: ${{ secrets.test_pypi_token }}
         # trailing / on pypi repos is required
@@ -290,7 +297,7 @@ jobs:
 
       # upload to pypi.org last to avoid burning stable version strings
       - name: deploy python package release vM.N.P to pypi.org
-        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && env.DEPLOY_TYPE == 'main' }}
+        if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && matrix.os == env.DEPLOY_OS && env.DEPLOY_TYPE == 'main' }}
         env:
           PYPI_TOKEN: ${{ secrets.pypi_token }}
         run: >-
