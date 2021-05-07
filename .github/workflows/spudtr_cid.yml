@@ -179,7 +179,7 @@ jobs:
 
           # pre-release if package version is M.N.P.devX on dev branch
           if [[ \
-            $OS == "Linux"" && \
+            $OS == "Linux" && \
             $GITHUB_REF =~ ^refs/heads/dev$ && \
             $pkg_version =~ ^([0-9]+\.){2}[0-9]+(\.dev[0-9]+){0,1}$ \
           ]]; then \
@@ -188,7 +188,7 @@ jobs:
 
           # main if package version is M.N.P on release tag vM.N.P
           if [[ \
-            $OS == "Linux"" && \
+            $OS == "Linux" && \
             $GITHUB_REF =~ ^refs/tags/v([0-9]+\.){2}[0-9]+$ && \
             $pkg_version == $pkg_mnp \
           ]]; then \
