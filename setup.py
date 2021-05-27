@@ -26,4 +26,5 @@ setup(
     ],
     packages=find_packages(exclude=["tests"]),
     scripts=["bin/stub"],
+    package_data={"spudtr": ["resources/*.*"]},
 )
