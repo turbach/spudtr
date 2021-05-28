@@ -140,7 +140,7 @@ jobs:
           lscpu
           python -c 'import numpy; numpy.show_config()'
           black --check --verbose .
-          pytest --cov=$PACKAGE_NAME # test as installed by conda
+          pytest --cov=$PACKAGE_NAME # test as installed by mamba
 
       - name: build sphinx docs
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && matrix.os == env.DEPLOY_OS }}
