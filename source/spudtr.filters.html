@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr.filters module &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>spudtr.filters module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/source/spudtr.filters.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-spudtr.filters">
+<span id="spudtr-filters-module"></span><h1>spudtr.filters module<a class="headerlink" href="#module-spudtr.filters" title="Permalink to this headline">¶</a></h1>
+<p>FIR filter wrappers and utility functions.</p>
+<p>All filter functions require explicit parameters except
+<code class="docutils literal notranslate"><span class="pre">check_filter_params()</span></code> and <code class="docutils literal notranslate"><span class="pre">show_filter()</span></code> which will,
+respectively, return and display suggested defaults for <code class="docutils literal notranslate"><span class="pre">window</span></code>,
+<code class="docutils literal notranslate"><span class="pre">width_hz</span></code> (transition band) and <code class="docutils literal notranslate"><span class="pre">ripple_db</span></code> if these are not
+specified.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.filters.check_filter_params">
+<span class="sig-prename descclassname"><span class="pre">spudtr.filters.</span></span><span class="sig-name descname"><span class="pre">check_filter_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/filters.html#check_filter_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.filters.check_filter_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>type check FIR filter parameters and optionally provide defaults</p>
+<p>Values for <cite>ftype</cite>, <cite>cutoff_hz</cite>, and <cite>sfreq</cite> are obligatory.</p>
+<p>If <cite>allow_defaults</cite> is True, reasonable defaults are provided if
+any of window, width_hz and ripple_db are None.</p>
+<dl class="field-list simple" id="filter-parameters-label">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ftype</strong> (<em>str {'lowpass'</em><em> , </em><em>'highpass'</em><em>, </em><em>'bandpass'</em><em>, </em><em>'bandstop'}</em>) – filter type</p></li>
+<li><p><strong>cutoff_hz</strong> (<em>float</em><em> or </em><em>1D-array-like of floats</em><em>, </em><em>length 2</em>) – 1/2 amplitude cutoff frequency in Hz</p></li>
+<li><p><strong>sfreq</strong> (<em>float</em>) – sampling frequency, e.g., 250.0, 500.0</p></li>
+<li><p><strong>width_hz</strong> (<em>float</em>) – pass-to-stop transition band width (Hz), symmetric for bandpass, bandstop</p></li>
+<li><p><strong>ripple_db</strong> (<em>float</em>) – ripple, in dB, e.g., 53.0, 60.0</p></li>
+<li><p><strong>window</strong> (<em>str {'kaiser'</em><em>,</em><em>'hamming'</em><em>,</em><em>'hann'</em><em>,</em><em>'blackman'}</em>) – window type for firwin</p></li>
+<li><p><strong>allow_defaults</strong> (<em>bool {False</em><em>, </em><em>True}</em>) – If <cite>True</cite> this makes <cite>width_hz</cite>, <cite>ripple_db</cite>, <cite>window</cite> optional and
+fills in sensible defaults for any left unspecified by the user.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">params</span></code> with key:val for all filter parameters specified, suitable for passing as
+<code class="docutils literal notranslate"><span class="pre">**params</span></code> to spudtr.filters FIR functions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.filters.filters_effect">
+<span class="sig-prename descclassname"><span class="pre">spudtr.filters.</span></span><span class="sig-name descname"><span class="pre">filters_effect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/filters.html#filters_effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.filters.filters_effect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate example filter input-output plots for pure sinewave data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key=val</strong> – see <a class="reference internal" href="#filter-parameters-label"><span class="std std-ref">check_filter params() Parameters</span></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">fig</span></code>, <code class="docutils literal notranslate"><span class="pre">ax</span></code> of the example plot</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.figure.Figure, matplotlib.axes.Axes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.filters.fir_filter_data">
+<span class="sig-prename descclassname"><span class="pre">spudtr.filters.</span></span><span class="sig-name descname"><span class="pre">fir_filter_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/filters.html#fir_filter_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.filters.fir_filter_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finite Impulse Response filter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>1-D array-like</em>) – </p></li>
+<li><p><strong>key=val</strong> – see <a class="reference internal" href="#filter-parameters-label"><span class="std std-ref">check_filter params() Parameters</span></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">filtered_data</span></code> filter output, same length as <code class="docutils literal notranslate"><span class="pre">data</span></code></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>1D array</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The input data is zero-padded by the length of the FIR filter delay and trimmed
+back to the original length.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.filters.fir_filter_dt">
+<span class="sig-prename descclassname"><span class="pre">spudtr.filters.</span></span><span class="sig-name descname"><span class="pre">fir_filter_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/filters.html#fir_filter_dt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.filters.fir_filter_dt" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply FIRLS filtering to columns of dataframe-like synchronized discrete time series</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> (<em>pd.DataFrame</em><em> or </em><em>structured numpy nd.array with named data types</em>) – regularly sampled time-series data table: time (row) x data (columns)</p></li>
+<li><p><strong>col_names</strong> (<em>list of str</em>) – column names to apply the transform</p></li>
+<li><p><strong>key=val</strong> – see <a class="reference internal" href="#filter-parameters-label"><span class="std std-ref">check_filter params() Parameters</span></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>table-like copy with filtered data columns, the same size and object type as dt</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame or np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The input data is zero-padded by the length of the FIR filter delay and trimmed
+back to the original length.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ftype</span> <span class="o">=</span> <span class="s2">&quot;bandpass&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cutoff_hz</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span> <span class="mi">35</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">width_hz</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ripple_db</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window</span> <span class="o">=</span> <span class="s2">&quot;kaiser&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sfreq</span> <span class="o">=</span> <span class="mi">250</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fir_filter_dt</span> <span class="o">=</span> <span class="n">epochs_filters</span><span class="p">(</span>
+<span class="go">    dt,</span>
+<span class="go">    col_names,</span>
+<span class="go">    ftype=ftype,</span>
+<span class="go">    window=window,</span>
+<span class="go">    cutoff_hz=cutoff_hz,</span>
+<span class="go">    width_hz=width_hz,</span>
+<span class="go">    ripple_db=ripple_db,</span>
+<span class="go">    sfreq=sfreq,</span>
+<span class="go">    trim_edges=False</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ftype</span><span class="o">=</span><span class="s2">&quot;lowpass&quot;</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">width_hz</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ripple_db</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">sfreq</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s2">&quot;hamming&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fir_filter_dt</span> <span class="o">=</span> <span class="n">epochs_filters</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">col_names</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.filters.show_filter">
+<span class="sig-prename descclassname"><span class="pre">spudtr.filters.</span></span><span class="sig-name descname"><span class="pre">show_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/filters.html#show_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.filters.show_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Text summary and graphic display of filter attributes for the specified parameters.</p>
+<p>Figures are plotted for the transfer function, coefficients, and
+input-output performance on pure sine wave data with intervals of
+edge distortion highlighted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ftype</strong> (<em>str {'lowpass'</em><em> , </em><em>'highpass'</em><em>, </em><em>'bandpass'</em><em>, </em><em>'bandstop'}</em>) – filter type</p></li>
+<li><p><strong>cutoff_hz</strong> (<em>float</em><em> or </em><em>1D array-like</em><em>, </em><em>length=2</em>) – 1/2 amplitude cutoff frequency (Hz)</p></li>
+<li><p><strong>sfreq</strong> (<em>float</em>) – sampling frequency in samples per second</p></li>
+<li><p><strong>width_hz</strong> (<em>float</em><em>, </em><em>optional</em>) – pass-to-stop transition band width (Hz)</p></li>
+<li><p><strong>ripple_db</strong> (<em>float</em><em>, </em><em>optional</em>) – band ripple (dB)</p></li>
+<li><p><strong>window</strong> (<em>{'kaiser'</em><em>,</em><em>'hamming'</em><em>,</em><em>'hann'</em><em>,</em><em>'blackman'}</em><em>, </em><em>optional</em>) – window type for firwin</p></li>
+<li><p><strong>show_output</strong> (<em>bool</em>) – plot example filter input-output, default=True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>freq_phase</strong> (<em>matplotlib.Figure</em>) – plots frequency and phase response</p></li>
+<li><p><strong>imp_resp</strong> (<em>matplotlib.Figure</em>) – plots impulse and step response</p></li>
+<li><p><strong>s_edge</strong> (<em>float</em>) – number of seconds distorted at edge boundaries</p></li>
+<li><p><strong>n_edge</strong> (<em>int</em>) – number of samples distorted at edge boundaries</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For more information on the filter parameters see
+<a class="reference internal" href="#filter-parameters-label"><span class="std std-ref">check_filter params() Parameters</span></a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ftype</span> <span class="o">=</span> <span class="s1">&#39;lowpass&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cutoff_hz</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sfreq</span> <span class="o">=</span> <span class="mi">250</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">width_hz</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ripple_db</span> <span class="o">=</span> <span class="mf">53.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window</span> <span class="o">=</span> <span class="s1">&#39;kaiser&#39;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># fill in defaults for width_hz, ripple_db, window</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">show_filter</span><span class="p">(</span>
+<span class="go">      ftype=ftype,</span>
+<span class="go">      cutoff_hz=cutoff_hz,</span>
+<span class="go">      sfreq=sfreq</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># with all explicit parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">show_filter</span><span class="p">(</span>
+<span class="go">      ftype=ftype,</span>
+<span class="go">      cutoff_hz=cutoff_hz,</span>
+<span class="go">      sfreq=sfreq,</span>
+<span class="go">      width_hz=width_hz,</span>
+<span class="go">      ripple_db=ripple_db,</span>
+<span class="go">      window=window,</span>
+<span class="go">    )</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+spudtr.filters module
+=====================
+
+.. automodule:: spudtr.filters
+   :members:
+   :undoc-members:
+   :show-inheritance:

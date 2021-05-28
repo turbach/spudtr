@@ -1,0 +1,188 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Read and write epochs as HDF5, feather, or csv\n",
+    "\n",
+    "`spudtr` runs on `pandas.DataFrame` so use `pandas` IO tools to read and write epochs data.\n",
+    "\n",
+    "https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html\n",
+    "\n",
+    "\n",
+    "The `feather` format is a good choice for Python and R, the files are incrementally larger than HDF5 but read more quickly.\n",
+    "\n",
+    "The `HDF5` format is fairly portable across Python, R, and MATLAB.\n",
+    "\n",
+    "Both `feather` and `HDF5` are binary formats that read-write-read round trip with identical pandas dataframes.\n",
+    "\n",
+    "Writing the epochs data as text `.csv` is possible but the data do not round trip. It is a bad idea and should be used only as a desparate last resort."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Example: read HDF5 EEG data**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/turbach/miniconda3/envs/mckonda_spudtr_dev/lib/python3.6/site-packages/pyarrow/pandas_compat.py:752: FutureWarning: .labels was deprecated in version 0.24.0. Use .codes instead.\n",
+      "  labels, = index.labels\n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "from spudtr import epf\n",
+    "from spudtr import get_demo_df, P3_100_FEATHER  # small sample epochs file\n",
+    "\n",
+    "from spudtr import DATA_DIR # replace DATA_DIR with the path to your own data directory\n",
+    "\n",
+    "# fetch epochs data for demonstration \n",
+    "epochs_df = get_demo_df(P3_100_FEATHER)\n",
+    "\n",
+    "# verify the format\n",
+    "eeg_channels = ['MiPf', 'MiCe', 'MiPa', 'MiOc']\n",
+    "epf.check_epochs(epochs_df, eeg_channels, epoch_id=\"epoch_id\", time=\"time_ms\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**write/read epochs as feather**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "epochs_df.to_feather(DATA_DIR / \"io_demo.epochs.feather\")\n",
+    "epochs_df_fthr = pd.read_feather(DATA_DIR / \"io_demo.epochs.feather\")\n",
+    "\n",
+    "assert epochs_df.equals(epochs_df_fthr)  # verify round trip"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**write/read epochs as pandas/pytables HDF5**\n",
+    "\n",
+    "Note: The pandas default HDF5 file mode is `append`. This means the default behavior for re-running `.to_hdf()` in a jupyter notebook cell is to append copy after copy after copy of your epochs to the HDF5 file which is probably not what you want.\n",
+    "\n",
+    "To prevent this, call `to_hdf(..., mode=\"w\")`. This makes it behaves like `to_feather()` and save one copy of the current epochs data in the HDF5. Setting `format=\"fixed\"` is not necessary for read/writes in Python/pandas but it simplifies the guts of the HDF5 file and makes it more portable across platforms if that is of interest."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "epochs_df.to_hdf(DATA_DIR / \"io_demo.epochs.h5\", key=\"io_demo\", mode=\"w\", format=\"fixed\")\n",
+    "epochs_df_h5 = pd.read_hdf(DATA_DIR / \"io_demo.epochs.h5\", key=\"io_demo\")\n",
+    "\n",
+    "assert epochs_df.equals(epochs_df_h5)  # verify the round trip"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**verify the feather and HDF5 data are the same**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "assert epochs_df_fthr.equals(epochs_df_h5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**do not write/read epochs data as ascii text unless absolutely necessary ... it does not round trip**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "to_csv(), read_csv, does not round trip\n",
+      "even after an initial conversion to text\n"
+     ]
+    }
+   ],
+   "source": [
+    "# write the binary dataframe as a tab-separated text file\n",
+    "epochs_df.to_csv(DATA_DIR / \"io_demo.epochs.tsv\", index=False, sep=\"\\t\")\n",
+    "epochs_df_tsv = pd.read_csv(DATA_DIR / \"io_demo.epochs.tsv\", sep=\"\\t\")\n",
+    "\n",
+    "# write the dataframe read from from text back to (another) text file\n",
+    "epochs_df_tsv.to_csv(DATA_DIR / \"io_demo_2.epochs.tsv\", sep=\"\\t\")\n",
+    "epochs_df_tsv_2 = pd.read_csv(DATA_DIR / \"io_demo_2.epochs.tsv\", sep=\"\\t\")\n",
+    "\n",
+    "try:\n",
+    "    assert epochs_df.equals(epochs_df_tsv), \"to_csv(), read_csv, does not round trip\"\n",
+    "except AssertionError as fail:\n",
+    "    print(fail)\n",
+    "    \n",
+    "try:\n",
+    "    assert epochs_df_tsv.equals(epochs_df_tsv_2), \"even after an initial conversion to text\"\n",
+    "except AssertionError as fail:\n",
+    "    print(fail)\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

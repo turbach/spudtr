@@ -1,0 +1,739 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr.epf &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../spudtr.html">spudtr</a> &raquo;</li>
+        
+      <li>spudtr.epf</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for spudtr.epf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;utilities for epoched EEG data in a pandas.DataFrame &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">bottleneck</span> <span class="k">as</span> <span class="nn">bn</span>
+
+<span class="kn">from</span> <span class="nn">spudtr.filters</span> <span class="kn">import</span> <span class="n">_design_firwin_filter</span><span class="p">,</span> <span class="n">fir_filter_dt</span>
+
+<span class="n">EPOCH_ID</span> <span class="o">=</span> <span class="s2">&quot;epoch_id&quot;</span>  <span class="c1"># default epoch ID column</span>
+<span class="n">TIME</span> <span class="o">=</span> <span class="s2">&quot;time&quot;</span>  <span class="c1"># default time column</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_epochs_df</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check form and index of the epochs_df is as expected</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_df : pd.DataFrame</span>
+
+<span class="sd">    epoch_id : str (optional, default=epf.EPOCH_ID)</span>
+<span class="sd">        column name for epoch indexes</span>
+
+<span class="sd">    time: str (optional, default=epf.TIME)</span>
+<span class="sd">        column name for time stamps</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">:</span> <span class="n">epoch_id</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> column not found: </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_epochs_QC</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">data_streams</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Quality control for spudtr format epochs, returns epochs_df on success&quot;&quot;&quot;</span>
+
+    <span class="c1"># epochs_df must be a Pandas DataFrame.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;epochs_df must be a Pandas DataFrame.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># data_streams must be a list of strings</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_streams</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data_streams</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data_streams should be a list of strings.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># all channels must be present as epochs_df columns</span>
+    <span class="n">missing_channels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data_streams</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">epochs_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing_channels</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;data_streams should all be present in the epochs dataframe, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the following are missing: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">missing_channels</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># check no duplicate column names in index and regular columns</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">epochs_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">epochs_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Duplicate column names not allowed.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># epoch_id and time must be the columns in the epochs_df</span>
+    <span class="n">_validate_epochs_df</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="c1"># check values of epoch_id in every time group are the same, and</span>
+    <span class="c1"># unique in each time group. Make our own copy so we are immune to</span>
+    <span class="c1"># modification to original table</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">epoch_id</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">==</span> <span class="p">[</span><span class="n">epoch_id</span><span class="p">]</span>
+
+    <span class="n">snapshots</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">time</span><span class="p">])</span>
+
+    <span class="c1"># check that snapshots across epochs have equal index by transitivity</span>
+    <span class="n">prev_group</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">cur_group</span> <span class="ow">in</span> <span class="n">snapshots</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prev_group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prev_group</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">cur_group</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Snapshot </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> differs from &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;previous snapshot in </span><span class="si">{</span><span class="n">epoch_id</span><span class="si">}</span><span class="s2"> index:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Current snapshot&#39;s indices:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cur_group</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Previous snapshot&#39;s indices:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prev_group</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="n">prev_group</span> <span class="o">=</span> <span class="n">cur_group</span>
+
+    <span class="k">def</span> <span class="nf">list_duplicates</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+        <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">seen_add</span> <span class="o">=</span> <span class="n">seen</span><span class="o">.</span><span class="n">add</span>
+        <span class="c1"># adds all elements it doesn&#39;t know yet to seen and all other to seen_twice</span>
+        <span class="n">seen_twice</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seq</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seen</span> <span class="ow">or</span> <span class="n">seen_add</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1"># turn the set into a list (as requested)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">seen_twice</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">prev_group</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">is_unique</span><span class="p">:</span>
+        <span class="n">dupes</span> <span class="o">=</span> <span class="n">list_duplicates</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">prev_group</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Duplicate values of epoch_id in each&quot;</span> <span class="sa">f</span><span class="s2">&quot;time group not allowed:</span><span class="se">\n</span><span class="si">{</span><span class="n">dupes</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">epochs_df</span>
+
+
+<span class="k">def</span> <span class="nf">_hdf_read_epochs</span><span class="p">(</span><span class="n">epochs_f</span><span class="p">,</span> <span class="n">h5_group</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;read tabular hdf5 epochs file, return as pd.DataFrame</span>
+
+<span class="sd">    .. deprecated:: 0.0.9</span>
+<span class="sd">       Use native pandas HDF functions instead. Will be removed in 0.0.11</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_f : str</span>
+<span class="sd">        name of the recorded epochs file to load</span>
+
+<span class="sd">    h5_group : str</span>
+<span class="sd">        name of h5 group key</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        columns in INDEX_NAMES are pd.MultiIndex axis 0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;_hdf_read_epochs() is unused, untested, and deprecated in spudtr.epf v0.0.9 and will be removed in v0.0.11&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">h5_group</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You have to give h5_group key&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">epochs_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="n">epochs_f</span><span class="p">,</span> <span class="n">h5_group</span><span class="p">)</span>
+
+    <span class="n">_validate_epochs_df</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">epochs_df</span>
+
+
+<span class="k">def</span> <span class="nf">_find_subscript</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;start stop interval includes end both end time stamps</span>
+
+<span class="sd">    This makes the timestamp interval open left and right, </span>
+<span class="sd">    [start, stop] when slicing with pandas and open left, </span>
+<span class="sd">    closed right, [start, stop) when slicing with numpy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">istart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">times</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">istart</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;start is too large (</span><span class="si">%s</span><span class="s2">), it exceeds the largest &quot;</span> <span class="s2">&quot;time value&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start</span><span class="p">,)</span>
+        <span class="p">)</span>
+    <span class="n">istart</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">istart</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">istop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">times</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">istop</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;stop is too small (</span><span class="si">%s</span><span class="s2">), it is smaller than the &quot;</span>
+            <span class="s2">&quot;smallest time value&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stop</span><span class="p">,)</span>
+        <span class="p">)</span>
+    <span class="n">istop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">istop</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">istart</span> <span class="o">&gt;=</span> <span class="n">istop</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Bad rescaling slice (</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">) from time values </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="n">istart</span><span class="p">,</span> <span class="n">istop</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">istart</span><span class="p">,</span> <span class="n">istop</span>
+
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1"># user API</span>
+<span class="c1"># ------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="check_epochs"><a class="viewcode-back" href="../../source/spudtr.epf.html#spudtr.epf.check_epochs">[docs]</a><span class="k">def</span> <span class="nf">check_epochs</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">data_streams</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check epochs data are in spudtr format</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_df : pd.DataFrame</span>
+
+<span class="sd">    data_streams: list of str</span>
+<span class="sd">        the columns containing data</span>
+<span class="sd">        </span>
+<span class="sd">    epoch_id : str, optional</span>
+<span class="sd">        column name for the epoch index</span>
+
+<span class="sd">    time: str, optional</span>
+<span class="sd">        column name for the time stamps</span>
+
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    Exception </span>
+<span class="sd">       diagnostic for what went wrong</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_</span> <span class="o">=</span> <span class="n">_epochs_QC</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">data_streams</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="center_eeg"><a class="viewcode-back" href="../../source/spudtr.epf.html#spudtr.epf.center_eeg">[docs]</a><span class="k">def</span> <span class="nf">center_eeg</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;center (a.k.a. &quot;baseline&quot;) EEG amplitude on mean amplitude in [start, stop)</span>
+<span class="sd">    </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_df : pd.DataFrame</span>
+<span class="sd">        must have epoch_id and time columns</span>
+
+<span class="sd">    eeg_streams: list of str</span>
+<span class="sd">        column names to apply the transform</span>
+
+<span class="sd">    start,stop : int</span>
+<span class="sd">        basline interval time values, `start &lt;= t &lt;= stop`</span>
+
+<span class="sd">    epoch_id : str, optional</span>
+<span class="sd">        column to use for the epoch index</span>
+
+<span class="sd">    time : str, optional</span>
+<span class="sd">        column to use for the time stamp index</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    centered_epochs_df : pd.DataFrame</span>
+<span class="sd">       each epoch and channel time series centered on the [start, stop)</span>
+<span class="sd">       interval mean amplitude</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    The `start`, `stop` values pick the smallest and largest</span>
+<span class="sd">    timestamps in the interval, i.e., [start_stamp, stop_stamp], but</span>
+<span class="sd">    since the data are sliced with np.arange, the upper bound is not</span>
+<span class="sd">    included, i.e., start_stamp &lt;= timestamps &lt; stop_stamp.  So, for</span>
+<span class="sd">    instance, start=-200, stop=0, would include timestamps at -200,</span>
+<span class="sd">    -199, ... -1, but not 0. </span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_epochs_QC</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="c1"># calculate the row-index vector to slice the centering intervals</span>
+    <span class="n">n_times</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">[</span><span class="n">time</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="n">n_epochs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">[</span><span class="n">epoch_id</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="p">[</span><span class="n">time</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">istart</span><span class="p">,</span> <span class="n">istop</span> <span class="o">=</span> <span class="n">_find_subscript</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+    <span class="n">center_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">istart</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">n_times</span><span class="p">),</span> <span class="n">istop</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">n_times</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># use pandas iloc index slicing then groupby epoch_id to compute means</span>
+    <span class="n">mns</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">center_idxs</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">epoch_id</span><span class="p">)[</span><span class="n">eeg_streams</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="c1"># inflate the means to the shape of the data and subtract in place, not sure if view() saves memory</span>
+    <span class="n">centered_epochs_df</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">centered_epochs_df</span><span class="p">[</span><span class="n">eeg_streams</span><span class="p">]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">mns</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(),</span> <span class="n">n_times</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">centered_epochs_df</span></div>
+
+
+<div class="viewcode-block" id="drop_bad_epochs"><a class="viewcode-back" href="../../source/spudtr.epf.html#spudtr.epf.drop_bad_epochs">[docs]</a><span class="k">def</span> <span class="nf">drop_bad_epochs</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">bads_column</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Quality control data slicer, excludes previously tagged artifact epochs</span>
+
+<span class="sd">    All epochs tagged with a non-zero quality code on the specified</span>
+<span class="sd">    `bads_column` at the time stamp == 0 are excluded.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_df : pd.DataFrame</span>
+<span class="sd">        must have epoch_id and time row index names</span>
+
+<span class="sd">    bads_column : str</span>
+<span class="sd">        column name with QC codes: non-zero == drop</span>
+
+<span class="sd">    epoch_id : str, optional</span>
+<span class="sd">        column name for epoch indexes</span>
+
+<span class="sd">    time: str, optional</span>
+<span class="sd">        column name for time stamps</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    good_epochs_df : pd.DataFrame</span>
+<span class="sd">       subset of the epochs with code 0 on `bads_column` at timestamp == 0</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_epochs_QC</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="p">[</span><span class="n">bads_column</span><span class="p">],</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="c1"># get the group of time == 0</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">time</span><span class="p">])</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">good_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="n">epoch_id</span><span class="p">][</span><span class="n">group</span><span class="p">[</span><span class="n">bads_column</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">good_epochs_df</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="p">[</span><span class="n">epochs_df</span><span class="p">[</span><span class="n">epoch_id</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">good_idx</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">good_epochs_df</span></div>
+
+
+<div class="viewcode-block" id="re_reference"><a class="viewcode-back" href="../../source/spudtr.epf.html#spudtr.epf.re_reference">[docs]</a><span class="k">def</span> <span class="nf">re_reference</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">ref_type</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert EEG data recorded with a common reference to a different reference</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">       These transforms are intended for use with common reference EEG</span>
+<span class="sd">       data. Use with other types of data are at your own risk.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_df : pd.DataFrame</span>
+<span class="sd">        must have epoch_id and time row index names</span>
+<span class="sd">   </span>
+<span class="sd">    eeg_streams : list-like of str</span>
+<span class="sd">        the names of colums to transform</span>
+<span class="sd">       </span>
+<span class="sd">    ref : str or list-like of str</span>
+<span class="sd">        name of the 2nd stream for a linked pair, the new common</span>
+<span class="sd">        reference, or the complete list of streams to use for a common</span>
+<span class="sd">        average reference</span>
+<span class="sd">        </span>
+<span class="sd">    type : str = {&#39;linked_pair&#39;, &#39;new_common&#39;, &#39;common_average&#39;}</span>
+
+<span class="sd">    epoch_id : str, optional</span>
+
+<span class="sd">    time : str, optional</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">       a copy of epochs_df with `eeg_streams` re-referenced</span>
+
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+
+<span class="sd">    `linked_pair`</span>
+<span class="sd">       Transforms the EEG data to a &quot;linked&quot; pair reference:</span>
+
+<span class="sd">       .. math::</span>
+<span class="sd">          EEG_{\\text{re-referenced}} = EEG - (0.5 \\times EEG_{ref})</span>
+
+<span class="sd">       May be used to switch from an A1 left mastoid common reference to a</span>
+<span class="sd">       common linked A1, A2 mastoid reference (&quot;bimastoid&quot;).</span>
+
+<span class="sd">    `new_common`</span>
+<span class="sd">        Transforms EEG to a different common reference location:</span>
+<span class="sd">    </span>
+<span class="sd">        .. math::</span>
+<span class="sd">           EEG_{\\text{re-referenced}} = EEG - EEG_{ref}</span>
+
+<span class="sd">        May be used switch from an A1 common reference to a vertex or</span>
+<span class="sd">        nose-tip reference.</span>
+
+<span class="sd">    `common_average`</span>
+<span class="sd">        Transforms EEG to a common average reference of :math:`N` EEG reference streams</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">           EEG_{\\text{re-referenced}} = EEG - \\frac{\\sum_{i=0}^{i=N}{EEG_{ref[i]}}}{N}</span>
+
+
+<span class="sd">   </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    Switch from A1 reference to linked-mastoids</span>
+
+<span class="sd">    &gt;&gt;&gt; eeg_streams = [&#39;MiPf&#39;, &#39;MiCe&#39;, &#39;MiPa&#39;, &#39;MiOc&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; re_reference(epochs_df, eeg_streams, &#39;A2&#39;, &#39;linked_pair&#39;)</span>
+
+<span class="sd">    </span>
+<span class="sd">    Switch to a vertex reference, MiCe</span>
+
+<span class="sd">    &gt;&gt;&gt; eeg_streams = [&#39;MiPf&#39;, &#39;MiCe&#39;, &#39;MiPa&#39;, &#39;MiOc&#39;]  </span>
+<span class="sd">    &gt;&gt;&gt; br_epochs_df = epf.re_reference(epochs_df, eeg_streams, &#39;MiCe&#39;, &quot;new_common&quot;)</span>
+
+
+<span class="sd">    Switch to a common average reference (typically all available EEG data streams)</span>
+
+<span class="sd">    &gt;&gt;&gt; eeg_streams = [&#39;MiPf&#39;, &#39;MiCe&#39;, &#39;MiPa&#39;, &#39;MiOc&#39;]  </span>
+<span class="sd">    &gt;&gt;&gt; ref = eeg_streams</span>
+<span class="sd">    &gt;&gt;&gt; br_epochs_df = epf.re_reference(epochs_df, eeg_streams, ref, &quot;common_average&quot;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_epochs_QC</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="c1"># ref must be a list of strings with len(ref)&gt;1 for ref_type of &#39;common_average&#39;</span>
+    <span class="k">if</span> <span class="n">ref_type</span> <span class="o">==</span> <span class="s2">&quot;common_average&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">ref</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;ref should be a list of strings with length greater than 1.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ref_type</span> <span class="o">==</span> <span class="s2">&quot;linked_pair&quot;</span><span class="p">:</span>
+        <span class="n">new_ref</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="k">elif</span> <span class="n">ref_type</span> <span class="o">==</span> <span class="s2">&quot;new_common&quot;</span><span class="p">:</span>
+        <span class="n">new_ref</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">ref_type</span> <span class="o">==</span> <span class="s2">&quot;common_average&quot;</span><span class="p">:</span>
+        <span class="n">new_ref</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unknown reference type: ref_type=</span><span class="si">{</span><span class="n">ref_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">br_epochs_df</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">eeg_streams</span><span class="p">:</span>
+        <span class="n">br_epochs_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">br_epochs_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">-</span> <span class="n">new_ref</span>
+
+    <span class="k">return</span> <span class="n">br_epochs_df</span></div>
+
+
+<div class="viewcode-block" id="fir_filter_epochs"><a class="viewcode-back" href="../../source/spudtr.epf.html#spudtr.epf.fir_filter_epochs">[docs]</a><span class="k">def</span> <span class="nf">fir_filter_epochs</span><span class="p">(</span>
+    <span class="n">epochs_df</span><span class="p">,</span>
+    <span class="n">data_columns</span><span class="p">,</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">trim_edges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">epoch_id</span><span class="o">=</span><span class="n">EPOCH_ID</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="n">TIME</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;apply FIRLS filtering to spudtr format epoched data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    epochs_df : pd.DataFrame </span>
+<span class="sd">        must be a spudtr format epochs dataframe with epoch_id, time columns</span>
+<span class="sd">    data_columns: list of str</span>
+<span class="sd">        column names to apply the transform</span>
+<span class="sd">    ftype : str {&#39;lowpass&#39; , &#39;highpass&#39;, &#39;bandpass&#39;, &#39;bandstop&#39;}</span>
+<span class="sd">        filter type</span>
+<span class="sd">    cutoff_hz : float or 1D-array-like of floats, length 2</span>
+<span class="sd">        1/2 amplitude cutoff frequency in Hz</span>
+<span class="sd">    width_hz : float</span>
+<span class="sd">        pass-to-stop transition band width (Hz), symmetric for bandpass, bandstop</span>
+<span class="sd">    ripple_db : float</span>
+<span class="sd">        ripple, in dB, e.g., 53.0, 60.0</span>
+<span class="sd">    window : str {&#39;kaiser&#39;,&#39;hamming&#39;,&#39;hann&#39;,&#39;blackman&#39;}</span>
+<span class="sd">        window type for firwin</span>
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency, e.g., 250.0, 500.0</span>
+<span class="sd">    trim_edges : bool</span>
+<span class="sd">        True trim edges, False not trim edges</span>
+<span class="sd">    epoch_id : str {&quot;epoch_id&quot;}, optional</span>
+<span class="sd">        column name for epoch index</span>
+<span class="sd">    time: str {&quot;time&quot;}, optional</span>
+<span class="sd">        column name for timestamps</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        a copy of epochs_df, with data in `data_columns` filtered</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    All the filter parameters are mandatory, consider making a</span>
+<span class="sd">    ``filter_params`` dictionary and expanding it like so</span>
+<span class="sd">    ``fir_filter_epochs( ..., **filter_params)``.</span>
+
+<span class="sd">    By default the filtered epochs have the same length as the</span>
+<span class="sd">    original. The `trim_edges` option returns the center interval of</span>
+<span class="sd">    each epoch, free from distortion at the edges but this may result in</span>
+<span class="sd">    considerable data loss depending on the filter specifications.</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; ftype = &quot;bandpass&quot;</span>
+<span class="sd">    &gt;&gt;&gt; cutoff_hz = [18, 35]</span>
+<span class="sd">    &gt;&gt;&gt; sfreq = 250</span>
+<span class="sd">    &gt;&gt;&gt; window = &quot;kaiser&quot;</span>
+<span class="sd">    &gt;&gt;&gt; width_hz = 5</span>
+<span class="sd">    &gt;&gt;&gt; ripple_db = 60</span>
+<span class="sd">    &gt;&gt;&gt; epoch_id = &quot;epoch_id&quot;</span>
+<span class="sd">    &gt;&gt;&gt; time = &quot;time_ms&quot;</span>
+<span class="sd">    &gt;&gt;&gt; filt_test_df = epochs_filters(</span>
+<span class="sd">            epochs_df, </span>
+<span class="sd">            data_columns,</span>
+<span class="sd">            ftype=ftype,</span>
+<span class="sd">            cutoff_hz=cutoff_hz,</span>
+<span class="sd">            width_hz=width_hz,</span>
+<span class="sd">            ripple_db=ripple_db,</span>
+<span class="sd">            window=window,</span>
+<span class="sd">            sfreq=sfreq,</span>
+<span class="sd">            trim_edges=False</span>
+<span class="sd">            epoch_id=epoch_id</span>
+<span class="sd">            time=time</span>
+<span class="sd">    )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># it is crucial to enforce the spudtr epochs format because trimming</span>
+    <span class="c1"># needs to know about epoch boundaries and times</span>
+    <span class="n">_epochs_QC</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">data_columns</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="n">_fparams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># build and apply the filter</span>
+    <span class="n">filt_epochs_df</span> <span class="o">=</span> <span class="n">fir_filter_dt</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">data_columns</span><span class="p">,</span> <span class="o">**</span><span class="n">_fparams</span><span class="p">)</span>
+
+    <span class="c1"># this trims edges in *each epoch*, 1/2 length of the filter</span>
+    <span class="k">if</span> <span class="n">trim_edges</span><span class="p">:</span>
+        <span class="n">taps</span> <span class="o">=</span> <span class="n">_design_firwin_filter</span><span class="p">(</span><span class="o">**</span><span class="n">_fparams</span><span class="p">)</span>
+        <span class="n">n_edge</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">taps</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">filt_epochs_df</span><span class="p">[</span><span class="n">time</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">start_good</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="n">n_edge</span><span class="p">]</span>  <span class="c1"># first good sample</span>
+        <span class="n">stop_good</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">n_edge</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>  <span class="c1"># last good sample</span>
+        <span class="n">qstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> &gt;= @start_good and </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> &lt;= @stop_good&quot;</span>
+        <span class="n">filt_epochs_df</span> <span class="o">=</span> <span class="n">filt_epochs_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">qstr</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">filt_epochs_df</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

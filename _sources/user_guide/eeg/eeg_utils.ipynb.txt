@@ -1,0 +1,412 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Read single-trial EEG epochs"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "SyntaxError",
+     "evalue": "EOL while scanning string literal (__init__.py, line 115)",
+     "output_type": "error",
+     "traceback": [
+      "Traceback \u001b[0;36m(most recent call last)\u001b[0m:\n",
+      "  File \u001b[1;32m\"/home/turbach/miniconda3/envs/mckonda_spudtr_dev/lib/python3.6/site-packages/IPython/core/interactiveshell.py\"\u001b[0m, line \u001b[1;32m3343\u001b[0m, in \u001b[1;35mrun_code\u001b[0m\n    exec(code_obj, self.user_global_ns, self.user_ns)\n",
+      "\u001b[0;36m  File \u001b[0;32m\"<ipython-input-1-0468059d92f2>\"\u001b[0;36m, line \u001b[0;32m3\u001b[0;36m, in \u001b[0;35m<module>\u001b[0;36m\u001b[0m\n\u001b[0;31m    from spudtr import get_demo_df, P3_1500_FEATHER\u001b[0m\n",
+      "\u001b[0;36m  File \u001b[0;32m\"/mnt/cube/home/turbach/TPU_Projects/spudtr/spudtr/__init__.py\"\u001b[0;36m, line \u001b[0;32m115\u001b[0m\n\u001b[0;31m    print(f\"caching {DATA_DIR / filename})\u001b[0m\n\u001b[0m                                          ^\u001b[0m\n\u001b[0;31mSyntaxError\u001b[0m\u001b[0;31m:\u001b[0m EOL while scanning string literal\n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "from matplotlib import pyplot as plt\n",
+    "from spudtr import get_demo_df, P3_1500_FEATHER\n",
+    "from spudtr import epf"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "epochs_df = get_demo_df(P3_1500_FEATHER)\n",
+    "\n",
+    "# example: four midline EEG channels\n",
+    "eeg_channels = ['MiPf', 'MiCe', 'MiPa', 'MiOc']\n",
+    "\n",
+    "# check the epochs format\n",
+    "epf.check_epochs(epochs_df, eeg_channels, epoch_id=\"epoch_id\", time=\"time_ms\")\n",
+    "\n",
+    "# preview the entire dataframe\n",
+    "epochs_df"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Common A1 to average mastoid reference\n",
+    "\n",
+    "a.k.a. \"bimastoid\", \"linked mastoid\"\n",
+    "\n",
+    "**Warning, only valid for EEG recorded with a common A1 reference**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "epf.re_reference(\n",
+    "    epochs_df, \n",
+    "    eeg_channels, \n",
+    "    'A2', \n",
+    "    \"linked_pair\",\n",
+    "    epoch_id=\"epoch_id\", time=\"time_ms\",\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# New common reference\n",
+    "\n",
+    "> Note: Only valid for common reference EEG data.\n",
+    "\n",
+    "For example change from common A1 reference to a vertex or nose tip common reference.\n",
+    "\n",
+    "Note: new the new reference = 0 as expected."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# vertex location is MiCe\n",
+    "epf.re_reference(\n",
+    "    epochs_df, \n",
+    "    eeg_channels, \n",
+    "    'MiCe',\n",
+    "    \"new_common\", \n",
+    "    epoch_id='epoch_id', \n",
+    "    time='time_ms'\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Common average reference\n",
+    "\n",
+    "Note: for demonstration only, a real application would use all scalp locations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "reference_channels = [\"MiPf\", \"MiCe\", \"MiPa\", \"MiOc\", \"A2\"]\n",
+    "epf.re_reference(\n",
+    "    epochs_df, \n",
+    "    eeg_channels, \n",
+    "    reference_channels ,\n",
+    "    \"common_average\", \n",
+    "    epoch_id='epoch_id', \n",
+    "    time='time_ms'\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Center EEG data in an interval (baseline)\n",
+    "\n",
+    "> The `start` and `stop` interval units are the same as the time channel"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "start = -500\n",
+    "stop = -4\n",
+    "centered_eeg_df = epf.center_eeg(\n",
+    "    epochs_df, \n",
+    "    eeg_channels, \n",
+    "    start, \n",
+    "    stop, \n",
+    "    epoch_id='epoch_id', \n",
+    "    time='time_ms'\n",
+    ")\n",
+    "centered_eeg_df"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Exclude previously tagged artifacts\n",
+    "\n",
+    "This special-purpose filter drops entire epochs where the time-locking event at time 0 is tagged as bad for some reason on the specified `bads_column`. \n",
+    "\n",
+    "This implements a simple convention for pruning epochs based on tags generated by artifact screening functions.\n",
+    "\n",
+    "Any column can be used or constructed for this purpose."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Example: drop all epochs where `eeg_artifact` is other than 0 at `time_ms` == 0 "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "good_epochs = epf.drop_bad_epochs(\n",
+    "    epochs_df, \n",
+    "    bads_column=\"eeg_artifact\",\n",
+    "    epoch_id='epoch_id', \n",
+    "    time='time_ms',\n",
+    ")\n",
+    "\n",
+    "print(\"Total number of epoch ids: \", len(epochs_df[\"epoch_id\"].unique()))\n",
+    "print(\"Number of good epoch ids: \", len(good_epochs[\"epoch_id\"].unique()))\n",
+    "good_epochs"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Filter EEG epochs: "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Configure the filter**\n",
+    "\n",
+    "If left unspecified in `show_filter()` the optional parameters `width_hz`, `ripple_db` and `window` default to reasonable values.\n",
+    "\n",
+    "However, to **apply** the filter **all** parameters must be explicitly specified. You can use the defaults or something else."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from spudtr import filters\n",
+    "\n",
+    "# note this fills in default transition width, ripple, and window values\n",
+    "lp_params = {\n",
+    "    \"ftype\": \"lowpass\",  # lowpass, bandpass, highpass\n",
+    "    \"cutoff_hz\": 20,     # 1/2 amplitude frequency Hz\n",
+    "    \"sfreq\": 250.0,      # sampling rate in samples/second\n",
+    "}\n",
+    "\n",
+    "bode, imp, s_edge, n_edge = filters.show_filter(**lp_params);  # expand the dictionary with python ** trick"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Apply the filter**\n",
+    "\n",
+    "With **all** the parameters specified.\n",
+    "\n",
+    "Note the `**lp_params` python trick to expand the filter parameter dictionary for the keyword arguments."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# update the filter specs with default values\n",
+    "lp_params[\"window\"] = \"kaiser\"\n",
+    "lp_params[\"width_hz\"] = 5.0\n",
+    "lp_params[\"ripple_db\"] = 53.0\n",
+    "display(lp_params)\n",
+    "\n",
+    "epochs_df_lp = epf.fir_filter_epochs(\n",
+    "    epochs_df,\n",
+    "    data_columns=eeg_channels,\n",
+    "    epoch_id=\"epoch_id\",\n",
+    "    time=\"time_ms\",\n",
+    "    trim_edges=False,\n",
+    "    **lp_params,\n",
+    "    )\n",
+    "\n",
+    "times = epochs_df[\"time_ms\"].unique()\n",
+    "epoch_ids = epochs_df[\"epoch_id\"].unique()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "3. Compare the output"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Filter EEG epochs, trim distorted edges\n",
+    "\n",
+    "\n",
+    "Edge distortion is reduced by zero-padding, but not eliminated.\n",
+    "\n",
+    "How much to trim the epochs is your business."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "epochs_df_lp_trimmed = epf.fir_filter_epochs(\n",
+    "    epochs_df,\n",
+    "    data_columns=eeg_channels,\n",
+    "    epoch_id=\"epoch_id\",\n",
+    "    time=\"time_ms\",\n",
+    "    trim_edges=True,\n",
+    "    **lp_params,\n",
+    "    )\n",
+    "\n",
+    "trimmed_times = epochs_df_lp_trimmed[\"time_ms\"].unique()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Compare the output"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# select some epochs to show\n",
+    "epidxs = [0, 6, 20]\n",
+    "channel = \"MiPa\"\n",
+    "\n",
+    "for epidx in epidxs:\n",
+    "\n",
+    "    qstr = f\"epoch_id == @epoch_ids[{epidx}]\"\n",
+    "    f, ax = plt.subplots(figsize=(12,8))\n",
+    "    ax.set_title(f\"epoch_id={epidx}\",  fontsize=18)\n",
+    "    \n",
+    "    # unfiltered\n",
+    "    ax.plot(\n",
+    "        times,\n",
+    "        epochs_df.query(qstr)[channel],\n",
+    "        color=\"black\", \n",
+    "        label=\"unfiltered\"\n",
+    "    )\n",
+    "    \n",
+    "    # filtered, phase compensated with distortion\n",
+    "    ax.plot(\n",
+    "        times,\n",
+    "        epochs_df_lp.query(qstr)[channel],\n",
+    "        color=\"red\", \n",
+    "        label=\"filtered\"\n",
+    "    )\n",
+    "    \n",
+    "    # filtered, phase compensated, distortion trimmed\n",
+    "    ax.plot(\n",
+    "        trimmed_times,\n",
+    "        epochs_df_lp_trimmed.query(qstr)[channel], \n",
+    "        color=\"blue\", \n",
+    "        lw=3, \n",
+    "        label=\"filtered, trimmed\"\n",
+    "    )\n",
+    "\n",
+    "    # decorate the beginning and end of the delay shift distortion regions\n",
+    "    for xtime in [trimmed_times[0], trimmed_times[-1]]:\n",
+    "        \n",
+    "        # beginning and end of the trimmed data\n",
+    "        ax.axvline(xtime, color=\"red\")\n",
+    "        ax.annotate(\n",
+    "            s=f\"{str(xtime)} ms\", \n",
+    "            xy=(xtime, ax.get_ylim()[1]), \n",
+    "            fontsize=18, \n",
+    "            ha=\"center\", \n",
+    "            va=\"bottom\",\n",
+    "            bbox=dict(boxstyle=\"round\", ec=\"red\",fc=\"white\")\n",
+    "        )\n",
+    "            \n",
+    "        # highlight the trimmed region\n",
+    "        for bound in [0, -1]:\n",
+    "            ax.axvspan(\n",
+    "                times[bound], \n",
+    "                trimmed_times[bound], \n",
+    "                color=\"pink\", \n",
+    "                alpha=.2\n",
+    "            )\n",
+    "    \n",
+    "    ax.legend()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

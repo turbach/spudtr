@@ -1,0 +1,2398 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Time domain averages (wide) &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Reference" href="../../reference.html" />
+    <link rel="prev" title="Design a lowpass filter" href="../filter/filters.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#epochs-data">Epochs data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#visualization">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#eeg-data-processing">EEG data processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#time-domain-filters">Time-domain filters</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../user_guide.html#gallery">Gallery</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Time domain averages (wide)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Time-domain-averages-(long)">Time-domain averages (long)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Time-interval-measurments">Time interval measurments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../user_guide.html">User Guide</a> &raquo;</li>
+        
+      <li>Time domain averages (wide)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/user_guide/gallery/gallery.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Time-domain-averages-(wide)">
+<h1>Time domain averages (wide)<a class="headerlink" href="#Time-domain-averages-(wide)" title="Permalink to this headline">¶</a></h1>
+<p>Read and check the epochs</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">spudtr</span> <span class="kn">import</span> <span class="n">epf</span>
+<span class="kn">from</span> <span class="nn">spudtr</span> <span class="kn">import</span> <span class="n">get_demo_df</span><span class="p">,</span> <span class="n">DATA_DIR</span><span class="p">,</span> <span class="n">P3_1500_FEATHER</span>
+
+<span class="n">epochs_df</span> <span class="o">=</span> <span class="n">get_demo_df</span><span class="p">(</span><span class="n">P3_1500_FEATHER</span><span class="p">)</span>
+<span class="n">eeg_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MiPf&#39;</span><span class="p">,</span> <span class="s1">&#39;MiCe&#39;</span><span class="p">,</span> <span class="s1">&#39;MiPa&#39;</span><span class="p">,</span> <span class="s1">&#39;MiOc&#39;</span><span class="p">]</span>
+
+<span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_channels</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;time_ms&quot;</span><span class="p">)</span>
+<span class="n">epochs_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>sub_id</th>
+      <th>eeg_artifact</th>
+      <th>dblock_path</th>
+      <th>log_evcodes</th>
+      <th>log_ccodes</th>
+      <th>dblock_srate</th>
+      <th>ccode</th>
+      <th>instrument</th>
+      <th>...</th>
+      <th>RMOc</th>
+      <th>LLTe</th>
+      <th>RLTe</th>
+      <th>LLOc</th>
+      <th>RLOc</th>
+      <th>MiOc</th>
+      <th>A2</th>
+      <th>HEOG</th>
+      <th>rle</th>
+      <th>rhz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>-748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-25.093750</td>
+      <td>-0.753906</td>
+      <td>1.480469</td>
+      <td>-13.414062</td>
+      <td>-18.937500</td>
+      <td>-17.734375</td>
+      <td>5.660156</td>
+      <td>98.875000</td>
+      <td>-39.500000</td>
+      <td>38.375000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-24.593750</td>
+      <td>0.502441</td>
+      <td>-2.466797</td>
+      <td>-17.640625</td>
+      <td>-17.468750</td>
+      <td>-15.304688</td>
+      <td>1.968750</td>
+      <td>104.750000</td>
+      <td>-38.031250</td>
+      <td>41.281250</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>-740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-16.484375</td>
+      <td>-1.507812</td>
+      <td>3.947266</td>
+      <td>-15.648438</td>
+      <td>-10.085938</td>
+      <td>-11.171875</td>
+      <td>8.367188</td>
+      <td>102.062500</td>
+      <td>-33.656250</td>
+      <td>43.718750</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>-736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-11.804688</td>
+      <td>-15.070312</td>
+      <td>9.867188</td>
+      <td>-14.906250</td>
+      <td>-7.378906</td>
+      <td>-8.742188</td>
+      <td>9.351562</td>
+      <td>100.562500</td>
+      <td>-42.906250</td>
+      <td>37.406250</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>-732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-6.394531</td>
+      <td>-4.019531</td>
+      <td>9.125000</td>
+      <td>-10.679688</td>
+      <td>-6.886719</td>
+      <td>-8.015625</td>
+      <td>8.125000</td>
+      <td>98.375000</td>
+      <td>-43.875000</td>
+      <td>37.906250</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>224995</th>
+      <td>600</td>
+      <td>732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.671875</td>
+      <td>-3.517578</td>
+      <td>-4.441406</td>
+      <td>-4.718750</td>
+      <td>-4.671875</td>
+      <td>-3.400391</td>
+      <td>-4.429688</td>
+      <td>-4.406250</td>
+      <td>-3.900391</td>
+      <td>-4.371094</td>
+    </tr>
+    <tr>
+      <th>224996</th>
+      <td>600</td>
+      <td>736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.179688</td>
+      <td>-4.019531</td>
+      <td>-4.195312</td>
+      <td>-4.222656</td>
+      <td>-4.425781</td>
+      <td>-3.644531</td>
+      <td>-4.429688</td>
+      <td>-4.160156</td>
+      <td>-3.412109</td>
+      <td>-4.371094</td>
+    </tr>
+    <tr>
+      <th>224997</th>
+      <td>600</td>
+      <td>740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.425781</td>
+      <td>-3.767578</td>
+      <td>-4.441406</td>
+      <td>-3.974609</td>
+      <td>-4.425781</td>
+      <td>-3.400391</td>
+      <td>-4.429688</td>
+      <td>-4.160156</td>
+      <td>-3.900391</td>
+      <td>-4.859375</td>
+    </tr>
+    <tr>
+      <th>224998</th>
+      <td>600</td>
+      <td>744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.425781</td>
+      <td>-4.269531</td>
+      <td>-4.195312</td>
+      <td>-4.222656</td>
+      <td>-4.425781</td>
+      <td>-3.886719</td>
+      <td>-4.429688</td>
+      <td>-4.406250</td>
+      <td>-3.900391</td>
+      <td>-4.371094</td>
+    </tr>
+    <tr>
+      <th>224999</th>
+      <td>600</td>
+      <td>748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.179688</td>
+      <td>-4.019531</td>
+      <td>-3.947266</td>
+      <td>-4.222656</td>
+      <td>-4.179688</td>
+      <td>-3.400391</td>
+      <td>-4.183594</td>
+      <td>-4.406250</td>
+      <td>-3.412109</td>
+      <td>-4.371094</td>
+    </tr>
+  </tbody>
+</table>
+<p>225000 rows × 47 columns</p>
+</div></div>
+</div>
+<p>Group by <code class="docutils literal notranslate"><span class="pre">time</span></code> to compute the time-domain average of all epochs and select columns of interest</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">grand_wide</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;time_ms&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()[</span><span class="n">eeg_channels</span><span class="p">]</span>
+<span class="n">grand_wide</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;channel&#39;</span>
+<span class="n">grand_wide</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>channel</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+    <tr>
+      <th>time_ms</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>-748</th>
+      <td>-0.647500</td>
+      <td>-0.818429</td>
+      <td>-0.650280</td>
+      <td>-1.128954</td>
+    </tr>
+    <tr>
+      <th>-744</th>
+      <td>-0.590833</td>
+      <td>-0.838763</td>
+      <td>-0.648749</td>
+      <td>-1.025912</td>
+    </tr>
+    <tr>
+      <th>-740</th>
+      <td>-0.569167</td>
+      <td>-0.987738</td>
+      <td>-0.715166</td>
+      <td>-1.047582</td>
+    </tr>
+    <tr>
+      <th>-736</th>
+      <td>-0.600000</td>
+      <td>-1.013976</td>
+      <td>-0.672859</td>
+      <td>-0.980162</td>
+    </tr>
+    <tr>
+      <th>-732</th>
+      <td>-0.767500</td>
+      <td>-1.069512</td>
+      <td>-0.705796</td>
+      <td>-0.867579</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>732</th>
+      <td>1.345833</td>
+      <td>-0.855422</td>
+      <td>-1.573245</td>
+      <td>-1.943028</td>
+    </tr>
+    <tr>
+      <th>736</th>
+      <td>1.138333</td>
+      <td>-0.999023</td>
+      <td>-1.762801</td>
+      <td>-2.063682</td>
+    </tr>
+    <tr>
+      <th>740</th>
+      <td>0.985000</td>
+      <td>-1.031177</td>
+      <td>-1.794903</td>
+      <td>-2.081421</td>
+    </tr>
+    <tr>
+      <th>744</th>
+      <td>0.877500</td>
+      <td>-1.011374</td>
+      <td>-1.770285</td>
+      <td>-2.010948</td>
+    </tr>
+    <tr>
+      <th>748</th>
+      <td>0.866667</td>
+      <td>-0.863825</td>
+      <td>-1.608073</td>
+      <td>-1.863831</td>
+    </tr>
+  </tbody>
+</table>
+<p>375 rows × 4 columns</p>
+</div></div>
+</div>
+<p>Group by <code class="docutils literal notranslate"><span class="pre">time</span></code> and other columns to compute the average of subsets of epochs</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">subsets_wide</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;time_ms&quot;</span><span class="p">,</span> <span class="s2">&quot;stim&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()[</span><span class="n">eeg_channels</span><span class="p">]</span>
+<span class="n">subsets_wide</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;channel&quot;</span>
+<span class="n">subsets_wide</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>channel</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+    <tr>
+      <th>time_ms</th>
+      <th>stim</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="3" valign="top">-748</th>
+      <th>cal</th>
+      <td>-4.317307</td>
+      <td>-3.857553</td>
+      <td>-4.073911</td>
+      <td>-4.143690</td>
+    </tr>
+    <tr>
+      <th>standard</th>
+      <td>1.419520</td>
+      <td>0.651240</td>
+      <td>0.729152</td>
+      <td>0.773548</td>
+    </tr>
+    <tr>
+      <th>target</th>
+      <td>0.950000</td>
+      <td>1.211514</td>
+      <td>2.442932</td>
+      <td>-0.413608</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">-744</th>
+      <th>cal</th>
+      <td>-4.329327</td>
+      <td>-3.851473</td>
+      <td>-4.114043</td>
+      <td>-4.118098</td>
+    </tr>
+    <tr>
+      <th>standard</th>
+      <td>1.493151</td>
+      <td>0.686627</td>
+      <td>0.894989</td>
+      <td>1.060941</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">744</th>
+      <th>standard</th>
+      <td>-1.669520</td>
+      <td>0.564905</td>
+      <td>-2.007408</td>
+      <td>-2.380829</td>
+    </tr>
+    <tr>
+      <th>target</th>
+      <td>19.059999</td>
+      <td>0.232344</td>
+      <td>3.668494</td>
+      <td>3.395762</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">748</th>
+      <th>cal</th>
+      <td>-4.305288</td>
+      <td>-3.828247</td>
+      <td>-4.077405</td>
+      <td>-4.089811</td>
+    </tr>
+    <tr>
+      <th>standard</th>
+      <td>-1.566781</td>
+      <td>0.687771</td>
+      <td>-1.867695</td>
+      <td>-2.206024</td>
+    </tr>
+    <tr>
+      <th>target</th>
+      <td>18.730000</td>
+      <td>0.771514</td>
+      <td>4.286233</td>
+      <td>3.765410</td>
+    </tr>
+  </tbody>
+</table>
+<p>1125 rows × 4 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="Time-domain-averages-(long)">
+<h1>Time-domain averages (long)<a class="headerlink" href="#Time-domain-averages-(long)" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">subsets_long</span> <span class="o">=</span> <span class="n">subsets_wide</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>  <span class="c1"># pivot the channel columns into one long column</span>
+<span class="n">subsets_long</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;microvolts&quot;</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">subsets_long</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th></th>
+      <th>microvolts</th>
+    </tr>
+    <tr>
+      <th>time_ms</th>
+      <th>stim</th>
+      <th>channel</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">-748</th>
+      <th rowspan="4" valign="top">cal</th>
+      <th>MiPf</th>
+      <td>-4.317307</td>
+    </tr>
+    <tr>
+      <th>MiCe</th>
+      <td>-3.857553</td>
+    </tr>
+    <tr>
+      <th>MiPa</th>
+      <td>-4.073911</td>
+    </tr>
+    <tr>
+      <th>MiOc</th>
+      <td>-4.143690</td>
+    </tr>
+    <tr>
+      <th>standard</th>
+      <th>MiPf</th>
+      <td>1.419520</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">748</th>
+      <th>standard</th>
+      <th>MiOc</th>
+      <td>-2.206024</td>
+    </tr>
+    <tr>
+      <th rowspan="4" valign="top">target</th>
+      <th>MiPf</th>
+      <td>18.730000</td>
+    </tr>
+    <tr>
+      <th>MiCe</th>
+      <td>0.771514</td>
+    </tr>
+    <tr>
+      <th>MiPa</th>
+      <td>4.286233</td>
+    </tr>
+    <tr>
+      <th>MiOc</th>
+      <td>3.765410</td>
+    </tr>
+  </tbody>
+</table>
+<p>4500 rows × 1 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="Time-interval-measurments">
+<h1>Time interval measurments<a class="headerlink" href="#Time-interval-measurments" title="Permalink to this headline">¶</a></h1>
+<p>Interval measurments use the “slice-groupby-apply” pattern.</p>
+<ul class="simple">
+<li><p>slice the time interval rows</p></li>
+<li><p>group by epoch_id and other tags</p></li>
+<li><p>apply the measurment function to the data, e.g., pandas built-in or user-defined</p></li>
+</ul>
+<p>Start by doing the steps separately to verify.</p>
+<p>When the steps are right, chain them for compact expression.</p>
+<p>Example: single trial mean amplitude</p>
+<ol class="arabic simple">
+<li><p>Load the epochs</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eeg_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MiPf&quot;</span><span class="p">,</span> <span class="s2">&quot;MiCe&quot;</span><span class="p">,</span> <span class="s2">&quot;MiPa&quot;</span><span class="p">,</span> <span class="s2">&quot;MiOc&quot;</span><span class="p">]</span>
+
+<span class="n">epochs_df</span> <span class="o">=</span> <span class="n">get_demo_df</span><span class="p">(</span><span class="n">P3_1500_FEATHER</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;stim in [&quot;target&quot;, &quot;standard&quot;]&#39;</span><span class="p">)</span>
+<span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_channels</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;time_ms&quot;</span><span class="p">)</span>
+<span class="n">epochs_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>sub_id</th>
+      <th>eeg_artifact</th>
+      <th>dblock_path</th>
+      <th>log_evcodes</th>
+      <th>log_ccodes</th>
+      <th>dblock_srate</th>
+      <th>ccode</th>
+      <th>instrument</th>
+      <th>...</th>
+      <th>RMOc</th>
+      <th>LLTe</th>
+      <th>RLTe</th>
+      <th>LLOc</th>
+      <th>RLOc</th>
+      <th>MiOc</th>
+      <th>A2</th>
+      <th>HEOG</th>
+      <th>rle</th>
+      <th>rhz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>-748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-25.093750</td>
+      <td>-0.753906</td>
+      <td>1.480469</td>
+      <td>-13.414062</td>
+      <td>-18.937500</td>
+      <td>-17.734375</td>
+      <td>5.660156</td>
+      <td>98.875000</td>
+      <td>-39.500000</td>
+      <td>38.375000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-24.593750</td>
+      <td>0.502441</td>
+      <td>-2.466797</td>
+      <td>-17.640625</td>
+      <td>-17.468750</td>
+      <td>-15.304688</td>
+      <td>1.968750</td>
+      <td>104.750000</td>
+      <td>-38.031250</td>
+      <td>41.281250</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>-740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-16.484375</td>
+      <td>-1.507812</td>
+      <td>3.947266</td>
+      <td>-15.648438</td>
+      <td>-10.085938</td>
+      <td>-11.171875</td>
+      <td>8.367188</td>
+      <td>102.062500</td>
+      <td>-33.656250</td>
+      <td>43.718750</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>-736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-11.804688</td>
+      <td>-15.070312</td>
+      <td>9.867188</td>
+      <td>-14.906250</td>
+      <td>-7.378906</td>
+      <td>-8.742188</td>
+      <td>9.351562</td>
+      <td>100.562500</td>
+      <td>-42.906250</td>
+      <td>37.406250</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>-732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-6.394531</td>
+      <td>-4.019531</td>
+      <td>9.125000</td>
+      <td>-10.679688</td>
+      <td>-6.886719</td>
+      <td>-8.015625</td>
+      <td>8.125000</td>
+      <td>98.375000</td>
+      <td>-43.875000</td>
+      <td>37.906250</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>146995</th>
+      <td>391</td>
+      <td>732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>9.593750</td>
+      <td>10.804688</td>
+      <td>0.000000</td>
+      <td>4.472656</td>
+      <td>1.967773</td>
+      <td>4.617188</td>
+      <td>-3.937500</td>
+      <td>-9.296875</td>
+      <td>-10.242188</td>
+      <td>-2.429688</td>
+    </tr>
+    <tr>
+      <th>146996</th>
+      <td>391</td>
+      <td>736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>15.250000</td>
+      <td>15.578125</td>
+      <td>8.632812</td>
+      <td>10.429688</td>
+      <td>8.609375</td>
+      <td>10.929688</td>
+      <td>-0.246094</td>
+      <td>-7.343750</td>
+      <td>-7.800781</td>
+      <td>2.914062</td>
+    </tr>
+    <tr>
+      <th>146997</th>
+      <td>391</td>
+      <td>740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>11.070312</td>
+      <td>11.554688</td>
+      <td>4.195312</td>
+      <td>7.203125</td>
+      <td>6.886719</td>
+      <td>7.773438</td>
+      <td>-4.429688</td>
+      <td>-7.832031</td>
+      <td>-13.648438</td>
+      <td>-2.429688</td>
+    </tr>
+    <tr>
+      <th>146998</th>
+      <td>391</td>
+      <td>744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>13.039062</td>
+      <td>6.781250</td>
+      <td>6.414062</td>
+      <td>9.187500</td>
+      <td>10.578125</td>
+      <td>10.445312</td>
+      <td>0.246094</td>
+      <td>-8.320312</td>
+      <td>-8.773438</td>
+      <td>-1.457031</td>
+    </tr>
+    <tr>
+      <th>146999</th>
+      <td>391</td>
+      <td>748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>13.531250</td>
+      <td>8.539062</td>
+      <td>10.359375</td>
+      <td>11.671875</td>
+      <td>13.531250</td>
+      <td>11.906250</td>
+      <td>3.937500</td>
+      <td>-8.320312</td>
+      <td>-10.242188</td>
+      <td>0.485840</td>
+    </tr>
+  </tbody>
+</table>
+<p>147000 rows × 47 columns</p>
+</div></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>(optional) select the data columns of interest or skip this and use them all.</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">coi</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="s2">&quot;time_ms&quot;</span><span class="p">,</span> <span class="s2">&quot;stim&quot;</span><span class="p">,</span> <span class="s2">&quot;MiPf&quot;</span><span class="p">,</span> <span class="s2">&quot;MiCe&quot;</span><span class="p">,</span> <span class="s2">&quot;MiPa&quot;</span><span class="p">,</span> <span class="s2">&quot;MiOc&quot;</span><span class="p">]</span>
+<span class="n">mid</span> <span class="o">=</span> <span class="n">epochs_df</span><span class="p">[</span><span class="n">coi</span><span class="p">]</span>  <span class="c1"># select columns of interest</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">mid</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">mid</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>stim</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>-748</td>
+      <td>target</td>
+      <td>-54.5</td>
+      <td>2.781250</td>
+      <td>-8.828125</td>
+      <td>-17.734375</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-744</td>
+      <td>target</td>
+      <td>-56.5</td>
+      <td>-4.046875</td>
+      <td>-11.929688</td>
+      <td>-15.304688</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>-740</td>
+      <td>target</td>
+      <td>-55.5</td>
+      <td>-3.289062</td>
+      <td>-4.769531</td>
+      <td>-11.171875</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>-736</td>
+      <td>target</td>
+      <td>-60.5</td>
+      <td>-2.529297</td>
+      <td>0.954102</td>
+      <td>-8.742188</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>-732</td>
+      <td>target</td>
+      <td>-57.0</td>
+      <td>4.046875</td>
+      <td>9.781250</td>
+      <td>-8.015625</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>stim</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>146995</th>
+      <td>391</td>
+      <td>732</td>
+      <td>standard</td>
+      <td>9.5</td>
+      <td>3.289062</td>
+      <td>15.265625</td>
+      <td>4.617188</td>
+    </tr>
+    <tr>
+      <th>146996</th>
+      <td>391</td>
+      <td>736</td>
+      <td>standard</td>
+      <td>15.5</td>
+      <td>9.359375</td>
+      <td>21.234375</td>
+      <td>10.929688</td>
+    </tr>
+    <tr>
+      <th>146997</th>
+      <td>391</td>
+      <td>740</td>
+      <td>standard</td>
+      <td>9.0</td>
+      <td>3.792969</td>
+      <td>15.507812</td>
+      <td>7.773438</td>
+    </tr>
+    <tr>
+      <th>146998</th>
+      <td>391</td>
+      <td>744</td>
+      <td>standard</td>
+      <td>7.5</td>
+      <td>4.300781</td>
+      <td>15.507812</td>
+      <td>10.445312</td>
+    </tr>
+    <tr>
+      <th>146999</th>
+      <td>391</td>
+      <td>748</td>
+      <td>standard</td>
+      <td>6.0</td>
+      <td>4.554688</td>
+      <td>14.789062</td>
+      <td>11.906250</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Slice the time interval data sample (rows) to measure and verify by inspection</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mid_300_500</span> <span class="o">=</span> <span class="n">mid</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;time_ms &gt;= 300 and time_ms &lt;= 500&quot;</span><span class="p">)</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">mid_300_500</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">mid_300_500</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">mid_300_500</span><span class="p">[</span><span class="s2">&quot;time_ms&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">mid_300_500</span><span class="p">[</span><span class="s2">&quot;time_ms&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>stim</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>262</th>
+      <td>0</td>
+      <td>300</td>
+      <td>target</td>
+      <td>-46.0</td>
+      <td>69.5625</td>
+      <td>77.5000</td>
+      <td>29.640625</td>
+    </tr>
+    <tr>
+      <th>263</th>
+      <td>0</td>
+      <td>304</td>
+      <td>target</td>
+      <td>-41.5</td>
+      <td>78.4375</td>
+      <td>82.7500</td>
+      <td>33.531250</td>
+    </tr>
+    <tr>
+      <th>264</th>
+      <td>0</td>
+      <td>308</td>
+      <td>target</td>
+      <td>-39.0</td>
+      <td>83.1875</td>
+      <td>84.4375</td>
+      <td>33.031250</td>
+    </tr>
+    <tr>
+      <th>265</th>
+      <td>0</td>
+      <td>312</td>
+      <td>target</td>
+      <td>-39.5</td>
+      <td>81.9375</td>
+      <td>82.3125</td>
+      <td>29.875000</td>
+    </tr>
+    <tr>
+      <th>266</th>
+      <td>0</td>
+      <td>316</td>
+      <td>target</td>
+      <td>-36.5</td>
+      <td>82.6875</td>
+      <td>83.2500</td>
+      <td>31.828125</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>stim</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>146933</th>
+      <td>391</td>
+      <td>484</td>
+      <td>standard</td>
+      <td>14.5</td>
+      <td>3.541016</td>
+      <td>5.726562</td>
+      <td>5.585938</td>
+    </tr>
+    <tr>
+      <th>146934</th>
+      <td>391</td>
+      <td>488</td>
+      <td>standard</td>
+      <td>13.0</td>
+      <td>-4.300781</td>
+      <td>-5.484375</td>
+      <td>-1.943359</td>
+    </tr>
+    <tr>
+      <th>146935</th>
+      <td>391</td>
+      <td>492</td>
+      <td>standard</td>
+      <td>8.5</td>
+      <td>-6.578125</td>
+      <td>-10.015625</td>
+      <td>-1.214844</td>
+    </tr>
+    <tr>
+      <th>146936</th>
+      <td>391</td>
+      <td>496</td>
+      <td>standard</td>
+      <td>6.5</td>
+      <td>-11.382812</td>
+      <td>-14.789062</td>
+      <td>-0.971680</td>
+    </tr>
+    <tr>
+      <th>146937</th>
+      <td>391</td>
+      <td>500</td>
+      <td>standard</td>
+      <td>-1.5</td>
+      <td>-21.250000</td>
+      <td>-21.937500</td>
+      <td>-2.429688</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+300
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+500
+</pre></div></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p><strong>Group by</strong> epoch_id, i.e., single trial, and other column labels to preserve them, and <strong>apply</strong> the built-in <code class="docutils literal notranslate"><span class="pre">mean()</span></code> function.</p></li>
+</ol>
+<p><strong>Note</strong> the <code class="docutils literal notranslate"><span class="pre">time_ms</span></code> timestamps is just another column of data and also averaged in the interval.</p>
+<p><strong>Note</strong> <code class="docutils literal notranslate"><span class="pre">pandas.Dataframe</span></code> has dozens of <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/frame.html?highlight=dataframe%20methods#computations-descriptive-stats">built-in stats functions</a> besides mean: <code class="docutils literal notranslate"><span class="pre">max()</span></code>, <code class="docutils literal notranslate"><span class="pre">min()</span></code>, <code class="docutils literal notranslate"><span class="pre">std()</span></code>, <code class="docutils literal notranslate"><span class="pre">var()</span></code>, …</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mid_300_500_mna</span> <span class="o">=</span> <span class="n">mid_300_500</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="s2">&quot;stim&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">mid_300_500_mna</span><span class="o">.</span><span class="n">head</span><span class="p">(),</span> <span class="n">mid_300_500_mna</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>time_ms</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+    <tr>
+      <th>epoch_id</th>
+      <th>stim</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <th>target</th>
+      <td>400</td>
+      <td>-42.176472</td>
+      <td>42.853859</td>
+      <td>52.521751</td>
+      <td>12.860375</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <th>target</th>
+      <td>400</td>
+      <td>-14.617647</td>
+      <td>41.024815</td>
+      <td>42.625919</td>
+      <td>6.120811</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <th>target</th>
+      <td>400</td>
+      <td>-7.186275</td>
+      <td>24.073071</td>
+      <td>31.395679</td>
+      <td>13.836741</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <th>target</th>
+      <td>400</td>
+      <td>-16.911764</td>
+      <td>20.560892</td>
+      <td>26.349571</td>
+      <td>16.461147</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <th>target</th>
+      <td>400</td>
+      <td>13.039216</td>
+      <td>27.078394</td>
+      <td>22.416552</td>
+      <td>5.758588</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>time_ms</th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+    </tr>
+    <tr>
+      <th>epoch_id</th>
+      <th>stim</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>387</th>
+      <th>standard</th>
+      <td>400</td>
+      <td>13.911765</td>
+      <td>20.714920</td>
+      <td>22.612095</td>
+      <td>4.010857</td>
+    </tr>
+    <tr>
+      <th>388</th>
+      <th>standard</th>
+      <td>400</td>
+      <td>24.696079</td>
+      <td>-4.259727</td>
+      <td>0.098336</td>
+      <td>-2.500594</td>
+    </tr>
+    <tr>
+      <th>389</th>
+      <th>standard</th>
+      <td>400</td>
+      <td>27.578432</td>
+      <td>11.336646</td>
+      <td>14.499387</td>
+      <td>6.349677</td>
+    </tr>
+    <tr>
+      <th>390</th>
+      <th>standard</th>
+      <td>400</td>
+      <td>36.323528</td>
+      <td>-0.446557</td>
+      <td>3.442656</td>
+      <td>-0.209578</td>
+    </tr>
+    <tr>
+      <th>391</th>
+      <th>standard</th>
+      <td>400</td>
+      <td>11.490196</td>
+      <td>-12.447074</td>
+      <td>-6.483092</td>
+      <td>-2.429051</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>The epoch interval measurements are new data, re-label them appropriately.</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># drop the no longer meaningful time_ms column</span>
+<span class="n">mid_300_500_mna</span> <span class="o">=</span> <span class="n">mid_300_500_mna</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;time_ms&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># describe the type of measurment and interval</span>
+<span class="n">mid_300_500_mna</span><span class="p">[</span><span class="s2">&quot;measure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mna&quot;</span>
+<span class="n">mid_300_500_mna</span><span class="p">[</span><span class="s2">&quot;interval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;300_500&quot;</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">mid_300_500_mna</span><span class="o">.</span><span class="n">head</span><span class="p">(),</span> <span class="n">mid_300_500_mna</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+      <th>measure</th>
+      <th>interval</th>
+    </tr>
+    <tr>
+      <th>epoch_id</th>
+      <th>stim</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <th>target</th>
+      <td>-42.176472</td>
+      <td>42.853859</td>
+      <td>52.521751</td>
+      <td>12.860375</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <th>target</th>
+      <td>-14.617647</td>
+      <td>41.024815</td>
+      <td>42.625919</td>
+      <td>6.120811</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <th>target</th>
+      <td>-7.186275</td>
+      <td>24.073071</td>
+      <td>31.395679</td>
+      <td>13.836741</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <th>target</th>
+      <td>-16.911764</td>
+      <td>20.560892</td>
+      <td>26.349571</td>
+      <td>16.461147</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <th>target</th>
+      <td>13.039216</td>
+      <td>27.078394</td>
+      <td>22.416552</td>
+      <td>5.758588</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>MiPf</th>
+      <th>MiCe</th>
+      <th>MiPa</th>
+      <th>MiOc</th>
+      <th>measure</th>
+      <th>interval</th>
+    </tr>
+    <tr>
+      <th>epoch_id</th>
+      <th>stim</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>387</th>
+      <th>standard</th>
+      <td>13.911765</td>
+      <td>20.714920</td>
+      <td>22.612095</td>
+      <td>4.010857</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>388</th>
+      <th>standard</th>
+      <td>24.696079</td>
+      <td>-4.259727</td>
+      <td>0.098336</td>
+      <td>-2.500594</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>389</th>
+      <th>standard</th>
+      <td>27.578432</td>
+      <td>11.336646</td>
+      <td>14.499387</td>
+      <td>6.349677</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>390</th>
+      <th>standard</th>
+      <td>36.323528</td>
+      <td>-0.446557</td>
+      <td>3.442656</td>
+      <td>-0.209578</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+    <tr>
+      <th>391</th>
+      <th>standard</th>
+      <td>11.490196</td>
+      <td>-12.447074</td>
+      <td>-6.483092</td>
+      <td>-2.429051</td>
+      <td>mna</td>
+      <td>300_500</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<ol class="arabic simple" start="6">
+<li><p>(optional) Export the measurements data</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mid_300_500_mna</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">to_feather</span><span class="p">(</span><span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;p3_mid_mna_300_500.feather&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<ol class="arabic simple" start="7">
+<li><p>Chaining: All of the above, simplified by chaining. The results are verifiably identical.</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">coi</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="s2">&quot;time_ms&quot;</span><span class="p">,</span> <span class="s2">&quot;stim&quot;</span><span class="p">,</span> <span class="s2">&quot;MiPf&quot;</span><span class="p">,</span> <span class="s2">&quot;MiCe&quot;</span><span class="p">,</span> <span class="s2">&quot;MiPa&quot;</span><span class="p">,</span> <span class="s2">&quot;MiOc&quot;</span><span class="p">]</span>
+
+<span class="c1"># slice-groupby-apply</span>
+<span class="n">mid_300_500_mna_c</span>  <span class="o">=</span> <span class="p">(</span>
+    <span class="n">epochs_df</span><span class="p">[</span><span class="n">coi</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;time_ms &gt;= 300 and time_ms &lt;= 500&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="s2">&quot;stim&quot;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;time_ms&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># describe the type of measurment and interval</span>
+<span class="n">mid_300_500_mna_c</span><span class="p">[</span><span class="s2">&quot;measure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mna&quot;</span>
+<span class="n">mid_300_500_mna_c</span><span class="p">[</span><span class="s2">&quot;interval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;300_500&quot;</span>
+
+<span class="c1"># verify steps and chained agree</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">mid_300_500_mna_c</span> <span class="o">==</span> <span class="n">mid_300_500_mna</span><span class="p">)</span>
+
+<span class="c1"># export</span>
+<span class="n">mid_300_500_mna_c</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">to_feather</span><span class="p">(</span><span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;p3_mid_mna_300_500.feather&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../../reference.html" class="btn btn-neutral float-right" title="Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../filter/filters.html" class="btn btn-neutral float-left" title="Design a lowpass filter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

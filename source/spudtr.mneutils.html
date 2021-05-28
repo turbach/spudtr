@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr.mneutils module &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>spudtr.mneutils module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/source/spudtr.mneutils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-spudtr.mneutils">
+<span id="spudtr-mneutils-module"></span><h1>spudtr.mneutils module<a class="headerlink" href="#module-spudtr.mneutils" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="spudtr.mneutils.EpochsSpudtr">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">spudtr.mneutils.</span></span><span class="sig-name descname"><span class="pre">EpochsSpudtr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eeg_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eeg_locations_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_stamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/mneutils.html#EpochsSpudtr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.mneutils.EpochsSpudtr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">mne.epochs.EpochsArray</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.mneutils.categories2eventid">
+<span class="sig-prename descclassname"><span class="pre">spudtr.mneutils.</span></span><span class="sig-name descname"><span class="pre">categories2eventid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_stamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/mneutils.html#categories2eventid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.mneutils.categories2eventid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build an MNE events array and event_id dict from one or more categorical variables.</p>
+<p>This uses patsy formulas and dummy coded (full rank) design
+matrixes to construct the MNE format event_id dictionary and
+corresponding events array (events x 3) for tagging and binning
+single-trial epochs for time-domain aggregation into
+<code class="docutils literal notranslate"><span class="pre">mne.Evoked</span></code>, e.g., average event-related potentials (ERPs).</p>
+<p>A single category is split into the category levels, a.k.a conditions, bins,
+like so: <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">0</span> <span class="pre">+</span> <span class="pre">a</span></code>.</p>
+<p>Multiple categories fully crossed like so: <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">0</span> <span class="pre">+</span>&#160; <span class="pre">a:b</span></code> and <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">0</span> <span class="pre">+</span> <span class="pre">a:b:c</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epochs_df</strong> (<em>pandas.DataFrame</em>) – A spudtr format epochs data with <code class="docutils literal notranslate"><span class="pre">epoch_id</span></code>, <code class="docutils literal notranslate"><span class="pre">time</span></code> columns.</p></li>
+<li><p><strong>categories</strong> (<em>str</em><em> or </em><em>iterable of str</em>) – The column name(s) of the categorical variables.</p></li>
+<li><p><strong>epoch_id</strong> (<em>str</em>) – The name of the column with the unique epoch ids, e.g.,
+<code class="docutils literal notranslate"><span class="pre">epoch_id</span></code>, <code class="docutils literal notranslate"><span class="pre">Epoch_idx</span></code>.</p></li>
+<li><p><strong>time</strong> (<em>str</em>) – The name of the column with the regular epoch time stamps, e.g., <code class="docutils literal notranslate"><span class="pre">time</span></code>,
+<code class="docutils literal notranslate"><span class="pre">time_ms</span></code>, <code class="docutils literal notranslate"><span class="pre">time_s</span></code>.</p></li>
+<li><p><strong>time_stamp</strong> (<em>int The time stamp in the epoch to look up the</em>) – categorical variable values, e.g., <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>mne_event_id</strong> (<em>dict</em>) – An MNE Python event_id dictionary where each item is <code class="docutils literal notranslate"><span class="pre">label:</span>
+<span class="pre">event_code</span></code>.  The <code class="docutils literal notranslate"><span class="pre">label</span></code> is the column name from the patsy
+full-rank design matrix (incidence matrix) for the categories
+(thank you NJS). The <code class="docutils literal notranslate"><span class="pre">event_code</span></code> is the 1-based column index
+in the design matrix.</p></li>
+<li><p><strong>mne_events</strong> (<em>np.array, shape=(number_of_epochs, 3) there is one</em>) –</p>
+<p>row for each epoch in <code class="docutils literal notranslate"><span class="pre">epochs_df</span></code>. Each row is</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">[epoch_id,</span> <span class="pre">0,</span> <span class="pre">mne_event_code]</span></code></p>
+</div></blockquote>
+<p>where <code class="docutils literal notranslate"><span class="pre">mne_event_code</span></code> is the newly
+constructed event code derived from the <code class="docutils literal notranslate"><span class="pre">patsy</span></code> design matrix
+column</p>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Suppose at the specified time stamp the epochs_df categorical
+columns <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> have have the following levels: <code class="docutils literal notranslate"><span class="pre">a:</span> <span class="pre">a1,</span>
+<span class="pre">a2</span></code>, <code class="docutils literal notranslate"><span class="pre">b:</span> <span class="pre">b1,</span> <span class="pre">b2,</span> <span class="pre">b3</span></code></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">categories2eventid</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">time_stamp</span><span class="p">)</span>
+<span class="go">event_ids = {</span>
+<span class="go">    &quot;a[a1]&quot;: 1,</span>
+<span class="go">    &quot;a[a2]&quot;: 2</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">categories2eventid</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">time_stamp</span><span class="p">)</span>
+<span class="go">event_ids = {</span>
+<span class="go">    &quot;b[b1]&quot;: 1,</span>
+<span class="go">    &quot;b[b2]&quot;: 2,</span>
+<span class="go">    &quot;b[b3]&quot;: 3</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">categories2eventid</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="n">epoch_id</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">time_stamp</span><span class="p">)</span>
+<span class="go">event_ids = {</span>
+<span class="go">    &#39;a[a1]:b[b1]&#39;: 1,</span>
+<span class="go">    &#39;a[a2]:b[b1]&#39;: 2,</span>
+<span class="go">    &#39;a[a1]:b[b2]&#39;: 3,</span>
+<span class="go">    &#39;a[a2]:b[b2]&#39;: 4,</span>
+<span class="go">    &#39;a[a1]:b[b3]&#39;: 5,</span>
+<span class="go">    &#39;a[a2]:b[b3]&#39;: 6</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.mneutils.read_spudtr_epochs">
+<span class="sig-prename descclassname"><span class="pre">spudtr.mneutils.</span></span><span class="sig-name descname"><span class="pre">read_spudtr_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eeg_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eeg_locations_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_stamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/mneutils.html#read_spudtr_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.mneutils.read_spudtr_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spudtr format epochs data to MNE Epochs</strong> (<em>convert</em>) – </p></li>
+<li><p><strong>input_fname</strong> (<em>file name of spudtr format epochs data.</em>) – </p></li>
+<li><p><strong>eeg_streams</strong> (<em>list of str</em>) – column names of the data streams</p></li>
+<li><p><strong>eeg_locations_f</strong> (<em>path and file of mne_32chan_xyz_spherical.yml</em>) – </p></li>
+<li><p><strong>categories</strong> (<em>str</em><em> or </em><em>iterable of str</em>) – The column name(s) of the categorical variables.</p></li>
+<li><p><strong>time_stamp</strong> (<em>int The time stamp in the epoch to look up the</em>) – categorical variable values, e.g., <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+<li><p><strong>epoch_id</strong> (<em>str</em>) – name of the epoch index</p></li>
+<li><p><strong>time</strong> (<em>str</em>) – name of the time stamp index, e.g., “time_ms”</p></li>
+<li><p><strong>time_unit</strong> (<em>float</em>) – time stamp unit in seconds, e.g., 0.001 for milliseconds, 1.0
+for seconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>epochs</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>mne.Epochs</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

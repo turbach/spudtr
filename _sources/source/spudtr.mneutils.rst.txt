@@ -1,0 +1,7 @@
+spudtr.mneutils module
+======================
+
+.. automodule:: spudtr.mneutils
+   :members:
+   :undoc-members:
+   :show-inheritance:

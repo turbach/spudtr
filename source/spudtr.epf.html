@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr.epf module &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>spudtr.epf module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/source/spudtr.epf.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-spudtr.epf">
+<span id="spudtr-epf-module"></span><h1>spudtr.epf module<a class="headerlink" href="#module-spudtr.epf" title="Permalink to this headline">¶</a></h1>
+<p>utilities for epoched EEG data in a pandas.DataFrame</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.epf.center_eeg">
+<span class="sig-prename descclassname"><span class="pre">spudtr.epf.</span></span><span class="sig-name descname"><span class="pre">center_eeg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eeg_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epoch_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/epf.html#center_eeg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.epf.center_eeg" title="Permalink to this definition">¶</a></dt>
+<dd><p>center (a.k.a. “baseline”) EEG amplitude on mean amplitude in [start, stop)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epochs_df</strong> (<em>pd.DataFrame</em>) – must have epoch_id and time columns</p></li>
+<li><p><strong>eeg_streams</strong> (<em>list of str</em>) – column names to apply the transform</p></li>
+<li><p><strong>start</strong> (<em>int</em>) – basline interval time values, <cite>start &lt;= t &lt;= stop</cite></p></li>
+<li><p><strong>stop</strong> (<em>int</em>) – basline interval time values, <cite>start &lt;= t &lt;= stop</cite></p></li>
+<li><p><strong>epoch_id</strong> (<em>str</em><em>, </em><em>optional</em>) – column to use for the epoch index</p></li>
+<li><p><strong>time</strong> (<em>str</em><em>, </em><em>optional</em>) – column to use for the time stamp index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>centered_epochs_df</strong> – each epoch and channel time series centered on the [start, stop)
+interval mean amplitude</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The <cite>start</cite>, <cite>stop</cite> values pick the smallest and largest
+timestamps in the interval, i.e., [start_stamp, stop_stamp], but
+since the data are sliced with np.arange, the upper bound is not
+included, i.e., start_stamp &lt;= timestamps &lt; stop_stamp.  So, for
+instance, start=-200, stop=0, would include timestamps at -200,
+-199, … -1, but not 0.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.epf.check_epochs">
+<span class="sig-prename descclassname"><span class="pre">spudtr.epf.</span></span><span class="sig-name descname"><span class="pre">check_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epoch_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/epf.html#check_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.epf.check_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><p>check epochs data are in spudtr format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epochs_df</strong> (<em>pd.DataFrame</em>) – </p></li>
+<li><p><strong>data_streams</strong> (<em>list of str</em>) – the columns containing data</p></li>
+<li><p><strong>epoch_id</strong> (<em>str</em><em>, </em><em>optional</em>) – column name for the epoch index</p></li>
+<li><p><strong>time</strong> (<em>str</em><em>, </em><em>optional</em>) – column name for the time stamps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>Exception</strong> – diagnostic for what went wrong</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.epf.drop_bad_epochs">
+<span class="sig-prename descclassname"><span class="pre">spudtr.epf.</span></span><span class="sig-name descname"><span class="pre">drop_bad_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bads_column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epoch_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epoch_id'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/epf.html#drop_bad_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.epf.drop_bad_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quality control data slicer, excludes previously tagged artifact epochs</p>
+<p>All epochs tagged with a non-zero quality code on the specified
+<cite>bads_column</cite> at the time stamp == 0 are excluded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epochs_df</strong> (<em>pd.DataFrame</em>) – must have epoch_id and time row index names</p></li>
+<li><p><strong>bads_column</strong> (<em>str</em>) – column name with QC codes: non-zero == drop</p></li>
+<li><p><strong>epoch_id</strong> (<em>str</em><em>, </em><em>optional</em>) – column name for epoch indexes</p></li>
+<li><p><strong>time</strong> (<em>str</em><em>, </em><em>optional</em>) – column name for time stamps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>good_epochs_df</strong> – subset of the epochs with code 0 on <cite>bads_column</cite> at timestamp == 0</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.epf.fir_filter_epochs">
+<span class="sig-prename descclassname"><span class="pre">spudtr.epf.</span></span><span class="sig-name descname"><span class="pre">fir_filter_epochs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfreq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trim_edges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epoch_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/epf.html#fir_filter_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.epf.fir_filter_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply FIRLS filtering to spudtr format epoched data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epochs_df</strong> (<em>pd.DataFrame</em>) – must be a spudtr format epochs dataframe with epoch_id, time columns</p></li>
+<li><p><strong>data_columns</strong> (<em>list of str</em>) – column names to apply the transform</p></li>
+<li><p><strong>ftype</strong> (<em>str {'lowpass'</em><em> , </em><em>'highpass'</em><em>, </em><em>'bandpass'</em><em>, </em><em>'bandstop'}</em>) – filter type</p></li>
+<li><p><strong>cutoff_hz</strong> (<em>float</em><em> or </em><em>1D-array-like of floats</em><em>, </em><em>length 2</em>) – 1/2 amplitude cutoff frequency in Hz</p></li>
+<li><p><strong>width_hz</strong> (<em>float</em>) – pass-to-stop transition band width (Hz), symmetric for bandpass, bandstop</p></li>
+<li><p><strong>ripple_db</strong> (<em>float</em>) – ripple, in dB, e.g., 53.0, 60.0</p></li>
+<li><p><strong>window</strong> (<em>str {'kaiser'</em><em>,</em><em>'hamming'</em><em>,</em><em>'hann'</em><em>,</em><em>'blackman'}</em>) – window type for firwin</p></li>
+<li><p><strong>sfreq</strong> (<em>float</em>) – sampling frequency, e.g., 250.0, 500.0</p></li>
+<li><p><strong>trim_edges</strong> (<em>bool</em>) – True trim edges, False not trim edges</p></li>
+<li><p><strong>epoch_id</strong> (<em>str {&quot;epoch_id&quot;}</em><em>, </em><em>optional</em>) – column name for epoch index</p></li>
+<li><p><strong>time</strong> (<em>str {&quot;time&quot;}</em><em>, </em><em>optional</em>) – column name for timestamps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a copy of epochs_df, with data in <cite>data_columns</cite> filtered</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>All the filter parameters are mandatory, consider making a
+<code class="docutils literal notranslate"><span class="pre">filter_params</span></code> dictionary and expanding it like so
+<code class="docutils literal notranslate"><span class="pre">fir_filter_epochs(</span> <span class="pre">...,</span> <span class="pre">**filter_params)</span></code>.</p>
+<p>By default the filtered epochs have the same length as the
+original. The <cite>trim_edges</cite> option returns the center interval of
+each epoch, free from distortion at the edges but this may result in
+considerable data loss depending on the filter specifications.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ftype</span> <span class="o">=</span> <span class="s2">&quot;bandpass&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cutoff_hz</span> <span class="o">=</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span> <span class="mi">35</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sfreq</span> <span class="o">=</span> <span class="mi">250</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">window</span> <span class="o">=</span> <span class="s2">&quot;kaiser&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">width_hz</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ripple_db</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">epoch_id</span> <span class="o">=</span> <span class="s2">&quot;epoch_id&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time</span> <span class="o">=</span> <span class="s2">&quot;time_ms&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filt_test_df</span> <span class="o">=</span> <span class="n">epochs_filters</span><span class="p">(</span>
+<span class="go">        epochs_df,</span>
+<span class="go">        data_columns,</span>
+<span class="go">        ftype=ftype,</span>
+<span class="go">        cutoff_hz=cutoff_hz,</span>
+<span class="go">        width_hz=width_hz,</span>
+<span class="go">        ripple_db=ripple_db,</span>
+<span class="go">        window=window,</span>
+<span class="go">        sfreq=sfreq,</span>
+<span class="go">        trim_edges=False</span>
+<span class="go">        epoch_id=epoch_id</span>
+<span class="go">        time=time</span>
+<span class="go">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spudtr.epf.re_reference">
+<span class="sig-prename descclassname"><span class="pre">spudtr.epf.</span></span><span class="sig-name descname"><span class="pre">re_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eeg_streams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epoch_id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spudtr/epf.html#re_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spudtr.epf.re_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert EEG data recorded with a common reference to a different reference</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>These transforms are intended for use with common reference EEG
+data. Use with other types of data are at your own risk.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epochs_df</strong> (<em>pd.DataFrame</em>) – must have epoch_id and time row index names</p></li>
+<li><p><strong>eeg_streams</strong> (<em>list-like of str</em>) – the names of colums to transform</p></li>
+<li><p><strong>ref</strong> (<em>str</em><em> or </em><em>list-like of str</em>) – name of the 2nd stream for a linked pair, the new common
+reference, or the complete list of streams to use for a common
+average reference</p></li>
+<li><p><strong>type</strong> (<em>str = {'linked_pair'</em><em>, </em><em>'new_common'</em><em>, </em><em>'common_average'}</em>) – </p></li>
+<li><p><strong>epoch_id</strong> (<em>str</em><em>, </em><em>optional</em>) – </p></li>
+<li><p><strong>time</strong> (<em>str</em><em>, </em><em>optional</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a copy of epochs_df with <cite>eeg_streams</cite> re-referenced</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl>
+<dt><cite>linked_pair</cite></dt><dd><p>Transforms the EEG data to a “linked” pair reference:</p>
+<div class="math notranslate nohighlight">
+\[EEG_{\text{re-referenced}} = EEG - (0.5 \times EEG_{ref})\]</div>
+<p>May be used to switch from an A1 left mastoid common reference to a
+common linked A1, A2 mastoid reference (“bimastoid”).</p>
+</dd>
+<dt><cite>new_common</cite></dt><dd><p>Transforms EEG to a different common reference location:</p>
+<div class="math notranslate nohighlight">
+\[EEG_{\text{re-referenced}} = EEG - EEG_{ref}\]</div>
+<p>May be used switch from an A1 common reference to a vertex or
+nose-tip reference.</p>
+</dd>
+<dt><cite>common_average</cite></dt><dd><p>Transforms EEG to a common average reference of <span class="math notranslate nohighlight">\(N\)</span> EEG reference streams</p>
+<div class="math notranslate nohighlight">
+\[EEG_{\text{re-referenced}} = EEG - \frac{\sum_{i=0}^{i=N}{EEG_{ref[i]}}}{N}\]</div>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<p>Switch from A1 reference to linked-mastoids</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eeg_streams</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MiPf&#39;</span><span class="p">,</span> <span class="s1">&#39;MiCe&#39;</span><span class="p">,</span> <span class="s1">&#39;MiPa&#39;</span><span class="p">,</span> <span class="s1">&#39;MiOc&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">re_reference</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;linked_pair&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Switch to a vertex reference, MiCe</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eeg_streams</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MiPf&#39;</span><span class="p">,</span> <span class="s1">&#39;MiCe&#39;</span><span class="p">,</span> <span class="s1">&#39;MiPa&#39;</span><span class="p">,</span> <span class="s1">&#39;MiOc&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">br_epochs_df</span> <span class="o">=</span> <span class="n">epf</span><span class="o">.</span><span class="n">re_reference</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="s1">&#39;MiCe&#39;</span><span class="p">,</span> <span class="s2">&quot;new_common&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Switch to a common average reference (typically all available EEG data streams)</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eeg_streams</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MiPf&#39;</span><span class="p">,</span> <span class="s1">&#39;MiCe&#39;</span><span class="p">,</span> <span class="s1">&#39;MiPa&#39;</span><span class="p">,</span> <span class="s1">&#39;MiOc&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">eeg_streams</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">br_epochs_df</span> <span class="o">=</span> <span class="n">epf</span><span class="o">.</span><span class="n">re_reference</span><span class="p">(</span><span class="n">epochs_df</span><span class="p">,</span> <span class="n">eeg_streams</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="s2">&quot;common_average&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

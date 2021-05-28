@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>spudtr</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for spudtr</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="c1"># single source the python package version</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.0.17&quot;</span>
+
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+<span class="n">RESOURCES_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="s2">&quot;resources&quot;</span>
+
+<span class="c1"># DEPRECATED in v.0.0.9, to be removed v0.0.11</span>
+<span class="c1"># local EEG files for testing and docs in DATA_DIR</span>
+<span class="n">P3_F</span> <span class="o">=</span> <span class="s2">&quot;gh_sub000p3.epochs.h5&quot;</span>
+<span class="n">P5_F</span> <span class="o">=</span> <span class="s2">&quot;gh_sub000p5.epochs.h5&quot;</span>
+<span class="n">WR_F</span> <span class="o">=</span> <span class="s2">&quot;gh_sub000wr.epochs.h5&quot;</span>
+
+
+<span class="c1"># Zenodo epochs files for testing and docs</span>
+<span class="n">DATA_URL</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;https://zenodo.org/record/3968485/files/&quot;</span>
+<span class="n">P3_100_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000p3.ms100.epochs.feather&quot;</span>
+<span class="n">P5_100_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000p50.ms100.epochs.feather&quot;</span>
+<span class="n">WR_100_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000wr.ms100.epochs.feather&quot;</span>
+<span class="n">PM_100_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000pm.ms100.epochs.feather&quot;</span>
+
+<span class="n">P3_1500_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000p3.ms1500.epochs.feather&quot;</span>
+<span class="n">P5_1500_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000p50.ms1500.epochs.feather&quot;</span>
+<span class="n">WR_1500_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000wr.ms1500.epochs.feather&quot;</span>
+<span class="n">PM_1500_FEATHER</span> <span class="o">=</span> <span class="s2">&quot;sub000pm.ms1500.epochs.feather&quot;</span>
+
+
+<div class="viewcode-block" id="get_ver"><a class="viewcode-back" href="../source/spudtr.html#spudtr.get_ver">[docs]</a><span class="k">def</span> <span class="nf">get_ver</span><span class="p">():</span>
+    <span class="n">pf_ver</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?P&lt;ver_str&gt;\d+\.\d+\.\d+\S*)&quot;</span><span class="p">,</span> <span class="n">__version__</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pf_ver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;Illegal spudtr __version__: </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">        spudtr __init__.py must have an X.Y.Z semantic version, e.g.,</span>
+
+<span class="s2">        __version__ = &#39;0.0.0&#39;</span>
+<span class="s2">        __version__ = &#39;0.0.0.dev0&#39;</span>
+<span class="s2">        __version__ = &#39;0.0.0rc1&#39;</span>
+
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pf_ver</span><span class="p">[</span><span class="s2">&quot;ver_str&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_demo_df"><a class="viewcode-back" href="../source/spudtr.html#spudtr.get_demo_df">[docs]</a><span class="k">def</span> <span class="nf">get_demo_df</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">DATA_URL</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;fetch and cache feather format demo EEG epochs data </span>
+
+<span class="sd">    default = Zenodo eeg-workshops/mkpy_data_examples/data, v0.0.3</span>
+<span class="sd">              https://doi.org/10.5281/zenodo.3968485/files</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">       file to fetch</span>
+
+<span class="sd">    url : str {DATA_URL}</span>
+<span class="sd">       top-level URL to fetch from</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        spudtr epochs format data frame with epoch_id, time_ms columns</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span> <span class="nn">io</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="kn">import</span> <span class="nn">requests</span>  <span class="c1"># URL IO</span>
+
+    <span class="c1"># shortcut if previously downloaded</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">DATA_DIR</span> <span class="o">/</span> <span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">DATA_DIR</span> <span class="o">/</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">DATA_DIR</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># otherwise download</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;downloading ./spudtr/data/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> ... please wait&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="sa">r</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">+=</span> <span class="sa">r</span><span class="s2">&quot;/&quot;</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">resp</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">decode_content</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">mem_fh</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">mem_fh</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;time_ms&quot;</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;match_time&quot;</span><span class="p">])</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;sub_id&quot;</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;data_group&quot;</span><span class="p">])</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;eeg_artifact&quot;</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;log_flags&quot;</span><span class="p">])</span>
+    <span class="n">_mkh5_internal</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;data_group&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dblock_tick_idx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dblock_ticks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;crw_ticks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;raw_evcodes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;log_flags&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;epoch_match_tick_delta&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;epoch_ticks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;idx&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dlim&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;match_str&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;match_code&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;match_tick&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;match_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;match_group&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;is_anchor&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_str&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_code&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_tick&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_tick_delta&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_time_delta&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;regexp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pygarv&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">_mkh5_internal</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">to_feather</span><span class="p">(</span><span class="n">DATA_DIR</span> <span class="o">/</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

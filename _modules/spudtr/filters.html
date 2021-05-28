@@ -1,0 +1,1114 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr.filters &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/user_guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../spudtr.html">spudtr</a> &raquo;</li>
+        
+      <li>spudtr.filters</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for spudtr.filters</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;FIR filter wrappers and utility functions. </span>
+
+<span class="sd">All filter functions require explicit parameters except</span>
+<span class="sd">``check_filter_params()`` and ``show_filter()`` which will,</span>
+<span class="sd">respectively, return and display suggested defaults for ``window``,</span>
+<span class="sd">``width_hz`` (transition band) and ``ripple_db`` if these are not</span>
+<span class="sd">specified.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">fftpack</span>
+
+<span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">LOGGER</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">kaiserord</span><span class="p">,</span> <span class="n">firwin</span><span class="p">,</span> <span class="n">freqz</span><span class="p">,</span> <span class="n">lfilter</span>
+
+
+<span class="n">FTYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lowpass&quot;</span><span class="p">,</span> <span class="s2">&quot;highpass&quot;</span><span class="p">,</span> <span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="s2">&quot;bandstop&quot;</span><span class="p">]</span>
+<span class="n">WINDOWS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;kaiser&quot;</span><span class="p">,</span> <span class="s2">&quot;hamming&quot;</span><span class="p">,</span> <span class="s2">&quot;hann&quot;</span><span class="p">,</span> <span class="s2">&quot;blackman&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1"># &quot;private&quot;-ish functions</span>
+
+
+<span class="k">def</span> <span class="nf">_trans_bwidth_ripple</span><span class="p">(</span><span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate reasonable default transition width and ripple dB</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    ftype : string</span>
+<span class="sd">        filter type, e.g., &#39;lowpass&#39; , &#39;highpass&#39;, &#39;bandpass&#39;, &#39;bandstop&#39;</span>
+<span class="sd">    cutoff_hz : float or 1D array_like</span>
+<span class="sd">        cutoff frequency in Hz</span>
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency per second, e.g., 250.0, 500.0</span>
+<span class="sd">    window : string</span>
+<span class="sd">        window type for firwin, e.g., &#39;kaiser&#39;,&#39;hamming&#39;,&#39;hann&#39;,&#39;blackman&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    width_hz : float</span>
+<span class="sd">        transition band width start to stop in Hz</span>
+<span class="sd">    ripple_db : float</span>
+<span class="sd">        attenuation in the stop band, in dB</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ftype</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">sfreq</span><span class="p">,</span> <span class="n">window</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="n">kwarg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lowpass&quot;</span><span class="p">:</span>
+        <span class="n">width_hz</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">cutoff_hz</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">cutoff_hz</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;highpass&quot;</span><span class="p">:</span>
+        <span class="n">width_hz</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">cutoff_hz</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="n">sfreq</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">cutoff_hz</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bandpass&quot;</span> <span class="ow">or</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bandstop&quot;</span><span class="p">:</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="n">sfreq</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">width_hz</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="k">if</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kaiser&quot;</span> <span class="ow">or</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hamming&quot;</span><span class="p">:</span>
+        <span class="n">ripple_db</span> <span class="o">=</span> <span class="mi">53</span>
+    <span class="k">elif</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hann&quot;</span><span class="p">:</span>
+        <span class="n">ripple_db</span> <span class="o">=</span> <span class="mi">44</span>
+    <span class="k">elif</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;blackman&quot;</span><span class="p">:</span>
+        <span class="n">ripple_db</span> <span class="o">=</span> <span class="mi">74</span>
+
+    <span class="k">return</span> <span class="n">width_hz</span><span class="p">,</span> <span class="n">ripple_db</span>
+
+
+<span class="k">def</span> <span class="nf">_suggest_epoch_length</span><span class="p">(</span><span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency, i.e. 250.0</span>
+<span class="sd">    width_hz : float</span>
+<span class="sd">        width of transition region in Hz</span>
+<span class="sd">    ripple_db : float</span>
+<span class="sd">        ripple in dB</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; sfreq = 250</span>
+<span class="sd">    &gt;&gt;&gt; ripple_db = 60</span>
+<span class="sd">    &gt;&gt;&gt; width_hz = 4</span>
+<span class="sd">    &gt;&gt;&gt; suggest_epoch_length(sfreq, ripple_db, width_hz)</span>
+<span class="sd">    your epoch length should be  230  points, or  0.92  seconds at least.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">sfreq</span><span class="p">,</span> <span class="n">width_hz</span><span class="p">,</span> <span class="n">ripple_db</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="n">kwarg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="c1"># Nyquist frequency</span>
+    <span class="n">nyq_rate</span> <span class="o">=</span> <span class="n">sfreq</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="c1"># transition band width in normalizied frequency</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="n">nyq_rate</span>
+
+    <span class="c1"># order and Kaiser parameter for the FIR filter.</span>
+    <span class="c1"># The parameters returned by this function are generally used for the window method with firwin.</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">kaiserord</span><span class="p">(</span><span class="n">ripple_db</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;your epoch length should be &quot;</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">,</span>
+        <span class="s2">&quot; points, or &quot;</span><span class="p">,</span>
+        <span class="n">N</span> <span class="o">/</span> <span class="n">sfreq</span><span class="p">,</span>
+        <span class="s2">&quot; seconds at least. &quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">N</span>
+
+
+<span class="k">def</span> <span class="nf">_mfreqz</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; Plot the frequency and phase response of a digital filter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    b : array_like</span>
+<span class="sd">        numerator of a linear filter</span>
+<span class="sd">    a : array_like</span>
+<span class="sd">        denominator of a linear filter</span>
+<span class="sd">    cutoff_hz : float or 1D array_like</span>
+<span class="sd">        cutoff frequency in Hz</span>
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency, e.g., 250.0, 500.0</span>
+<span class="sd">    width_hz : float</span>
+<span class="sd">        transition band width start to stop in Hz</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : `~.figure.Figure`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">sfreq</span><span class="p">,</span> <span class="n">width_hz</span><span class="p">,</span> <span class="n">a</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="n">kwarg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">freqz</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">h_dB</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax_freq</span><span class="p">,</span> <span class="n">ax_freq_phase</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># make a little extra space between the subplots</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+
+    <span class="c1"># frequency response plot</span>
+    <span class="n">nyq_rate</span> <span class="o">=</span> <span class="n">sfreq</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">ax_freq</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">w</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">nyq_rate</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+    <span class="n">cutoff_hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">)</span>
+    <span class="n">lstyle</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="s2">&quot;lw&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;r&quot;</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">cutoff_hz</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ax_freq</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cutoff_hz</span> <span class="o">+</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">lstyle</span><span class="p">)</span>
+        <span class="n">ax_freq</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cutoff_hz</span> <span class="o">-</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">lstyle</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax_freq</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">lstyle</span><span class="p">)</span>
+        <span class="n">ax_freq</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">lstyle</span><span class="p">)</span>
+        <span class="n">ax_freq</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">lstyle</span><span class="p">)</span>
+        <span class="n">ax_freq</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">lstyle</span><span class="p">)</span>
+
+    <span class="n">ax_freq</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Gain&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Frequency Response&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ax_freq.set_xlim(0, nyq_rate)</span>
+    <span class="n">ax_freq</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">nyq_rate</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax_freq</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+
+    <span class="c1"># frequency-phase plot</span>
+    <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">h_dB</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Magnitude (db)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Normalized Frequency (x$\pi$rad/sample)&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Frequency and Phase response&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq_phaseb</span> <span class="o">=</span> <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+    <span class="n">h_Phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">h</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">h</span><span class="p">)))</span>
+    <span class="n">ax_freq_phaseb</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">h_Phase</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq_phaseb</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Phase (radians)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+    <span class="n">ax_freq_phase</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span>
+
+
+<span class="k">def</span> <span class="nf">_impz</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; Plot step and impulse response.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    b : array_like</span>
+<span class="sd">        numerator of a linear filter</span>
+<span class="sd">    a : array_like</span>
+<span class="sd">        denominator of a linear filter</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : `~.figure.Figure`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="n">kwarg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">impulse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+    <span class="n">impulse</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">lfilter</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">impulse</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># make a little extra space between the subplots</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+
+    <span class="n">ax1</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">use_line_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Amplitude&quot;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;n (samples)&quot;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Impulse response&quot;</span><span class="p">)</span>
+
+    <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">use_line_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Amplitude&quot;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;n (samples)&quot;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Step response&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span>
+
+
+<span class="k">def</span> <span class="nf">_design_firwin_filter</span><span class="p">(</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;calculate odd length, symmetric, linear phase FIR filter coefficients</span>
+
+<span class="sd">    FIRLS at https://scipy-cookbook.readthedocs.io/items/FIRFilter.html</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    ftype : string</span>
+<span class="sd">        filter type, one of &#39;lowpass&#39; , &#39;highpass&#39;, &#39;bandpass&#39;, &#39;bandstop&#39;</span>
+
+<span class="sd">    cutoff_hz : float or 1D array_like</span>
+<span class="sd">        cutoff frequency in Hz, e.g., 5.0, 30.0 for lowpass or</span>
+<span class="sd">        highpass. 1D array_like, e.g. [10.0, 30.0] for bandpass or</span>
+<span class="sd">        bandstop</span>
+
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency, e.g., 250.0, 500.0</span>
+
+<span class="sd">    width_hz : float</span>
+<span class="sd">        transition band width start to stop in Hz</span>
+
+<span class="sd">    ripple_db : float</span>
+<span class="sd">        attenuation in the stop band, in dB, e.g., 24.0, 60.0</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    taps : np.array</span>
+<span class="sd">        coefficients of FIR filter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">kwarg</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ftype</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">sfreq</span><span class="p">,</span> <span class="n">width_hz</span><span class="p">,</span> <span class="n">ripple_db</span><span class="p">,</span> <span class="n">window</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="n">kwarg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="n">check_filter_params</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Nyquist frequency</span>
+    <span class="n">nyq_rate</span> <span class="o">=</span> <span class="n">sfreq</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="c1"># transition band width in normalizied frequency</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">width_hz</span> <span class="o">/</span> <span class="n">nyq_rate</span>
+
+    <span class="c1"># order and Kaiser parameter for the FIR filter.</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">kaiserord</span><span class="p">(</span><span class="n">ripple_db</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">N</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># enforce odd number of taps</span>
+
+    <span class="c1"># create a FIR filter using firwin</span>
+    <span class="k">if</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lowpass&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kaiser&quot;</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+                <span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;kaiser&quot;</span><span class="p">,</span> <span class="n">beta</span><span class="p">),</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;lowpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;lowpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;highpass&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kaiser&quot;</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+                <span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;kaiser&quot;</span><span class="p">,</span> <span class="n">beta</span><span class="p">),</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;highpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;highpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bandpass&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kaiser&quot;</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+                <span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;kaiser&quot;</span><span class="p">,</span> <span class="n">beta</span><span class="p">),</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bandstop&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">window</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;kaiser&quot;</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+                <span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;kaiser&quot;</span><span class="p">,</span> <span class="n">beta</span><span class="p">),</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandstop&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">taps</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandstop&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">sfreq</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">taps</span>
+
+
+<span class="k">def</span> <span class="nf">_sins_test_data</span><span class="p">(</span>
+    <span class="n">freq_list</span><span class="p">,</span> <span class="n">amplitude_list</span><span class="p">,</span> <span class="n">sampling_freq</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">show_plot</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;creat a noisy signal to test the filter</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    freq_list : float, list</span>
+
+<span class="sd">    amplitude_list : float, list</span>
+
+<span class="sd">    sampling_freq : float, optional</span>
+<span class="sd">        sampling frequency, default is 250.0</span>
+
+<span class="sd">    duration : float, optional</span>
+<span class="sd">        signal duration, default is 1.5 seconds</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    t,x : float</span>
+<span class="sd">        time and values of a noisy signal  </span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; freq_list = [10.0, 25.0, 45.0]</span>
+<span class="sd">    &gt;&gt;&gt; amplitude_list = [1.0, 0.2, 0.3]</span>
+<span class="sd">    &gt;&gt;&gt; t, y = _sins_test_data(freq_list, amplitude_list)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">freq_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">amplitude_list</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">sampling_freq</span><span class="p">)</span>
+    <span class="n">x_noise</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+    <span class="c1"># x = x_noise</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">freq_list</span><span class="p">)):</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="n">amplitude_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show_plot</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span>
+
+
+<span class="k">def</span> <span class="nf">_apply_firwin_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">taps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;apply and phase compensate the FIRLS filtering to each column</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : array</span>
+
+<span class="sd">    taps : ndarray</span>
+<span class="sd">        Coefficients of FIR filter.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filtered_data : filtered data (same size as data)</span>
+<span class="sd">        filtered array.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">taps</span><span class="p">)</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">taps</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    applying linear phase delay compensated filter.</span>
+<span class="s2">    a: </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">, N: </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2">, delay: </span><span class="si">{</span><span class="n">delay</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">    taps:</span>
+<span class="s2">    </span><span class="si">{</span><span class="n">taps</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float64&quot;</span><span class="p">)</span>
+
+    <span class="c1"># add pads</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">delay</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="n">delay</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yy</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+    <span class="c1"># forward pass</span>
+    <span class="n">filtered_data</span> <span class="o">=</span> <span class="n">lfilter</span><span class="p">(</span><span class="n">taps</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">yy</span><span class="p">)</span>
+
+    <span class="c1"># roll the phase shift by delay back to 0</span>
+    <span class="n">filtered_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">,</span> <span class="o">-</span><span class="n">delay</span><span class="p">)[</span><span class="n">delay</span><span class="p">:</span><span class="o">-</span><span class="n">delay</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;filter I/O length mismatch: input=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> output=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">filtered_data</span>
+
+
+<span class="c1"># ------------------------------------------------------------</span>
+<span class="c1"># public functions</span>
+
+
+<div class="viewcode-block" id="check_filter_params"><a class="viewcode-back" href="../../source/spudtr.filters.html#spudtr.filters.check_filter_params">[docs]</a><span class="k">def</span> <span class="nf">check_filter_params</span><span class="p">(</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">allow_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;type check FIR filter parameters and optionally provide defaults</span>
+
+<span class="sd">    Values for `ftype`, `cutoff_hz`, and `sfreq` are obligatory.</span>
+
+<span class="sd">    If `allow_defaults` is True, reasonable defaults are provided if</span>
+<span class="sd">    any of window, width_hz and ripple_db are None.</span>
+
+
+<span class="sd">    .. _filter_parameters_label:</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ftype : str {&#39;lowpass&#39; , &#39;highpass&#39;, &#39;bandpass&#39;, &#39;bandstop&#39;}</span>
+<span class="sd">        filter type</span>
+<span class="sd">    cutoff_hz : float or 1D-array-like of floats, length 2</span>
+<span class="sd">        1/2 amplitude cutoff frequency in Hz</span>
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency, e.g., 250.0, 500.0</span>
+<span class="sd">    width_hz : float</span>
+<span class="sd">        pass-to-stop transition band width (Hz), symmetric for bandpass, bandstop</span>
+<span class="sd">    ripple_db : float</span>
+<span class="sd">        ripple, in dB, e.g., 53.0, 60.0</span>
+<span class="sd">    window : str {&#39;kaiser&#39;,&#39;hamming&#39;,&#39;hann&#39;,&#39;blackman&#39;}</span>
+<span class="sd">        window type for firwin</span>
+<span class="sd">    allow_defaults : bool {False, True}</span>
+<span class="sd">        If `True` this makes `width_hz`, `ripple_db`, `window` optional and</span>
+<span class="sd">        fills in sensible defaults for any left unspecified by the user.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">       ``params`` with key:val for all filter parameters specified, suitable for passing as</span>
+<span class="sd">       ``**params`` to spudtr.filters FIR functions.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_test_numeric</span><span class="p">(</span><span class="n">_key</span><span class="p">,</span> <span class="n">_val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;helper raises ValueError if _val is None or non-numeric&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_val</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">_val</span><span class="si">}</span><span class="s2">, must be numeric&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------</span>
+    <span class="c1"># API obligatory args: ftype, cutoff_hz, sfreq</span>
+    <span class="c1"># ------------------------------------------------------------</span>
+    <span class="k">if</span> <span class="n">ftype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">FTYPES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ftype=</span><span class="si">{</span><span class="n">ftype</span><span class="si">}</span><span class="s2">, must be one of &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FTYPES</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">_param</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cutoff_hz&quot;</span><span class="p">,</span> <span class="s2">&quot;sfreq&quot;</span><span class="p">]:</span>
+        <span class="n">_test_numeric</span><span class="p">(</span><span class="n">_param</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">_param</span><span class="p">))</span>
+
+    <span class="c1"># ------------------------------------------------------------</span>
+    <span class="c1"># API optional args: window, width_hz, ripple_db</span>
+    <span class="c1"># ------------------------------------------------------------</span>
+    <span class="k">if</span> <span class="n">window</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allow_defaults</span><span class="p">:</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="s2">&quot;kaiser&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using default window=&#39;</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">window</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WINDOWS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;window=</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2">, must be one of &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">WINDOWS</span><span class="p">))</span>
+
+    <span class="c1"># compute default cutoff_hz and ripple_db for this window, ftype, sfreq</span>
+    <span class="n">_width_hz</span><span class="p">,</span> <span class="n">_ripple_db</span> <span class="o">=</span> <span class="n">_trans_bwidth_ripple</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span> <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">width_hz</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allow_defaults</span><span class="p">:</span>
+        <span class="n">width_hz</span> <span class="o">=</span> <span class="n">_width_hz</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using default width_hz=</span><span class="si">{</span><span class="n">width_hz</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ripple_db</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allow_defaults</span><span class="p">:</span>
+        <span class="n">ripple_db</span> <span class="o">=</span> <span class="n">_ripple_db</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using default ripple_db=</span><span class="si">{</span><span class="n">ripple_db</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_param</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;width_hz&quot;</span><span class="p">,</span> <span class="s2">&quot;ripple_db&quot;</span><span class="p">]:</span>
+        <span class="n">_test_numeric</span><span class="p">(</span><span class="n">_param</span><span class="p">,</span> <span class="nb">eval</span><span class="p">(</span><span class="n">_param</span><span class="p">))</span>
+
+    <span class="c1"># load up return dict</span>
+    <span class="n">_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ftype&quot;</span><span class="p">:</span> <span class="n">ftype</span><span class="p">,</span>
+        <span class="s2">&quot;cutoff_hz&quot;</span><span class="p">:</span> <span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="s2">&quot;width_hz&quot;</span><span class="p">:</span> <span class="n">width_hz</span><span class="p">,</span>
+        <span class="s2">&quot;ripple_db&quot;</span><span class="p">:</span> <span class="n">ripple_db</span><span class="p">,</span>
+        <span class="s2">&quot;window&quot;</span><span class="p">:</span> <span class="n">window</span><span class="p">,</span>
+        <span class="s2">&quot;sfreq&quot;</span><span class="p">:</span> <span class="n">sfreq</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_params</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+
+    <span class="k">return</span> <span class="n">_params</span></div>
+
+
+<div class="viewcode-block" id="show_filter"><a class="viewcode-back" href="../../source/spudtr.filters.html#spudtr.filters.show_filter">[docs]</a><span class="k">def</span> <span class="nf">show_filter</span><span class="p">(</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">show_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Text summary and graphic display of filter attributes for the specified parameters.</span>
+
+<span class="sd">    Figures are plotted for the transfer function, coefficients, and</span>
+<span class="sd">    input-output performance on pure sine wave data with intervals of</span>
+<span class="sd">    edge distortion highlighted.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ftype : str {&#39;lowpass&#39; , &#39;highpass&#39;, &#39;bandpass&#39;, &#39;bandstop&#39;}</span>
+<span class="sd">        filter type</span>
+<span class="sd">    cutoff_hz : float or 1D array-like, length=2</span>
+<span class="sd">        1/2 amplitude cutoff frequency (Hz)</span>
+<span class="sd">    sfreq : float</span>
+<span class="sd">        sampling frequency in samples per second</span>
+<span class="sd">    width_hz : float, optional</span>
+<span class="sd">        pass-to-stop transition band width (Hz)</span>
+<span class="sd">    ripple_db : float, optional</span>
+<span class="sd">       band ripple (dB)</span>
+<span class="sd">    window : {&#39;kaiser&#39;,&#39;hamming&#39;,&#39;hann&#39;,&#39;blackman&#39;}, optional</span>
+<span class="sd">        window type for firwin</span>
+<span class="sd">    show_output : bool </span>
+<span class="sd">        plot example filter input-output, default=True</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    freq_phase : matplotlib.Figure</span>
+<span class="sd">       plots frequency and phase response</span>
+<span class="sd">    imp_resp: matplotlib.Figure</span>
+<span class="sd">       plots impulse and step response</span>
+<span class="sd">    s_edge : float</span>
+<span class="sd">       number of seconds distorted at edge boundaries</span>
+<span class="sd">    n_edge : int</span>
+<span class="sd">       number of samples distorted at edge boundaries</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For more information on the filter parameters see</span>
+<span class="sd">    :ref:`check_filter params() Parameters &lt;filter_parameters_label&gt;`</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; ftype = &#39;lowpass&#39;</span>
+<span class="sd">    &gt;&gt;&gt; cutoff_hz = 10.0</span>
+<span class="sd">    &gt;&gt;&gt; sfreq = 250</span>
+<span class="sd">    &gt;&gt;&gt; width_hz = 5.0</span>
+<span class="sd">    &gt;&gt;&gt; ripple_db = 53.0</span>
+<span class="sd">    &gt;&gt;&gt; window = &#39;kaiser&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; # fill in defaults for width_hz, ripple_db, window</span>
+<span class="sd">    &gt;&gt;&gt; show_filter(</span>
+<span class="sd">          ftype=ftype,</span>
+<span class="sd">          cutoff_hz=cutoff_hz,</span>
+<span class="sd">          sfreq=sfreq</span>
+<span class="sd">        )</span>
+
+<span class="sd">    &gt;&gt;&gt; # with all explicit parameters</span>
+<span class="sd">    &gt;&gt;&gt; show_filter(</span>
+<span class="sd">          ftype=ftype,</span>
+<span class="sd">          cutoff_hz=cutoff_hz,</span>
+<span class="sd">          sfreq=sfreq,</span>
+<span class="sd">          width_hz=width_hz,</span>
+<span class="sd">          ripple_db=ripple_db,</span>
+<span class="sd">          window=window,</span>
+<span class="sd">        )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_fp</span> <span class="o">=</span> <span class="n">check_filter_params</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+        <span class="n">allow_defaults</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">taps</span> <span class="o">=</span> <span class="n">_design_firwin_filter</span><span class="p">(</span><span class="o">**</span><span class="n">_fp</span><span class="p">)</span>
+
+    <span class="c1"># this many samples are lost to edge distortion (worst case)</span>
+    <span class="n">n_edge</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">taps</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span>
+    <span class="n">s_edge</span> <span class="o">=</span> <span class="n">n_edge</span> <span class="o">/</span> <span class="n">sfreq</span>
+
+    <span class="c1"># promote scalar to iterable for printing</span>
+    <span class="n">_cutoff_hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_fp</span><span class="p">[</span><span class="s2">&quot;cutoff_hz&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_fp</span><span class="p">[</span><span class="s1">&#39;ftype&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> filter&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sampling rate (samples / s): </span><span class="si">{</span><span class="n">_fp</span><span class="p">[</span><span class="s1">&#39;sfreq&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;1/2 amplitude cutoff (Hz): &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hz</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">hz</span> <span class="ow">in</span> <span class="n">_cutoff_hz</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;transition width (Hz): </span><span class="si">{</span><span class="n">_fp</span><span class="p">[</span><span class="s1">&#39;width_hz&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ripple (dB): </span><span class="si">{</span><span class="n">_fp</span><span class="p">[</span><span class="s1">&#39;ripple_db&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;window: </span><span class="si">{</span><span class="n">_fp</span><span class="p">[</span><span class="s1">&#39;window&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;length (coefficients): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">taps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;delay (samples): </span><span class="si">{</span><span class="n">n_edge</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;edge distortion: first and last </span><span class="si">{</span><span class="n">s_edge</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> seconds of the data&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;(= </span><span class="si">{</span><span class="n">n_edge</span><span class="si">}</span><span class="s2"> samples at </span><span class="si">{</span><span class="n">sfreq</span><span class="si">}</span><span class="s2"> samples / s)&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">freq_phase</span> <span class="o">=</span> <span class="n">_mfreqz</span><span class="p">(</span>
+        <span class="n">b</span><span class="o">=</span><span class="n">taps</span><span class="p">,</span>
+        <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">_fp</span><span class="p">[</span><span class="s2">&quot;cutoff_hz&quot;</span><span class="p">],</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">_fp</span><span class="p">[</span><span class="s2">&quot;sfreq&quot;</span><span class="p">],</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">_fp</span><span class="p">[</span><span class="s2">&quot;width_hz&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">imp_step</span> <span class="o">=</span> <span class="n">_impz</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="n">taps</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show_output</span><span class="p">:</span>
+        <span class="n">io_fig</span><span class="p">,</span> <span class="n">io_ax</span> <span class="o">=</span> <span class="n">filters_effect</span><span class="p">(</span><span class="o">**</span><span class="n">_fp</span><span class="p">)</span>
+        <span class="n">xdata_lims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">l</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">l</span><span class="o">.</span><span class="n">get_xdata</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">io_ax</span><span class="o">.</span><span class="n">get_lines</span><span class="p">()]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span> <span class="o">=</span> <span class="n">xdata_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xdata_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">io_ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">tmin</span><span class="p">,</span> <span class="n">tmin</span> <span class="o">+</span> <span class="n">s_edge</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+        <span class="n">io_ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">tmax</span><span class="p">,</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">s_edge</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">freq_phase</span><span class="p">,</span> <span class="n">imp_step</span><span class="p">,</span> <span class="n">s_edge</span><span class="p">,</span> <span class="n">n_edge</span></div>
+
+
+<div class="viewcode-block" id="fir_filter_dt"><a class="viewcode-back" href="../../source/spudtr.filters.html#spudtr.filters.fir_filter_dt">[docs]</a><span class="k">def</span> <span class="nf">fir_filter_dt</span><span class="p">(</span>
+    <span class="n">dt</span><span class="p">,</span>
+    <span class="n">col_names</span><span class="p">,</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;apply FIRLS filtering to columns of dataframe-like synchronized discrete time series</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dt : pd.DataFrame or structured numpy nd.array with named data types </span>
+<span class="sd">        regularly sampled time-series data table: time (row) x data (columns)</span>
+
+<span class="sd">    col_names: list of str</span>
+<span class="sd">        column names to apply the transform</span>
+
+<span class="sd">    key=val</span>
+<span class="sd">        see :ref:`check_filter params() Parameters &lt;filter_parameters_label&gt;`</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame or np.ndarray</span>
+<span class="sd">        table-like copy with filtered data columns, the same size and object type as dt</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The input data is zero-padded by the length of the FIR filter delay and trimmed</span>
+<span class="sd">    back to the original length.</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; ftype = &quot;bandpass&quot;</span>
+<span class="sd">    &gt;&gt;&gt; cutoff_hz = [18, 35]</span>
+<span class="sd">    &gt;&gt;&gt; width_hz = 5</span>
+<span class="sd">    &gt;&gt;&gt; ripple_db = 60</span>
+<span class="sd">    &gt;&gt;&gt; window = &quot;kaiser&quot;</span>
+<span class="sd">    &gt;&gt;&gt; sfreq = 250</span>
+
+<span class="sd">    &gt;&gt;&gt; fir_filter_dt = epochs_filters(</span>
+<span class="sd">        dt,</span>
+<span class="sd">        col_names,</span>
+<span class="sd">        ftype=ftype,</span>
+<span class="sd">        window=window,</span>
+<span class="sd">        cutoff_hz=cutoff_hz,</span>
+<span class="sd">        width_hz=width_hz,</span>
+<span class="sd">        ripple_db=ripple_db,</span>
+<span class="sd">        sfreq=sfreq,</span>
+<span class="sd">        trim_edges=False</span>
+<span class="sd">    )</span>
+
+<span class="sd">    &gt;&gt;&gt; params = dict(ftype=&quot;lowpass&quot;, cutoff_hz=10, width_hz=5, ripple_db=60, sfreq=250, window=&quot;hamming&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; fir_filter_dt = epochs_filters(dt, col_names, **params)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_fp</span> <span class="o">=</span> <span class="n">check_filter_params</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">taps</span> <span class="o">=</span> <span class="n">_design_firwin_filter</span><span class="p">(</span><span class="o">**</span><span class="n">_fp</span><span class="p">)</span>
+
+    <span class="c1"># modicum of guarding</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dt</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;dt must be pandas.DataFrame or structured numpy.ndarray&quot;</span><span class="p">)</span>
+
+    <span class="n">filt_dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">col_names</span><span class="p">:</span>
+
+        <span class="n">filt_dt</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">_apply_firwin_filter_data</span><span class="p">(</span><span class="n">dt</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="n">taps</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">filt_dt</span></div>
+
+
+<div class="viewcode-block" id="fir_filter_data"><a class="viewcode-back" href="../../source/spudtr.filters.html#spudtr.filters.fir_filter_data">[docs]</a><span class="k">def</span> <span class="nf">fir_filter_data</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finite Impulse Response filter</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : 1-D array-like</span>
+
+<span class="sd">    key=val</span>
+<span class="sd">        see :ref:`check_filter params() Parameters &lt;filter_parameters_label&gt;`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    1D array</span>
+<span class="sd">       ``filtered_data`` filter output, same length as ``data``</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The input data is zero-padded by the length of the FIR filter delay and trimmed</span>
+<span class="sd">    back to the original length.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_fp</span> <span class="o">=</span> <span class="n">check_filter_params</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">taps</span> <span class="o">=</span> <span class="n">_design_firwin_filter</span><span class="p">(</span><span class="o">**</span><span class="n">_fp</span><span class="p">)</span>
+    <span class="n">filt_data</span> <span class="o">=</span> <span class="n">_apply_firwin_filter_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">taps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filt_data</span></div>
+
+
+<div class="viewcode-block" id="filters_effect"><a class="viewcode-back" href="../../source/spudtr.filters.html#spudtr.filters.filters_effect">[docs]</a><span class="k">def</span> <span class="nf">filters_effect</span><span class="p">(</span>
+    <span class="n">ftype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sfreq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ripple_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate example filter input-output plots for pure sinewave data.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    key=val</span>
+<span class="sd">        see :ref:`check_filter params() Parameters &lt;filter_parameters_label&gt;`</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.figure.Figure, matplotlib.axes.Axes</span>
+<span class="sd">       ``fig``, ``ax`` of the example plot</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># test signal lower and upper bounds</span>
+    <span class="n">LO_HZ_LB</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="n">HI_HZ_UB</span> <span class="o">=</span> <span class="n">sfreq</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="n">_fp</span> <span class="o">=</span> <span class="n">check_filter_params</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+        <span class="n">allow_defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">lo_hz</span> <span class="o">=</span> <span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">width_hz</span>
+        <span class="n">hi_hz</span> <span class="o">=</span> <span class="n">cutoff_hz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">width_hz</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lo_hz</span> <span class="o">=</span> <span class="n">cutoff_hz</span> <span class="o">-</span> <span class="n">width_hz</span>
+        <span class="n">hi_hz</span> <span class="o">=</span> <span class="n">cutoff_hz</span> <span class="o">+</span> <span class="n">width_hz</span>
+
+    <span class="n">mid_hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">lo_hz</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">])</span>  <span class="c1"># same as np.mean(cutoff_hz)</span>
+
+    <span class="c1"># bound lo, hi, mid hz</span>
+    <span class="n">lo_hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">LO_HZ_LB</span><span class="p">,</span> <span class="n">lo_hz</span><span class="p">])</span>
+    <span class="n">hi_hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">HI_HZ_UB</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">lo_hz</span> <span class="o">&lt;</span> <span class="n">mid_hz</span> <span class="ow">and</span> <span class="n">mid_hz</span> <span class="o">&lt;</span> <span class="n">hi_hz</span>
+
+    <span class="c1"># set y, y1 sine wave lo_hz, hi_hz, w/ mid_hz for band pass/stop</span>
+    <span class="k">if</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lowpass&quot;</span><span class="p">:</span>
+        <span class="n">y_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lo_hz</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">]</span>
+        <span class="n">y1_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lo_hz</span><span class="p">]</span>  <span class="c1"># lo signal to pass</span>
+
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;highpass&quot;</span><span class="p">:</span>
+        <span class="n">y_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lo_hz</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">]</span>
+        <span class="n">y1_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">hi_hz</span><span class="p">]</span>  <span class="c1"># hi signal to pass</span>
+
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bandpass&quot;</span><span class="p">:</span>
+        <span class="n">y_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lo_hz</span><span class="p">,</span> <span class="n">mid_hz</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">]</span>
+        <span class="n">y1_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">mid_hz</span><span class="p">]</span>  <span class="c1"># in-band signal to pass</span>
+
+    <span class="k">elif</span> <span class="n">ftype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bandstop&quot;</span><span class="p">:</span>
+        <span class="n">y_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lo_hz</span><span class="p">,</span> <span class="n">mid_hz</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">]</span>
+        <span class="n">y1_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">lo_hz</span><span class="p">,</span> <span class="n">hi_hz</span><span class="p">]</span>  <span class="c1"># out-of-band signals to pass</span>
+
+    <span class="n">_fparams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">ftype</span><span class="o">=</span><span class="n">ftype</span><span class="p">,</span>
+        <span class="n">cutoff_hz</span><span class="o">=</span><span class="n">cutoff_hz</span><span class="p">,</span>
+        <span class="n">sfreq</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span>
+        <span class="n">width_hz</span><span class="o">=</span><span class="n">width_hz</span><span class="p">,</span>
+        <span class="n">ripple_db</span><span class="o">=</span><span class="n">ripple_db</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># generate y, y1, and filter y</span>
+    <span class="n">y_amplitude_list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_freqs</span><span class="p">)</span>
+    <span class="n">y1_amplitude_list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">y1_freqs</span><span class="p">)</span>
+
+    <span class="c1"># duration = 1/2 filter len + 3 cycles of low Hz + 1/2 filter len</span>
+    <span class="n">taps</span> <span class="o">=</span> <span class="n">_design_firwin_filter</span><span class="p">(</span><span class="o">**</span><span class="n">_fparams</span><span class="p">)</span>
+    <span class="n">duration</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">lo_hz</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">taps</span><span class="p">)</span> <span class="o">/</span> <span class="n">sfreq</span><span class="p">)</span>
+
+    <span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">_sins_test_data</span><span class="p">(</span><span class="n">y_freqs</span><span class="p">,</span> <span class="n">y_amplitude_list</span><span class="p">,</span> <span class="n">sfreq</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+    <span class="n">t1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">_sins_test_data</span><span class="p">(</span><span class="n">y1_freqs</span><span class="p">,</span> <span class="n">y1_amplitude_list</span><span class="p">,</span> <span class="n">sfreq</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+    <span class="n">y_filt</span> <span class="o">=</span> <span class="n">fir_filter_data</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">_fparams</span><span class="p">)</span>  <span class="c1"># apply the filter</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;.-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;input&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="s2">&quot;.-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ideal output&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">t</span><span class="p">,</span> <span class="n">y_filt</span><span class="p">,</span> <span class="s2">&quot;.-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> filter output&quot;</span> <span class="o">%</span> <span class="n">ftype</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># format for the title</span>
+    <span class="n">cutoff_hz_str</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hz</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">hz</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">cutoff_hz</span><span class="p">)])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ftype</span><span class="si">}</span><span class="s2"> filter cutoff=</span><span class="si">{</span><span class="n">cutoff_hz_str</span><span class="si">}</span><span class="s2"> Hz, transition width=</span><span class="si">{</span><span class="n">width_hz</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Hz, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;ripple=</span><span class="si">{</span><span class="n">ripple_db</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, dB window=</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">),</span>
+        <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,3128 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Start with spudtr epochs &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Read single-trial EEG epochs" href="../eeg/eeg_utils.html" />
+    <link rel="prev" title="Read and write epochs as HDF5, feather, or csv" href="../epochs_data/epochs_io.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#epochs-data">Epochs data</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../user_guide.html#visualization">Visualization</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Start with <code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pandas.DataFrame.groupby().plot()"><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.groupby().plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#matplotlib.pyplot"><code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Preview-epochs-rows-and-columns">Preview epochs rows and columns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Select-rows-to-display-with-pandas-index-and-query">Select rows to display with pandas <code class="docutils literal notranslate"><span class="pre">index</span></code> and <code class="docutils literal notranslate"><span class="pre">query</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Unhide-rows-and-columns">Unhide rows and columns</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#eeg-data-processing">EEG data processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#time-domain-filters">Time-domain filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#gallery">Gallery</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../user_guide.html">User Guide</a> &raquo;</li>
+        
+      <li>Start with <code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/user_guide/visualize/visualize.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Start-with-spudtr-epochs">
+<h1>Start with <code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs<a class="headerlink" href="#Start-with-spudtr-epochs" title="Permalink to this headline">¶</a></h1>
+<p>Example: generate simulated data</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">spudtr</span> <span class="kn">import</span> <span class="n">epf</span><span class="p">,</span> <span class="n">fake_epochs_data</span>
+<span class="kn">from</span> <span class="nn">spudtr</span> <span class="kn">import</span> <span class="n">get_demo_df</span><span class="p">,</span> <span class="n">DATA_DIR</span><span class="p">,</span> <span class="n">P3_1500_FEATHER</span>
+
+<span class="n">n_epochs_per_category</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">sim_epochs_df</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="n">fake_epochs_data</span><span class="o">.</span><span class="n">_generate</span><span class="p">(</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="n">n_epochs_per_category</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">n_categories</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_channels</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">,</span>
+    <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Simulated epochs&quot;</span><span class="p">)</span>
+<span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;channel0&quot;</span><span class="p">,</span> <span class="s2">&quot;channel1&quot;</span><span class="p">],</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;day&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Simulated epochs
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>day</th>
+      <th>categorical</th>
+      <th>continuous</th>
+      <th>channel0</th>
+      <th>channel1</th>
+      <th>channel2</th>
+      <th>channel3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>cat0</td>
+      <td>0.771321</td>
+      <td>-13.170787</td>
+      <td>-30.197057</td>
+      <td>19.609869</td>
+      <td>43.177612</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>cat0</td>
+      <td>0.020752</td>
+      <td>4.233125</td>
+      <td>-7.726009</td>
+      <td>-65.298259</td>
+      <td>41.464399</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>cat0</td>
+      <td>0.633648</td>
+      <td>8.191480</td>
+      <td>21.915223</td>
+      <td>18.568468</td>
+      <td>27.639613</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>cat0</td>
+      <td>0.748804</td>
+      <td>-48.557122</td>
+      <td>-50.952045</td>
+      <td>14.317029</td>
+      <td>-17.186617</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.498507</td>
+      <td>-17.193401</td>
+      <td>50.222266</td>
+      <td>0.782896</td>
+      <td>38.251473</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Example: read previously saved EEG epochs</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eeg_epochs_df</span> <span class="o">=</span> <span class="n">get_demo_df</span><span class="p">(</span><span class="n">P3_1500_FEATHER</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;stim in [&#39;standard&#39;, &#39;target&#39;]&quot;</span><span class="p">)</span>
+
+<span class="n">eeg_channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MiPf&#39;</span><span class="p">,</span> <span class="s1">&#39;MiCe&#39;</span><span class="p">,</span> <span class="s1">&#39;MiPa&#39;</span><span class="p">,</span> <span class="s1">&#39;MiOc&#39;</span><span class="p">]</span>  <span class="c1"># subset for demonstration</span>
+<span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">eeg_epochs_df</span><span class="p">,</span> <span class="n">eeg_channels</span><span class="p">,</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;time_ms&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EEG epochs&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">eeg_epochs_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EEG epochs
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>sub_id</th>
+      <th>eeg_artifact</th>
+      <th>dblock_path</th>
+      <th>log_evcodes</th>
+      <th>log_ccodes</th>
+      <th>dblock_srate</th>
+      <th>ccode</th>
+      <th>instrument</th>
+      <th>...</th>
+      <th>RMOc</th>
+      <th>LLTe</th>
+      <th>RLTe</th>
+      <th>LLOc</th>
+      <th>RLOc</th>
+      <th>MiOc</th>
+      <th>A2</th>
+      <th>HEOG</th>
+      <th>rle</th>
+      <th>rhz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>-748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-25.093750</td>
+      <td>-0.753906</td>
+      <td>1.480469</td>
+      <td>-13.414062</td>
+      <td>-18.937500</td>
+      <td>-17.734375</td>
+      <td>5.660156</td>
+      <td>98.8750</td>
+      <td>-39.50000</td>
+      <td>38.37500</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-24.593750</td>
+      <td>0.502441</td>
+      <td>-2.466797</td>
+      <td>-17.640625</td>
+      <td>-17.468750</td>
+      <td>-15.304688</td>
+      <td>1.968750</td>
+      <td>104.7500</td>
+      <td>-38.03125</td>
+      <td>41.28125</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>-740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-16.484375</td>
+      <td>-1.507812</td>
+      <td>3.947266</td>
+      <td>-15.648438</td>
+      <td>-10.085938</td>
+      <td>-11.171875</td>
+      <td>8.367188</td>
+      <td>102.0625</td>
+      <td>-33.65625</td>
+      <td>43.71875</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>-736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-11.804688</td>
+      <td>-15.070312</td>
+      <td>9.867188</td>
+      <td>-14.906250</td>
+      <td>-7.378906</td>
+      <td>-8.742188</td>
+      <td>9.351562</td>
+      <td>100.5625</td>
+      <td>-42.90625</td>
+      <td>37.40625</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>-732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-6.394531</td>
+      <td>-4.019531</td>
+      <td>9.125000</td>
+      <td>-10.679688</td>
+      <td>-6.886719</td>
+      <td>-8.015625</td>
+      <td>8.125000</td>
+      <td>98.3750</td>
+      <td>-43.87500</td>
+      <td>37.90625</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 47 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="pandas.DataFrame.groupby().plot()">
+<h1><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.groupby().plot()</span></code><a class="headerlink" href="#pandas.DataFrame.groupby().plot()" title="Permalink to this headline">¶</a></h1>
+<p>Quick and easy but may be slow on large data sets</p>
+<p>Good for rough work and eye-ball checks but need so much tuning for finished figures, may as well use matplotlib from the start for that.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Simulated data&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">epoch_i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">sim_epochs_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;epoch_id&#39;</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="s1">&#39;day&#39;</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;channel0&#39;</span><span class="p">,</span> <span class="s1">&#39;channel1&#39;</span><span class="p">],</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;epoch_id: </span><span class="si">{</span><span class="n">epoch_i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Simulated data
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/user_guide_visualize_visualize_6_1.png" src="../../_images/user_guide_visualize_visualize_6_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/user_guide_visualize_visualize_6_2.png" src="../../_images/user_guide_visualize_visualize_6_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/user_guide_visualize_visualize_6_3.png" src="../../_images/user_guide_visualize_visualize_6_3.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/user_guide_visualize_visualize_6_4.png" src="../../_images/user_guide_visualize_visualize_6_4.png" />
+</div>
+</div>
+</div>
+<div class="section" id="matplotlib.pyplot">
+<h1><code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot</span></code><a class="headerlink" href="#matplotlib.pyplot" title="Permalink to this headline">¶</a></h1>
+<p>More work but flexible enough for publication quality figures.</p>
+<p>There are lots of ways to slice the data for plotting. Some are easier, some are faster.</p>
+<p>Example: Overplot single trial EEG</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;standard&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
+
+<span class="n">time_stamps</span> <span class="o">=</span> <span class="n">eeg_epochs_df</span><span class="o">.</span><span class="n">time_ms</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="n">n_times</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_stamps</span><span class="p">)</span>
+<span class="n">n_channels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eeg_channels</span><span class="p">)</span>
+<span class="n">leg_h</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">condition</span><span class="p">,</span> <span class="n">trials</span> <span class="ow">in</span> <span class="n">eeg_epochs_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;stim&#39;</span><span class="p">):</span>
+
+    <span class="c1"># reshape the epochs x channel 2-D array for overplotting</span>
+    <span class="n">n_trials</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trials</span><span class="p">)</span>
+    <span class="n">trial_arry</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">trials</span><span class="p">[</span><span class="n">eeg_channels</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n_trials</span> <span class="o">/</span> <span class="n">n_times</span><span class="p">),</span> <span class="n">n_times</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">trial_arry</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># confirm (epochs, times, channels)</span>
+
+    <span class="k">for</span> <span class="n">chan_idx</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eeg_channels</span><span class="p">):</span>
+        <span class="n">axs</span><span class="p">[</span><span class="n">chan_idx</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">chan_idx</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">time_stamps</span><span class="p">,</span>
+            <span class="n">trial_arry</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">chan_idx</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">condition</span><span class="p">],</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">.2</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">condition</span>
+        <span class="p">)</span>
+
+    <span class="c1"># build a custom legend on the way out</span>
+    <span class="n">leg_line</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># so we don&#39;t change the original line</span>
+    <span class="n">leg_line</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">leg_h</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">leg_line</span><span class="p">)</span>
+
+<span class="n">leg</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">leg_h</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(292, 375, 4)
+(100, 375, 4)
+CPU times: user 873 ms, sys: 28.3 ms, total: 902 ms
+Wall time: 892 ms
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/user_guide_visualize_visualize_9_1.png" src="../../_images/user_guide_visualize_visualize_9_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%%time</span>
+
+<span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;standard&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
+
+<span class="n">leg_h</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">condition</span><span class="p">,</span> <span class="n">trials</span> <span class="ow">in</span> <span class="n">eeg_epochs_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;stim&#39;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch_idx</span><span class="p">,</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;epoch_id&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">chan_idx</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eeg_channels</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="n">chan_idx</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">eeg_epochs_df</span><span class="o">.</span><span class="n">time_ms</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span>
+                <span class="n">trial</span><span class="p">[</span><span class="n">eeg_channels</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[:,</span> <span class="n">chan_idx</span><span class="p">],</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">condition</span><span class="p">],</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">.2</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">condition</span>
+            <span class="p">)</span>
+
+    <span class="c1"># on way out, build custom legend handles current line</span>
+    <span class="n">leg_line</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">leg_line</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">leg_h</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">leg_line</span><span class="p">)</span>
+
+<span class="n">leg</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">leg_h</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 4.14 s, sys: 35.4 ms, total: 4.18 s
+Wall time: 4.17 s
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/user_guide_visualize_visualize_10_1.png" src="../../_images/user_guide_visualize_visualize_10_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Preview-epochs-rows-and-columns">
+<h1>Preview epochs rows and columns<a class="headerlink" href="#Preview-epochs-rows-and-columns" title="Permalink to this headline">¶</a></h1>
+<p>The default display is to preview five lines of the head and tail.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">display</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>day</th>
+      <th>categorical</th>
+      <th>continuous</th>
+      <th>channel0</th>
+      <th>channel1</th>
+      <th>channel2</th>
+      <th>channel3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>cat0</td>
+      <td>0.771321</td>
+      <td>-13.170787</td>
+      <td>-30.197057</td>
+      <td>19.609869</td>
+      <td>43.177612</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>cat0</td>
+      <td>0.020752</td>
+      <td>4.233125</td>
+      <td>-7.726009</td>
+      <td>-65.298259</td>
+      <td>41.464399</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>cat0</td>
+      <td>0.633648</td>
+      <td>8.191480</td>
+      <td>21.915223</td>
+      <td>18.568468</td>
+      <td>27.639613</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>cat0</td>
+      <td>0.748804</td>
+      <td>-48.557122</td>
+      <td>-50.952045</td>
+      <td>14.317029</td>
+      <td>-17.186617</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.498507</td>
+      <td>-17.193401</td>
+      <td>50.222266</td>
+      <td>0.782896</td>
+      <td>38.251473</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>123</th>
+      <td>3</td>
+      <td>27</td>
+      <td>cat1</td>
+      <td>0.744603</td>
+      <td>33.167254</td>
+      <td>-7.658414</td>
+      <td>14.630878</td>
+      <td>14.329468</td>
+    </tr>
+    <tr>
+      <th>124</th>
+      <td>3</td>
+      <td>28</td>
+      <td>cat1</td>
+      <td>0.469785</td>
+      <td>-60.531560</td>
+      <td>0.774228</td>
+      <td>1.689442</td>
+      <td>0.882024</td>
+    </tr>
+    <tr>
+      <th>125</th>
+      <td>3</td>
+      <td>29</td>
+      <td>cat1</td>
+      <td>0.598256</td>
+      <td>16.216221</td>
+      <td>66.028993</td>
+      <td>16.373534</td>
+      <td>4.854384</td>
+    </tr>
+    <tr>
+      <th>126</th>
+      <td>3</td>
+      <td>30</td>
+      <td>cat1</td>
+      <td>0.147620</td>
+      <td>-43.268966</td>
+      <td>26.531028</td>
+      <td>-20.493672</td>
+      <td>-12.327708</td>
+    </tr>
+    <tr>
+      <th>127</th>
+      <td>3</td>
+      <td>31</td>
+      <td>cat1</td>
+      <td>0.184035</td>
+      <td>-48.265511</td>
+      <td>-41.604676</td>
+      <td>-19.770519</td>
+      <td>27.925069</td>
+    </tr>
+  </tbody>
+</table>
+<p>128 rows × 8 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="Select-rows-to-display-with-pandas-index-and-query">
+<h1>Select rows to display with pandas <code class="docutils literal notranslate"><span class="pre">index</span></code> and <code class="docutils literal notranslate"><span class="pre">query</span></code><a class="headerlink" href="#Select-rows-to-display-with-pandas-index-and-query" title="Permalink to this headline">¶</a></h1>
+<p>Show day 4 in each epoch</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">display</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;day==4&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>day</th>
+      <th>categorical</th>
+      <th>continuous</th>
+      <th>channel0</th>
+      <th>channel1</th>
+      <th>channel2</th>
+      <th>channel3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.498507</td>
+      <td>-17.193401</td>
+      <td>50.222266</td>
+      <td>0.782896</td>
+      <td>38.251473</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>1</td>
+      <td>4</td>
+      <td>cat1</td>
+      <td>0.113984</td>
+      <td>40.336483</td>
+      <td>-38.094588</td>
+      <td>-26.743542</td>
+      <td>-40.420244</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>2</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.330719</td>
+      <td>66.751489</td>
+      <td>54.533478</td>
+      <td>-50.413378</td>
+      <td>37.444479</td>
+    </tr>
+    <tr>
+      <th>100</th>
+      <td>3</td>
+      <td>4</td>
+      <td>cat1</td>
+      <td>0.578136</td>
+      <td>-46.419162</td>
+      <td>11.901780</td>
+      <td>46.354853</td>
+      <td>17.120804</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Show epoch 2, all 32 days</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">display</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;epoch_id==2&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>day</th>
+      <th>categorical</th>
+      <th>continuous</th>
+      <th>channel0</th>
+      <th>channel1</th>
+      <th>channel2</th>
+      <th>channel3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>64</th>
+      <td>2</td>
+      <td>0</td>
+      <td>cat0</td>
+      <td>0.039282</td>
+      <td>-42.626415</td>
+      <td>14.550079</td>
+      <td>15.875708</td>
+      <td>-6.495748</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>2</td>
+      <td>1</td>
+      <td>cat0</td>
+      <td>0.357182</td>
+      <td>-20.368403</td>
+      <td>-49.758141</td>
+      <td>-26.884315</td>
+      <td>-35.376135</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>2</td>
+      <td>2</td>
+      <td>cat0</td>
+      <td>0.079613</td>
+      <td>16.016544</td>
+      <td>80.397309</td>
+      <td>-5.934304</td>
+      <td>49.342834</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>2</td>
+      <td>3</td>
+      <td>cat0</td>
+      <td>0.305460</td>
+      <td>22.319232</td>
+      <td>-33.105664</td>
+      <td>-2.864275</td>
+      <td>21.702876</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>2</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.330719</td>
+      <td>66.751489</td>
+      <td>54.533478</td>
+      <td>-50.413378</td>
+      <td>37.444479</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>2</td>
+      <td>5</td>
+      <td>cat0</td>
+      <td>0.773830</td>
+      <td>3.515443</td>
+      <td>-16.681420</td>
+      <td>20.301246</td>
+      <td>21.981773</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>2</td>
+      <td>6</td>
+      <td>cat0</td>
+      <td>0.039959</td>
+      <td>7.338436</td>
+      <td>28.731337</td>
+      <td>1.821835</td>
+      <td>-9.630682</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>2</td>
+      <td>7</td>
+      <td>cat0</td>
+      <td>0.429492</td>
+      <td>-5.318965</td>
+      <td>24.456620</td>
+      <td>-0.691236</td>
+      <td>15.026849</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>2</td>
+      <td>8</td>
+      <td>cat0</td>
+      <td>0.314927</td>
+      <td>-12.171886</td>
+      <td>1.929582</td>
+      <td>-16.599553</td>
+      <td>15.598269</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>2</td>
+      <td>9</td>
+      <td>cat0</td>
+      <td>0.636491</td>
+      <td>23.453256</td>
+      <td>-4.992161</td>
+      <td>-33.183697</td>
+      <td>-41.336275</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>2</td>
+      <td>10</td>
+      <td>cat0</td>
+      <td>0.346347</td>
+      <td>10.604328</td>
+      <td>-28.221293</td>
+      <td>-6.514047</td>
+      <td>23.541319</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>2</td>
+      <td>11</td>
+      <td>cat0</td>
+      <td>0.043097</td>
+      <td>-6.218385</td>
+      <td>-1.607835</td>
+      <td>-26.262671</td>
+      <td>-26.889230</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>2</td>
+      <td>12</td>
+      <td>cat0</td>
+      <td>0.879915</td>
+      <td>-32.390922</td>
+      <td>33.034086</td>
+      <td>0.323443</td>
+      <td>-35.350138</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>2</td>
+      <td>13</td>
+      <td>cat0</td>
+      <td>0.763241</td>
+      <td>-3.692095</td>
+      <td>11.163676</td>
+      <td>-27.187405</td>
+      <td>22.235622</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>2</td>
+      <td>14</td>
+      <td>cat0</td>
+      <td>0.878097</td>
+      <td>-11.729466</td>
+      <td>-26.503830</td>
+      <td>-42.472596</td>
+      <td>-17.185480</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>2</td>
+      <td>15</td>
+      <td>cat0</td>
+      <td>0.417509</td>
+      <td>37.655212</td>
+      <td>34.741547</td>
+      <td>2.841249</td>
+      <td>-28.830160</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>2</td>
+      <td>16</td>
+      <td>cat0</td>
+      <td>0.605578</td>
+      <td>28.413782</td>
+      <td>-36.109605</td>
+      <td>5.814018</td>
+      <td>35.637540</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>2</td>
+      <td>17</td>
+      <td>cat0</td>
+      <td>0.513467</td>
+      <td>-30.669321</td>
+      <td>6.295174</td>
+      <td>16.297053</td>
+      <td>-52.984950</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>2</td>
+      <td>18</td>
+      <td>cat0</td>
+      <td>0.597837</td>
+      <td>35.015051</td>
+      <td>-26.735608</td>
+      <td>1.690073</td>
+      <td>-23.112350</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>2</td>
+      <td>19</td>
+      <td>cat0</td>
+      <td>0.262216</td>
+      <td>-17.159304</td>
+      <td>-23.480632</td>
+      <td>43.969650</td>
+      <td>33.727257</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>2</td>
+      <td>20</td>
+      <td>cat0</td>
+      <td>0.300871</td>
+      <td>3.994125</td>
+      <td>32.391920</td>
+      <td>-19.079076</td>
+      <td>80.150553</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>2</td>
+      <td>21</td>
+      <td>cat0</td>
+      <td>0.025400</td>
+      <td>36.082316</td>
+      <td>-13.885227</td>
+      <td>33.285157</td>
+      <td>1.933365</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>2</td>
+      <td>22</td>
+      <td>cat0</td>
+      <td>0.303063</td>
+      <td>-30.742589</td>
+      <td>-45.452270</td>
+      <td>-29.778975</td>
+      <td>27.404529</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>2</td>
+      <td>23</td>
+      <td>cat0</td>
+      <td>0.242076</td>
+      <td>4.811975</td>
+      <td>-16.161556</td>
+      <td>-20.470244</td>
+      <td>-29.910186</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>2</td>
+      <td>24</td>
+      <td>cat0</td>
+      <td>0.557578</td>
+      <td>-33.914259</td>
+      <td>22.698656</td>
+      <td>-12.278076</td>
+      <td>62.251460</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>2</td>
+      <td>25</td>
+      <td>cat0</td>
+      <td>0.565507</td>
+      <td>-58.238990</td>
+      <td>-21.881977</td>
+      <td>-7.424258</td>
+      <td>-17.705596</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>2</td>
+      <td>26</td>
+      <td>cat0</td>
+      <td>0.475132</td>
+      <td>29.597935</td>
+      <td>36.443480</td>
+      <td>45.835534</td>
+      <td>-84.480037</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>2</td>
+      <td>27</td>
+      <td>cat0</td>
+      <td>0.292798</td>
+      <td>0.846821</td>
+      <td>30.248489</td>
+      <td>-19.483151</td>
+      <td>3.286333</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>2</td>
+      <td>28</td>
+      <td>cat0</td>
+      <td>0.064251</td>
+      <td>-24.671028</td>
+      <td>2.198490</td>
+      <td>-38.070466</td>
+      <td>4.280079</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>2</td>
+      <td>29</td>
+      <td>cat0</td>
+      <td>0.978819</td>
+      <td>-47.596553</td>
+      <td>35.211972</td>
+      <td>22.646282</td>
+      <td>-23.521067</td>
+    </tr>
+    <tr>
+      <th>94</th>
+      <td>2</td>
+      <td>30</td>
+      <td>cat0</td>
+      <td>0.339708</td>
+      <td>-12.044185</td>
+      <td>55.888550</td>
+      <td>-0.717253</td>
+      <td>7.728322</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>2</td>
+      <td>31</td>
+      <td>cat0</td>
+      <td>0.495049</td>
+      <td>40.265379</td>
+      <td>-59.509095</td>
+      <td>-46.726274</td>
+      <td>39.387682</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+<div class="section" id="Unhide-rows-and-columns">
+<h1>Unhide rows and columns<a class="headerlink" href="#Unhide-rows-and-columns" title="Permalink to this headline">¶</a></h1>
+<p>Use <code class="docutils literal notranslate"><span class="pre">pandas.option_context</span></code> to control the number of rows and columns displayed</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">option_context</span><span class="p">(</span><span class="s1">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>day</th>
+      <th>categorical</th>
+      <th>continuous</th>
+      <th>channel0</th>
+      <th>channel1</th>
+      <th>channel2</th>
+      <th>channel3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>cat0</td>
+      <td>0.771321</td>
+      <td>-13.170787</td>
+      <td>-30.197057</td>
+      <td>19.609869</td>
+      <td>43.177612</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>cat0</td>
+      <td>0.020752</td>
+      <td>4.233125</td>
+      <td>-7.726009</td>
+      <td>-65.298259</td>
+      <td>41.464399</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>cat0</td>
+      <td>0.633648</td>
+      <td>8.191480</td>
+      <td>21.915223</td>
+      <td>18.568468</td>
+      <td>27.639613</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>cat0</td>
+      <td>0.748804</td>
+      <td>-48.557122</td>
+      <td>-50.952045</td>
+      <td>14.317029</td>
+      <td>-17.186617</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.498507</td>
+      <td>-17.193401</td>
+      <td>50.222266</td>
+      <td>0.782896</td>
+      <td>38.251473</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0</td>
+      <td>5</td>
+      <td>cat0</td>
+      <td>0.224797</td>
+      <td>-39.613426</td>
+      <td>34.911711</td>
+      <td>-29.091170</td>
+      <td>-9.864961</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0</td>
+      <td>6</td>
+      <td>cat0</td>
+      <td>0.198063</td>
+      <td>37.086160</td>
+      <td>-3.977208</td>
+      <td>-29.511844</td>
+      <td>-4.390224</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0</td>
+      <td>7</td>
+      <td>cat0</td>
+      <td>0.760531</td>
+      <td>73.959752</td>
+      <td>-8.707374</td>
+      <td>12.375981</td>
+      <td>31.753099</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>0</td>
+      <td>8</td>
+      <td>cat0</td>
+      <td>0.169111</td>
+      <td>41.496967</td>
+      <td>-28.605973</td>
+      <td>-18.429145</td>
+      <td>-3.332413</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0</td>
+      <td>9</td>
+      <td>cat0</td>
+      <td>0.088340</td>
+      <td>10.386993</td>
+      <td>17.641218</td>
+      <td>25.112453</td>
+      <td>-1.166434</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>0</td>
+      <td>10</td>
+      <td>cat0</td>
+      <td>0.685360</td>
+      <td>30.675483</td>
+      <td>2.064044</td>
+      <td>-18.708570</td>
+      <td>-9.670905</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>0</td>
+      <td>11</td>
+      <td>cat0</td>
+      <td>0.953393</td>
+      <td>5.004308</td>
+      <td>42.361929</td>
+      <td>-10.895586</td>
+      <td>-19.972972</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>0</td>
+      <td>12</td>
+      <td>cat0</td>
+      <td>0.003948</td>
+      <td>49.701499</td>
+      <td>-20.586468</td>
+      <td>22.784140</td>
+      <td>-21.138600</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>0</td>
+      <td>13</td>
+      <td>cat0</td>
+      <td>0.512192</td>
+      <td>20.036688</td>
+      <td>16.438318</td>
+      <td>-1.017810</td>
+      <td>-10.612882</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>0</td>
+      <td>14</td>
+      <td>cat0</td>
+      <td>0.812621</td>
+      <td>-6.898399</td>
+      <td>-1.091476</td>
+      <td>-4.992021</td>
+      <td>4.557823</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>0</td>
+      <td>15</td>
+      <td>cat0</td>
+      <td>0.612526</td>
+      <td>-33.886536</td>
+      <td>-25.410488</td>
+      <td>8.087173</td>
+      <td>-9.126005</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>0</td>
+      <td>16</td>
+      <td>cat0</td>
+      <td>0.721755</td>
+      <td>-19.198878</td>
+      <td>57.069121</td>
+      <td>11.259167</td>
+      <td>-35.365631</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>0</td>
+      <td>17</td>
+      <td>cat0</td>
+      <td>0.291876</td>
+      <td>9.414916</td>
+      <td>8.388162</td>
+      <td>-2.517457</td>
+      <td>-4.473981</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>0</td>
+      <td>18</td>
+      <td>cat0</td>
+      <td>0.917774</td>
+      <td>-36.775079</td>
+      <td>18.607635</td>
+      <td>6.783790</td>
+      <td>-6.752906</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>0</td>
+      <td>19</td>
+      <td>cat0</td>
+      <td>0.714576</td>
+      <td>-6.653794</td>
+      <td>-32.057031</td>
+      <td>-3.476422</td>
+      <td>2.104631</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>0</td>
+      <td>20</td>
+      <td>cat0</td>
+      <td>0.542544</td>
+      <td>40.197789</td>
+      <td>-21.678622</td>
+      <td>12.348072</td>
+      <td>13.562017</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>0</td>
+      <td>21</td>
+      <td>cat0</td>
+      <td>0.142170</td>
+      <td>0.879291</td>
+      <td>2.524187</td>
+      <td>8.634313</td>
+      <td>8.822078</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>0</td>
+      <td>22</td>
+      <td>cat0</td>
+      <td>0.373341</td>
+      <td>59.561572</td>
+      <td>-17.533655</td>
+      <td>15.128144</td>
+      <td>-24.825300</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>0</td>
+      <td>23</td>
+      <td>cat0</td>
+      <td>0.674134</td>
+      <td>43.414968</td>
+      <td>18.060668</td>
+      <td>24.128021</td>
+      <td>-24.854137</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>0</td>
+      <td>24</td>
+      <td>cat0</td>
+      <td>0.441833</td>
+      <td>-8.628882</td>
+      <td>13.150957</td>
+      <td>-30.918246</td>
+      <td>-14.775224</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>0</td>
+      <td>25</td>
+      <td>cat0</td>
+      <td>0.434014</td>
+      <td>-40.779317</td>
+      <td>-23.470296</td>
+      <td>-40.730927</td>
+      <td>-22.548613</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>0</td>
+      <td>26</td>
+      <td>cat0</td>
+      <td>0.617767</td>
+      <td>-1.441240</td>
+      <td>5.788080</td>
+      <td>-7.995056</td>
+      <td>-47.651424</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>0</td>
+      <td>27</td>
+      <td>cat0</td>
+      <td>0.513138</td>
+      <td>-14.423620</td>
+      <td>0.120747</td>
+      <td>-5.138784</td>
+      <td>-14.061921</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>0</td>
+      <td>28</td>
+      <td>cat0</td>
+      <td>0.650397</td>
+      <td>11.332593</td>
+      <td>-4.922259</td>
+      <td>13.871567</td>
+      <td>-42.933554</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>0</td>
+      <td>29</td>
+      <td>cat0</td>
+      <td>0.601039</td>
+      <td>48.432239</td>
+      <td>-34.464368</td>
+      <td>-36.595666</td>
+      <td>-37.904906</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>0</td>
+      <td>30</td>
+      <td>cat0</td>
+      <td>0.805223</td>
+      <td>-33.693121</td>
+      <td>-25.065255</td>
+      <td>5.777185</td>
+      <td>-37.207459</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>0</td>
+      <td>31</td>
+      <td>cat0</td>
+      <td>0.521647</td>
+      <td>-11.661838</td>
+      <td>6.313522</td>
+      <td>13.063512</td>
+      <td>-31.593479</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>1</td>
+      <td>0</td>
+      <td>cat1</td>
+      <td>0.908649</td>
+      <td>9.970498</td>
+      <td>30.419539</td>
+      <td>-49.048324</td>
+      <td>-33.965932</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>1</td>
+      <td>1</td>
+      <td>cat1</td>
+      <td>0.319236</td>
+      <td>34.049195</td>
+      <td>-29.105935</td>
+      <td>13.048118</td>
+      <td>-27.328382</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>1</td>
+      <td>2</td>
+      <td>cat1</td>
+      <td>0.090459</td>
+      <td>15.321432</td>
+      <td>36.515447</td>
+      <td>41.934582</td>
+      <td>-7.807197</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>1</td>
+      <td>3</td>
+      <td>cat1</td>
+      <td>0.300700</td>
+      <td>12.428929</td>
+      <td>5.479421</td>
+      <td>3.740003</td>
+      <td>24.439636</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>1</td>
+      <td>4</td>
+      <td>cat1</td>
+      <td>0.113984</td>
+      <td>40.336483</td>
+      <td>-38.094588</td>
+      <td>-26.743542</td>
+      <td>-40.420244</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>1</td>
+      <td>5</td>
+      <td>cat1</td>
+      <td>0.828681</td>
+      <td>14.805460</td>
+      <td>9.701698</td>
+      <td>-17.306800</td>
+      <td>31.785850</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>1</td>
+      <td>6</td>
+      <td>cat1</td>
+      <td>0.046896</td>
+      <td>-7.110126</td>
+      <td>26.573246</td>
+      <td>-2.248466</td>
+      <td>15.736222</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>1</td>
+      <td>7</td>
+      <td>cat1</td>
+      <td>0.626287</td>
+      <td>1.718555</td>
+      <td>7.931841</td>
+      <td>-15.653293</td>
+      <td>16.004671</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>1</td>
+      <td>8</td>
+      <td>cat1</td>
+      <td>0.547586</td>
+      <td>-21.212143</td>
+      <td>69.573820</td>
+      <td>-96.132040</td>
+      <td>-7.606741</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>1</td>
+      <td>9</td>
+      <td>cat1</td>
+      <td>0.819287</td>
+      <td>16.399945</td>
+      <td>9.260030</td>
+      <td>43.881330</td>
+      <td>5.763669</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>1</td>
+      <td>10</td>
+      <td>cat1</td>
+      <td>0.198948</td>
+      <td>28.275012</td>
+      <td>26.776921</td>
+      <td>-14.007079</td>
+      <td>16.887654</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>1</td>
+      <td>11</td>
+      <td>cat1</td>
+      <td>0.856850</td>
+      <td>-89.387903</td>
+      <td>0.330681</td>
+      <td>-5.370591</td>
+      <td>18.823529</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>1</td>
+      <td>12</td>
+      <td>cat1</td>
+      <td>0.351653</td>
+      <td>36.544466</td>
+      <td>29.402224</td>
+      <td>27.742429</td>
+      <td>-10.198459</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>1</td>
+      <td>13</td>
+      <td>cat1</td>
+      <td>0.754648</td>
+      <td>-1.695622</td>
+      <td>-71.867160</td>
+      <td>7.057343</td>
+      <td>22.115369</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>1</td>
+      <td>14</td>
+      <td>cat1</td>
+      <td>0.295962</td>
+      <td>13.826654</td>
+      <td>-25.725675</td>
+      <td>-14.658248</td>
+      <td>36.087088</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>1</td>
+      <td>15</td>
+      <td>cat1</td>
+      <td>0.883936</td>
+      <td>19.871220</td>
+      <td>-10.928343</td>
+      <td>-2.789446</td>
+      <td>29.116786</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>1</td>
+      <td>16</td>
+      <td>cat1</td>
+      <td>0.325512</td>
+      <td>-68.853100</td>
+      <td>15.117807</td>
+      <td>16.062041</td>
+      <td>21.116362</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>1</td>
+      <td>17</td>
+      <td>cat1</td>
+      <td>0.165016</td>
+      <td>-35.877879</td>
+      <td>5.649936</td>
+      <td>16.525341</td>
+      <td>-18.149632</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>1</td>
+      <td>18</td>
+      <td>cat1</td>
+      <td>0.392529</td>
+      <td>-9.993035</td>
+      <td>32.556812</td>
+      <td>-5.745662</td>
+      <td>0.141316</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>1</td>
+      <td>19</td>
+      <td>cat1</td>
+      <td>0.093460</td>
+      <td>-23.741723</td>
+      <td>10.708172</td>
+      <td>23.840929</td>
+      <td>4.411018</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>1</td>
+      <td>20</td>
+      <td>cat1</td>
+      <td>0.821106</td>
+      <td>8.225183</td>
+      <td>6.219887</td>
+      <td>23.552895</td>
+      <td>-13.876174</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>1</td>
+      <td>21</td>
+      <td>cat1</td>
+      <td>0.151152</td>
+      <td>-15.447298</td>
+      <td>-4.351936</td>
+      <td>-14.631733</td>
+      <td>6.556765</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>1</td>
+      <td>22</td>
+      <td>cat1</td>
+      <td>0.384114</td>
+      <td>-51.332136</td>
+      <td>4.917128</td>
+      <td>-30.175946</td>
+      <td>5.062608</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>1</td>
+      <td>23</td>
+      <td>cat1</td>
+      <td>0.944261</td>
+      <td>18.368919</td>
+      <td>24.885375</td>
+      <td>9.827261</td>
+      <td>-1.499915</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>1</td>
+      <td>24</td>
+      <td>cat1</td>
+      <td>0.987625</td>
+      <td>33.003881</td>
+      <td>22.658999</td>
+      <td>17.371454</td>
+      <td>-4.497184</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>1</td>
+      <td>25</td>
+      <td>cat1</td>
+      <td>0.456305</td>
+      <td>16.930576</td>
+      <td>26.384571</td>
+      <td>-13.797766</td>
+      <td>-1.059842</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>1</td>
+      <td>26</td>
+      <td>cat1</td>
+      <td>0.826123</td>
+      <td>-21.383983</td>
+      <td>-7.198689</td>
+      <td>-13.074477</td>
+      <td>1.008496</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>1</td>
+      <td>27</td>
+      <td>cat1</td>
+      <td>0.251374</td>
+      <td>-7.825784</td>
+      <td>-20.851699</td>
+      <td>16.088057</td>
+      <td>-10.997280</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>1</td>
+      <td>28</td>
+      <td>cat1</td>
+      <td>0.597372</td>
+      <td>16.452842</td>
+      <td>-14.142002</td>
+      <td>4.710450</td>
+      <td>-12.726343</td>
+    </tr>
+    <tr>
+      <th>61</th>
+      <td>1</td>
+      <td>29</td>
+      <td>cat1</td>
+      <td>0.902832</td>
+      <td>18.095972</td>
+      <td>10.484292</td>
+      <td>40.763674</td>
+      <td>-1.525490</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>1</td>
+      <td>30</td>
+      <td>cat1</td>
+      <td>0.534558</td>
+      <td>30.205834</td>
+      <td>48.343719</td>
+      <td>15.460357</td>
+      <td>-33.712626</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>1</td>
+      <td>31</td>
+      <td>cat1</td>
+      <td>0.590201</td>
+      <td>-8.832780</td>
+      <td>7.180178</td>
+      <td>71.523739</td>
+      <td>-55.720745</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>2</td>
+      <td>0</td>
+      <td>cat0</td>
+      <td>0.039282</td>
+      <td>-42.626415</td>
+      <td>14.550079</td>
+      <td>15.875708</td>
+      <td>-6.495748</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>2</td>
+      <td>1</td>
+      <td>cat0</td>
+      <td>0.357182</td>
+      <td>-20.368403</td>
+      <td>-49.758141</td>
+      <td>-26.884315</td>
+      <td>-35.376135</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>2</td>
+      <td>2</td>
+      <td>cat0</td>
+      <td>0.079613</td>
+      <td>16.016544</td>
+      <td>80.397309</td>
+      <td>-5.934304</td>
+      <td>49.342834</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>2</td>
+      <td>3</td>
+      <td>cat0</td>
+      <td>0.305460</td>
+      <td>22.319232</td>
+      <td>-33.105664</td>
+      <td>-2.864275</td>
+      <td>21.702876</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>2</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.330719</td>
+      <td>66.751489</td>
+      <td>54.533478</td>
+      <td>-50.413378</td>
+      <td>37.444479</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>2</td>
+      <td>5</td>
+      <td>cat0</td>
+      <td>0.773830</td>
+      <td>3.515443</td>
+      <td>-16.681420</td>
+      <td>20.301246</td>
+      <td>21.981773</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>2</td>
+      <td>6</td>
+      <td>cat0</td>
+      <td>0.039959</td>
+      <td>7.338436</td>
+      <td>28.731337</td>
+      <td>1.821835</td>
+      <td>-9.630682</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>2</td>
+      <td>7</td>
+      <td>cat0</td>
+      <td>0.429492</td>
+      <td>-5.318965</td>
+      <td>24.456620</td>
+      <td>-0.691236</td>
+      <td>15.026849</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>2</td>
+      <td>8</td>
+      <td>cat0</td>
+      <td>0.314927</td>
+      <td>-12.171886</td>
+      <td>1.929582</td>
+      <td>-16.599553</td>
+      <td>15.598269</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>2</td>
+      <td>9</td>
+      <td>cat0</td>
+      <td>0.636491</td>
+      <td>23.453256</td>
+      <td>-4.992161</td>
+      <td>-33.183697</td>
+      <td>-41.336275</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>2</td>
+      <td>10</td>
+      <td>cat0</td>
+      <td>0.346347</td>
+      <td>10.604328</td>
+      <td>-28.221293</td>
+      <td>-6.514047</td>
+      <td>23.541319</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>2</td>
+      <td>11</td>
+      <td>cat0</td>
+      <td>0.043097</td>
+      <td>-6.218385</td>
+      <td>-1.607835</td>
+      <td>-26.262671</td>
+      <td>-26.889230</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>2</td>
+      <td>12</td>
+      <td>cat0</td>
+      <td>0.879915</td>
+      <td>-32.390922</td>
+      <td>33.034086</td>
+      <td>0.323443</td>
+      <td>-35.350138</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>2</td>
+      <td>13</td>
+      <td>cat0</td>
+      <td>0.763241</td>
+      <td>-3.692095</td>
+      <td>11.163676</td>
+      <td>-27.187405</td>
+      <td>22.235622</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>2</td>
+      <td>14</td>
+      <td>cat0</td>
+      <td>0.878097</td>
+      <td>-11.729466</td>
+      <td>-26.503830</td>
+      <td>-42.472596</td>
+      <td>-17.185480</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>2</td>
+      <td>15</td>
+      <td>cat0</td>
+      <td>0.417509</td>
+      <td>37.655212</td>
+      <td>34.741547</td>
+      <td>2.841249</td>
+      <td>-28.830160</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>2</td>
+      <td>16</td>
+      <td>cat0</td>
+      <td>0.605578</td>
+      <td>28.413782</td>
+      <td>-36.109605</td>
+      <td>5.814018</td>
+      <td>35.637540</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>2</td>
+      <td>17</td>
+      <td>cat0</td>
+      <td>0.513467</td>
+      <td>-30.669321</td>
+      <td>6.295174</td>
+      <td>16.297053</td>
+      <td>-52.984950</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>2</td>
+      <td>18</td>
+      <td>cat0</td>
+      <td>0.597837</td>
+      <td>35.015051</td>
+      <td>-26.735608</td>
+      <td>1.690073</td>
+      <td>-23.112350</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>2</td>
+      <td>19</td>
+      <td>cat0</td>
+      <td>0.262216</td>
+      <td>-17.159304</td>
+      <td>-23.480632</td>
+      <td>43.969650</td>
+      <td>33.727257</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>2</td>
+      <td>20</td>
+      <td>cat0</td>
+      <td>0.300871</td>
+      <td>3.994125</td>
+      <td>32.391920</td>
+      <td>-19.079076</td>
+      <td>80.150553</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>2</td>
+      <td>21</td>
+      <td>cat0</td>
+      <td>0.025400</td>
+      <td>36.082316</td>
+      <td>-13.885227</td>
+      <td>33.285157</td>
+      <td>1.933365</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>2</td>
+      <td>22</td>
+      <td>cat0</td>
+      <td>0.303063</td>
+      <td>-30.742589</td>
+      <td>-45.452270</td>
+      <td>-29.778975</td>
+      <td>27.404529</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>2</td>
+      <td>23</td>
+      <td>cat0</td>
+      <td>0.242076</td>
+      <td>4.811975</td>
+      <td>-16.161556</td>
+      <td>-20.470244</td>
+      <td>-29.910186</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>2</td>
+      <td>24</td>
+      <td>cat0</td>
+      <td>0.557578</td>
+      <td>-33.914259</td>
+      <td>22.698656</td>
+      <td>-12.278076</td>
+      <td>62.251460</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>2</td>
+      <td>25</td>
+      <td>cat0</td>
+      <td>0.565507</td>
+      <td>-58.238990</td>
+      <td>-21.881977</td>
+      <td>-7.424258</td>
+      <td>-17.705596</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>2</td>
+      <td>26</td>
+      <td>cat0</td>
+      <td>0.475132</td>
+      <td>29.597935</td>
+      <td>36.443480</td>
+      <td>45.835534</td>
+      <td>-84.480037</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>2</td>
+      <td>27</td>
+      <td>cat0</td>
+      <td>0.292798</td>
+      <td>0.846821</td>
+      <td>30.248489</td>
+      <td>-19.483151</td>
+      <td>3.286333</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>2</td>
+      <td>28</td>
+      <td>cat0</td>
+      <td>0.064251</td>
+      <td>-24.671028</td>
+      <td>2.198490</td>
+      <td>-38.070466</td>
+      <td>4.280079</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>2</td>
+      <td>29</td>
+      <td>cat0</td>
+      <td>0.978819</td>
+      <td>-47.596553</td>
+      <td>35.211972</td>
+      <td>22.646282</td>
+      <td>-23.521067</td>
+    </tr>
+    <tr>
+      <th>94</th>
+      <td>2</td>
+      <td>30</td>
+      <td>cat0</td>
+      <td>0.339708</td>
+      <td>-12.044185</td>
+      <td>55.888550</td>
+      <td>-0.717253</td>
+      <td>7.728322</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>2</td>
+      <td>31</td>
+      <td>cat0</td>
+      <td>0.495049</td>
+      <td>40.265379</td>
+      <td>-59.509095</td>
+      <td>-46.726274</td>
+      <td>39.387682</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>3</td>
+      <td>0</td>
+      <td>cat1</td>
+      <td>0.977081</td>
+      <td>12.074073</td>
+      <td>34.700668</td>
+      <td>10.390547</td>
+      <td>-40.470761</td>
+    </tr>
+    <tr>
+      <th>97</th>
+      <td>3</td>
+      <td>1</td>
+      <td>cat1</td>
+      <td>0.440774</td>
+      <td>-11.182842</td>
+      <td>18.278468</td>
+      <td>28.270935</td>
+      <td>15.004106</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>3</td>
+      <td>2</td>
+      <td>cat1</td>
+      <td>0.318273</td>
+      <td>-20.160703</td>
+      <td>-9.696037</td>
+      <td>-11.564305</td>
+      <td>-29.537599</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>3</td>
+      <td>3</td>
+      <td>cat1</td>
+      <td>0.519797</td>
+      <td>3.174362</td>
+      <td>19.924368</td>
+      <td>46.806263</td>
+      <td>44.579382</td>
+    </tr>
+    <tr>
+      <th>100</th>
+      <td>3</td>
+      <td>4</td>
+      <td>cat1</td>
+      <td>0.578136</td>
+      <td>-46.419162</td>
+      <td>11.901780</td>
+      <td>46.354853</td>
+      <td>17.120804</td>
+    </tr>
+    <tr>
+      <th>101</th>
+      <td>3</td>
+      <td>5</td>
+      <td>cat1</td>
+      <td>0.853934</td>
+      <td>40.344195</td>
+      <td>-17.283506</td>
+      <td>-20.750630</td>
+      <td>-15.386256</td>
+    </tr>
+    <tr>
+      <th>102</th>
+      <td>3</td>
+      <td>6</td>
+      <td>cat1</td>
+      <td>0.068097</td>
+      <td>15.095675</td>
+      <td>44.646552</td>
+      <td>25.935554</td>
+      <td>8.273473</td>
+    </tr>
+    <tr>
+      <th>103</th>
+      <td>3</td>
+      <td>7</td>
+      <td>cat1</td>
+      <td>0.464531</td>
+      <td>35.830518</td>
+      <td>4.207406</td>
+      <td>-62.933756</td>
+      <td>-11.678446</td>
+    </tr>
+    <tr>
+      <th>104</th>
+      <td>3</td>
+      <td>8</td>
+      <td>cat1</td>
+      <td>0.781949</td>
+      <td>-16.905170</td>
+      <td>35.649503</td>
+      <td>5.108841</td>
+      <td>19.455882</td>
+    </tr>
+    <tr>
+      <th>105</th>
+      <td>3</td>
+      <td>9</td>
+      <td>cat1</td>
+      <td>0.718603</td>
+      <td>25.644863</td>
+      <td>-7.372362</td>
+      <td>-22.734890</td>
+      <td>-0.732856</td>
+    </tr>
+    <tr>
+      <th>106</th>
+      <td>3</td>
+      <td>10</td>
+      <td>cat1</td>
+      <td>0.586022</td>
+      <td>20.637142</td>
+      <td>-49.067599</td>
+      <td>29.034312</td>
+      <td>39.254615</td>
+    </tr>
+    <tr>
+      <th>107</th>
+      <td>3</td>
+      <td>11</td>
+      <td>cat1</td>
+      <td>0.037094</td>
+      <td>-45.992062</td>
+      <td>7.343943</td>
+      <td>-26.235751</td>
+      <td>79.877324</td>
+    </tr>
+    <tr>
+      <th>108</th>
+      <td>3</td>
+      <td>12</td>
+      <td>cat1</td>
+      <td>0.350656</td>
+      <td>4.468821</td>
+      <td>-7.052467</td>
+      <td>30.835212</td>
+      <td>10.281792</td>
+    </tr>
+    <tr>
+      <th>109</th>
+      <td>3</td>
+      <td>13</td>
+      <td>cat1</td>
+      <td>0.563191</td>
+      <td>9.453335</td>
+      <td>-37.824834</td>
+      <td>-24.086689</td>
+      <td>26.178905</td>
+    </tr>
+    <tr>
+      <th>110</th>
+      <td>3</td>
+      <td>14</td>
+      <td>cat1</td>
+      <td>0.299730</td>
+      <td>-17.247530</td>
+      <td>-50.759038</td>
+      <td>-12.849102</td>
+      <td>11.321910</td>
+    </tr>
+    <tr>
+      <th>111</th>
+      <td>3</td>
+      <td>15</td>
+      <td>cat1</td>
+      <td>0.512334</td>
+      <td>-10.805134</td>
+      <td>18.493528</td>
+      <td>-22.662475</td>
+      <td>-15.199781</td>
+    </tr>
+    <tr>
+      <th>112</th>
+      <td>3</td>
+      <td>16</td>
+      <td>cat1</td>
+      <td>0.673467</td>
+      <td>13.085559</td>
+      <td>38.090738</td>
+      <td>6.614907</td>
+      <td>14.490484</td>
+    </tr>
+    <tr>
+      <th>113</th>
+      <td>3</td>
+      <td>17</td>
+      <td>cat1</td>
+      <td>0.159194</td>
+      <td>-1.137536</td>
+      <td>41.920139</td>
+      <td>-41.193426</td>
+      <td>29.307181</td>
+    </tr>
+    <tr>
+      <th>114</th>
+      <td>3</td>
+      <td>18</td>
+      <td>cat1</td>
+      <td>0.050478</td>
+      <td>-30.141491</td>
+      <td>16.026749</td>
+      <td>19.402750</td>
+      <td>25.405239</td>
+    </tr>
+    <tr>
+      <th>115</th>
+      <td>3</td>
+      <td>19</td>
+      <td>cat1</td>
+      <td>0.337816</td>
+      <td>17.743593</td>
+      <td>0.123061</td>
+      <td>-20.205054</td>
+      <td>4.699553</td>
+    </tr>
+    <tr>
+      <th>116</th>
+      <td>3</td>
+      <td>20</td>
+      <td>cat1</td>
+      <td>0.108064</td>
+      <td>6.834521</td>
+      <td>5.682595</td>
+      <td>67.255995</td>
+      <td>-4.635653</td>
+    </tr>
+    <tr>
+      <th>117</th>
+      <td>3</td>
+      <td>21</td>
+      <td>cat1</td>
+      <td>0.178903</td>
+      <td>7.475360</td>
+      <td>1.343241</td>
+      <td>-7.394614</td>
+      <td>54.904415</td>
+    </tr>
+    <tr>
+      <th>118</th>
+      <td>3</td>
+      <td>22</td>
+      <td>cat1</td>
+      <td>0.885827</td>
+      <td>2.872897</td>
+      <td>23.840558</td>
+      <td>-22.908130</td>
+      <td>27.873339</td>
+    </tr>
+    <tr>
+      <th>119</th>
+      <td>3</td>
+      <td>23</td>
+      <td>cat1</td>
+      <td>0.365365</td>
+      <td>13.470652</td>
+      <td>-14.794222</td>
+      <td>14.423662</td>
+      <td>41.476125</td>
+    </tr>
+    <tr>
+      <th>120</th>
+      <td>3</td>
+      <td>24</td>
+      <td>cat1</td>
+      <td>0.218769</td>
+      <td>-8.580060</td>
+      <td>-37.847692</td>
+      <td>-24.953976</td>
+      <td>-19.567841</td>
+    </tr>
+    <tr>
+      <th>121</th>
+      <td>3</td>
+      <td>25</td>
+      <td>cat1</td>
+      <td>0.752496</td>
+      <td>-25.882749</td>
+      <td>-6.577808</td>
+      <td>17.795677</td>
+      <td>42.685600</td>
+    </tr>
+    <tr>
+      <th>122</th>
+      <td>3</td>
+      <td>26</td>
+      <td>cat1</td>
+      <td>0.106880</td>
+      <td>-22.254745</td>
+      <td>5.918167</td>
+      <td>-13.463374</td>
+      <td>-43.765331</td>
+    </tr>
+    <tr>
+      <th>123</th>
+      <td>3</td>
+      <td>27</td>
+      <td>cat1</td>
+      <td>0.744603</td>
+      <td>33.167254</td>
+      <td>-7.658414</td>
+      <td>14.630878</td>
+      <td>14.329468</td>
+    </tr>
+    <tr>
+      <th>124</th>
+      <td>3</td>
+      <td>28</td>
+      <td>cat1</td>
+      <td>0.469785</td>
+      <td>-60.531560</td>
+      <td>0.774228</td>
+      <td>1.689442</td>
+      <td>0.882024</td>
+    </tr>
+    <tr>
+      <th>125</th>
+      <td>3</td>
+      <td>29</td>
+      <td>cat1</td>
+      <td>0.598256</td>
+      <td>16.216221</td>
+      <td>66.028993</td>
+      <td>16.373534</td>
+      <td>4.854384</td>
+    </tr>
+    <tr>
+      <th>126</th>
+      <td>3</td>
+      <td>30</td>
+      <td>cat1</td>
+      <td>0.147620</td>
+      <td>-43.268966</td>
+      <td>26.531028</td>
+      <td>-20.493672</td>
+      <td>-12.327708</td>
+    </tr>
+    <tr>
+      <th>127</th>
+      <td>3</td>
+      <td>31</td>
+      <td>cat1</td>
+      <td>0.184035</td>
+      <td>-48.265511</td>
+      <td>-41.604676</td>
+      <td>-19.770519</td>
+      <td>27.925069</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../eeg/eeg_utils.html" class="btn btn-neutral float-right" title="Read single-trial EEG epochs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../epochs_data/epochs_io.html" class="btn btn-neutral float-left" title="Read and write epochs as HDF5, feather, or csv" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

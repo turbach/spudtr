@@ -1,0 +1,22 @@
+spudtr package
+==============
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   spudtr.epf
+   spudtr.epochs_plots
+   spudtr.fake_epochs_data
+   spudtr.filters
+   spudtr.mneutils
+
+Module contents
+---------------
+
+.. automodule:: spudtr
+   :members:
+   :undoc-members:
+   :show-inheritance:

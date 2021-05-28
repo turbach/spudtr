@@ -1,0 +1,1210 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>spudtr epochs dataframe format &mdash; spudtr 0.0.17 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Read and write epochs as HDF5, feather, or csv" href="epochs_io.html" />
+    <link rel="prev" title="User Guide" href="../user_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> spudtr
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../user_guide.html#epochs-data">Epochs data</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../user_guide.html#format">Format</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs dataframe format</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user_guide.html#file-input-output-pandas-iotools">File Input/Output: <cite>pandas</cite> IOtools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#visualization">Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#eeg-data-processing">EEG data processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#time-domain-filters">Time-domain filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide.html#gallery">Gallery</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spudtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../user_guide.html">User Guide</a> &raquo;</li>
+        
+      <li><code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs dataframe format</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/user_guide/epochs_data/epochs_format.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="spudtr-epochs-dataframe-format">
+<h1><code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs dataframe format<a class="headerlink" href="#spudtr-epochs-dataframe-format" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">spudtr</span></code> epochs are <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> objects.</p>
+<p>There are three key elements:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">epoch_id</span></code> an index-like integer column, where each value designates a unique epoch</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">time</span></code> an index-like column of integer timestamps, the same in each epoch</p></li>
+<li><p>the rest of the data columns</p></li>
+</ol>
+<p>There must be at least one epoch.</p>
+<p>There must be at least one timepoint.</p>
+<p>All the epochs must be timestamped exactly the same way.</p>
+<blockquote>
+<div><p>NOTE: timestamps are positive and negative integers, the units are unspecified: milliseconds, months, nanoseconds, hours.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">from</span> <span class="nn">spudtr</span> <span class="kn">import</span> <span class="n">get_demo_df</span><span class="p">,</span> <span class="n">P3_1500_FEATHER</span>
+<span class="kn">from</span> <span class="nn">spudtr</span> <span class="kn">import</span> <span class="n">epf</span>
+<span class="kn">import</span> <span class="nn">spudtr.fake_epochs_data</span> <span class="k">as</span> <span class="nn">fake_data</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Example: simulated categorical and continuous data</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">epoch_id</span></code> column is “epoch_id”, there are four epochs: 0, 1, 2, 3.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">time</span></code> column is “days”, there are 31 days in each epoch, 0, 1, 2, …, 31.</p>
+<p>The rest of the columns are the data recorded in each epoch at each time stamp.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n_epochs_per_category</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">sim_epochs_df</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="n">fake_data</span><span class="o">.</span><span class="n">_generate</span><span class="p">(</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="n">n_epochs_per_category</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">n_categories</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_channels</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;days&quot;</span><span class="p">,</span>
+    <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>days</th>
+      <th>categorical</th>
+      <th>continuous</th>
+      <th>channel0</th>
+      <th>channel1</th>
+      <th>channel2</th>
+      <th>channel3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>cat0</td>
+      <td>0.771321</td>
+      <td>-13.170787</td>
+      <td>-30.197057</td>
+      <td>19.609869</td>
+      <td>43.177612</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>cat0</td>
+      <td>0.020752</td>
+      <td>4.233125</td>
+      <td>-7.726009</td>
+      <td>-65.298259</td>
+      <td>41.464399</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>cat0</td>
+      <td>0.633648</td>
+      <td>8.191480</td>
+      <td>21.915223</td>
+      <td>18.568468</td>
+      <td>27.639613</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>cat0</td>
+      <td>0.748804</td>
+      <td>-48.557122</td>
+      <td>-50.952045</td>
+      <td>14.317029</td>
+      <td>-17.186617</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>cat0</td>
+      <td>0.498507</td>
+      <td>-17.193401</td>
+      <td>50.222266</td>
+      <td>0.782896</td>
+      <td>38.251473</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>123</th>
+      <td>3</td>
+      <td>27</td>
+      <td>cat1</td>
+      <td>0.744603</td>
+      <td>33.167254</td>
+      <td>-7.658414</td>
+      <td>14.630878</td>
+      <td>14.329468</td>
+    </tr>
+    <tr>
+      <th>124</th>
+      <td>3</td>
+      <td>28</td>
+      <td>cat1</td>
+      <td>0.469785</td>
+      <td>-60.531560</td>
+      <td>0.774228</td>
+      <td>1.689442</td>
+      <td>0.882024</td>
+    </tr>
+    <tr>
+      <th>125</th>
+      <td>3</td>
+      <td>29</td>
+      <td>cat1</td>
+      <td>0.598256</td>
+      <td>16.216221</td>
+      <td>66.028993</td>
+      <td>16.373534</td>
+      <td>4.854384</td>
+    </tr>
+    <tr>
+      <th>126</th>
+      <td>3</td>
+      <td>30</td>
+      <td>cat1</td>
+      <td>0.147620</td>
+      <td>-43.268966</td>
+      <td>26.531028</td>
+      <td>-20.493672</td>
+      <td>-12.327708</td>
+    </tr>
+    <tr>
+      <th>127</th>
+      <td>3</td>
+      <td>31</td>
+      <td>cat1</td>
+      <td>0.184035</td>
+      <td>-48.265511</td>
+      <td>-41.604676</td>
+      <td>-19.770519</td>
+      <td>27.925069</td>
+    </tr>
+  </tbody>
+</table>
+<p>128 rows × 8 columns</p>
+</div></div>
+</div>
+<p><strong>Example: EEG data</strong></p>
+<p>The epoch index column is <code class="docutils literal notranslate"><span class="pre">epoch_id</span></code>, there are 600 epochs numbered: 0, 1, 2, …, 600. There are 600 not 601 epochs here because <code class="docutils literal notranslate"><span class="pre">epoch_id</span></code> 392 was excluded: the relevant event marked a pause in the recording not a stimulus. The epoch ids must be unique but they can be gappy and out of order.</p>
+<p>The time column is <code class="docutils literal notranslate"><span class="pre">time_ms</span></code>, there are 375 digital samples in each epoch at 4 ms intervals, -748, -744, …, 744, 748</p>
+<p>The rest of the columns are the data recorded in each epoch at each time stamp.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eeg_epochs_df</span> <span class="o">=</span> <span class="n">get_demo_df</span><span class="p">(</span><span class="n">P3_1500_FEATHER</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">eeg_epochs_df</span><span class="p">[</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()))</span>
+<span class="n">eeg_epochs_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+600
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>sub_id</th>
+      <th>eeg_artifact</th>
+      <th>dblock_path</th>
+      <th>log_evcodes</th>
+      <th>log_ccodes</th>
+      <th>dblock_srate</th>
+      <th>ccode</th>
+      <th>instrument</th>
+      <th>...</th>
+      <th>RMOc</th>
+      <th>LLTe</th>
+      <th>RLTe</th>
+      <th>LLOc</th>
+      <th>RLOc</th>
+      <th>MiOc</th>
+      <th>A2</th>
+      <th>HEOG</th>
+      <th>rle</th>
+      <th>rhz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>-748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-25.093750</td>
+      <td>-0.753906</td>
+      <td>1.480469</td>
+      <td>-13.414062</td>
+      <td>-18.937500</td>
+      <td>-17.734375</td>
+      <td>5.660156</td>
+      <td>98.875000</td>
+      <td>-39.500000</td>
+      <td>38.375000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>-744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-24.593750</td>
+      <td>0.502441</td>
+      <td>-2.466797</td>
+      <td>-17.640625</td>
+      <td>-17.468750</td>
+      <td>-15.304688</td>
+      <td>1.968750</td>
+      <td>104.750000</td>
+      <td>-38.031250</td>
+      <td>41.281250</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>-740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-16.484375</td>
+      <td>-1.507812</td>
+      <td>3.947266</td>
+      <td>-15.648438</td>
+      <td>-10.085938</td>
+      <td>-11.171875</td>
+      <td>8.367188</td>
+      <td>102.062500</td>
+      <td>-33.656250</td>
+      <td>43.718750</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>-736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-11.804688</td>
+      <td>-15.070312</td>
+      <td>9.867188</td>
+      <td>-14.906250</td>
+      <td>-7.378906</td>
+      <td>-8.742188</td>
+      <td>9.351562</td>
+      <td>100.562500</td>
+      <td>-42.906250</td>
+      <td>37.406250</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>-732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>1</td>
+      <td>eeg</td>
+      <td>...</td>
+      <td>-6.394531</td>
+      <td>-4.019531</td>
+      <td>9.125000</td>
+      <td>-10.679688</td>
+      <td>-6.886719</td>
+      <td>-8.015625</td>
+      <td>8.125000</td>
+      <td>98.375000</td>
+      <td>-43.875000</td>
+      <td>37.906250</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>224995</th>
+      <td>600</td>
+      <td>732</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.671875</td>
+      <td>-3.517578</td>
+      <td>-4.441406</td>
+      <td>-4.718750</td>
+      <td>-4.671875</td>
+      <td>-3.400391</td>
+      <td>-4.429688</td>
+      <td>-4.406250</td>
+      <td>-3.900391</td>
+      <td>-4.371094</td>
+    </tr>
+    <tr>
+      <th>224996</th>
+      <td>600</td>
+      <td>736</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.179688</td>
+      <td>-4.019531</td>
+      <td>-4.195312</td>
+      <td>-4.222656</td>
+      <td>-4.425781</td>
+      <td>-3.644531</td>
+      <td>-4.429688</td>
+      <td>-4.160156</td>
+      <td>-3.412109</td>
+      <td>-4.371094</td>
+    </tr>
+    <tr>
+      <th>224997</th>
+      <td>600</td>
+      <td>740</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.425781</td>
+      <td>-3.767578</td>
+      <td>-4.441406</td>
+      <td>-3.974609</td>
+      <td>-4.425781</td>
+      <td>-3.400391</td>
+      <td>-4.429688</td>
+      <td>-4.160156</td>
+      <td>-3.900391</td>
+      <td>-4.859375</td>
+    </tr>
+    <tr>
+      <th>224998</th>
+      <td>600</td>
+      <td>744</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.425781</td>
+      <td>-4.269531</td>
+      <td>-4.195312</td>
+      <td>-4.222656</td>
+      <td>-4.425781</td>
+      <td>-3.886719</td>
+      <td>-4.429688</td>
+      <td>-4.406250</td>
+      <td>-3.900391</td>
+      <td>-4.371094</td>
+    </tr>
+    <tr>
+      <th>224999</th>
+      <td>600</td>
+      <td>748</td>
+      <td>sub000</td>
+      <td>0</td>
+      <td>sub000/dblock_4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>250.0</td>
+      <td>0</td>
+      <td>cal</td>
+      <td>...</td>
+      <td>-4.179688</td>
+      <td>-4.019531</td>
+      <td>-3.947266</td>
+      <td>-4.222656</td>
+      <td>-4.179688</td>
+      <td>-3.400391</td>
+      <td>-4.183594</td>
+      <td>-4.406250</td>
+      <td>-3.412109</td>
+      <td>-4.371094</td>
+    </tr>
+  </tbody>
+</table>
+<p>225000 rows × 47 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eeg_epochs_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;epoch_id == 392&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epoch_id</th>
+      <th>time_ms</th>
+      <th>sub_id</th>
+      <th>eeg_artifact</th>
+      <th>dblock_path</th>
+      <th>log_evcodes</th>
+      <th>log_ccodes</th>
+      <th>dblock_srate</th>
+      <th>ccode</th>
+      <th>instrument</th>
+      <th>...</th>
+      <th>RMOc</th>
+      <th>LLTe</th>
+      <th>RLTe</th>
+      <th>LLOc</th>
+      <th>RLOc</th>
+      <th>MiOc</th>
+      <th>A2</th>
+      <th>HEOG</th>
+      <th>rle</th>
+      <th>rhz</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<p>0 rows × 47 columns</p>
+</div></div>
+</div>
+<p><strong>Always check the epoch x time format</strong></p>
+<p>When things go well the check quietly succeeds.</p>
+<p>When they don’t the reason appears at the bottom of the messages.</p>
+<p>Example: This check of the simulated data <strong>SUCCEEDS</strong>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;channel0&#39;</span><span class="p">,</span> <span class="s1">&#39;channel1&#39;</span><span class="p">],</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;days&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Example: this checks <strong>FAILS</strong> because the data column named “bogus_channel0” doesn’t exist in the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;bogus_channel0&#39;</span><span class="p">,</span> <span class="s1">&#39;channel1&#39;</span><span class="p">],</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;days&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-eebb523a5162&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>epf<span class="ansi-blue-fg">.</span>check_epochs<span class="ansi-blue-fg">(</span>sim_epochs_df<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;bogus_channel0&#39;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;channel1&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> epoch_id<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;epoch_id&#34;</span><span class="ansi-blue-fg">,</span> time<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;days&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/miniconda/envs/env_3.9/lib/python3.9/site-packages/spudtr/epf.py</span> in <span class="ansi-cyan-fg">check_epochs</span><span class="ansi-blue-fg">(epochs_df, data_streams, epoch_id, time)</span>
+<span class="ansi-green-intense-fg ansi-bold">    191</span>     &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    192</span>
+<span class="ansi-green-fg">--&gt; 193</span><span class="ansi-red-fg">     </span>_ <span class="ansi-blue-fg">=</span> _epochs_QC<span class="ansi-blue-fg">(</span>epochs_df<span class="ansi-blue-fg">,</span> data_streams<span class="ansi-blue-fg">,</span> epoch_id<span class="ansi-blue-fg">=</span>epoch_id<span class="ansi-blue-fg">,</span> time<span class="ansi-blue-fg">=</span>time<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    194</span>
+<span class="ansi-green-intense-fg ansi-bold">    195</span>
+
+<span class="ansi-green-fg">~/miniconda/envs/env_3.9/lib/python3.9/site-packages/spudtr/epf.py</span> in <span class="ansi-cyan-fg">_epochs_QC</span><span class="ansi-blue-fg">(epochs_df, data_streams, epoch_id, time)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>     missing_channels <span class="ansi-blue-fg">=</span> set<span class="ansi-blue-fg">(</span>data_streams<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">-</span> set<span class="ansi-blue-fg">(</span>epochs_df<span class="ansi-blue-fg">.</span>columns<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>     <span class="ansi-green-fg">if</span> missing_channels<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 49</span><span class="ansi-red-fg">         raise ValueError(
+</span><span class="ansi-green-intense-fg ansi-bold">     50</span>             <span class="ansi-blue-fg">&#34;data_streams should all be present in the epochs dataframe, &#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span>             <span class="ansi-blue-fg">f&#34;the following are missing: {list(missing_channels)}&#34;</span>
+
+<span class="ansi-red-fg">ValueError</span>: data_streams should all be present in the epochs dataframe, the following are missing: [&#39;bogus_channel0&#39;]
+</pre></div></div>
+</div>
+<p>Example: this checks <strong>FAILS</strong> because the <code class="docutils literal notranslate"><span class="pre">time</span></code> column named “hours” doesn’t exist.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">epf</span><span class="o">.</span><span class="n">check_epochs</span><span class="p">(</span><span class="n">sim_epochs_df</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;channel0&#39;</span><span class="p">,</span> <span class="s1">&#39;channel1&#39;</span><span class="p">],</span> <span class="n">epoch_id</span><span class="o">=</span><span class="s2">&quot;epoch_id&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;hours&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-38894973e721&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>epf<span class="ansi-blue-fg">.</span>check_epochs<span class="ansi-blue-fg">(</span>sim_epochs_df<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;channel0&#39;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;channel1&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> epoch_id<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;epoch_id&#34;</span><span class="ansi-blue-fg">,</span> time<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;hours&#34;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/miniconda/envs/env_3.9/lib/python3.9/site-packages/spudtr/epf.py</span> in <span class="ansi-cyan-fg">check_epochs</span><span class="ansi-blue-fg">(epochs_df, data_streams, epoch_id, time)</span>
+<span class="ansi-green-intense-fg ansi-bold">    191</span>     &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    192</span>
+<span class="ansi-green-fg">--&gt; 193</span><span class="ansi-red-fg">     </span>_ <span class="ansi-blue-fg">=</span> _epochs_QC<span class="ansi-blue-fg">(</span>epochs_df<span class="ansi-blue-fg">,</span> data_streams<span class="ansi-blue-fg">,</span> epoch_id<span class="ansi-blue-fg">=</span>epoch_id<span class="ansi-blue-fg">,</span> time<span class="ansi-blue-fg">=</span>time<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    194</span>
+<span class="ansi-green-intense-fg ansi-bold">    195</span>
+
+<span class="ansi-green-fg">~/miniconda/envs/env_3.9/lib/python3.9/site-packages/spudtr/epf.py</span> in <span class="ansi-cyan-fg">_epochs_QC</span><span class="ansi-blue-fg">(epochs_df, data_streams, epoch_id, time)</span>
+<span class="ansi-green-intense-fg ansi-bold">     58</span>
+<span class="ansi-green-intense-fg ansi-bold">     59</span>     <span class="ansi-red-fg"># epoch_id and time must be the columns in the epochs_df</span>
+<span class="ansi-green-fg">---&gt; 60</span><span class="ansi-red-fg">     </span>_validate_epochs_df<span class="ansi-blue-fg">(</span>epochs_df<span class="ansi-blue-fg">,</span> epoch_id<span class="ansi-blue-fg">=</span>epoch_id<span class="ansi-blue-fg">,</span> time<span class="ansi-blue-fg">=</span>time<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     61</span>
+<span class="ansi-green-intense-fg ansi-bold">     62</span>     <span class="ansi-red-fg"># check values of epoch_id in every time group are the same, and</span>
+
+<span class="ansi-green-fg">~/miniconda/envs/env_3.9/lib/python3.9/site-packages/spudtr/epf.py</span> in <span class="ansi-cyan-fg">_validate_epochs_df</span><span class="ansi-blue-fg">(epochs_df, epoch_id, time)</span>
+<span class="ansi-green-intense-fg ansi-bold">     28</span>     <span class="ansi-green-fg">for</span> key<span class="ansi-blue-fg">,</span> val <span class="ansi-green-fg">in</span> <span class="ansi-blue-fg">{</span><span class="ansi-blue-fg">&#34;epoch_id&#34;</span><span class="ansi-blue-fg">:</span> epoch_id<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;time&#34;</span><span class="ansi-blue-fg">:</span> time<span class="ansi-blue-fg">}</span><span class="ansi-blue-fg">.</span>items<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     29</span>         <span class="ansi-green-fg">if</span> val <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">in</span> epochs_df<span class="ansi-blue-fg">.</span>columns<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 30</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> ValueError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">f&#34;{key} column not found: {val}&#34;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     31</span>
+<span class="ansi-green-intense-fg ansi-bold">     32</span>
+
+<span class="ansi-red-fg">ValueError</span>: time column not found: hours
+</pre></div></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="epochs_io.html" class="btn btn-neutral float-right" title="Read and write epochs as HDF5, feather, or csv" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../user_guide.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019-2020, Thomas P. Urbach.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

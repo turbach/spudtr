@@ -1,0 +1,7 @@
+spudtr.fake\_epochs\_data module
+================================
+
+.. automodule:: spudtr.fake_epochs_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
