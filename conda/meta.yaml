@@ -17,11 +17,12 @@ requirements:
   host:
     - python {{ python }}
     - pip
+    - numpy
 
   run:
     - python {{ python }}
     - numpy
-    - numpy-base
+    # - numpy-base
     - scipy
     - pandas >=1.0
     - pyarrow >=1.0,!=1.0.1
@@ -30,7 +31,8 @@ requirements:
     - pytables
     - patsy
     - requests
-    - mne >=0.20.0=py3*
+    # - mne >=0.20.0=py3*
+    - mne >=0.20.0
     - PyYAML
 
 test:
