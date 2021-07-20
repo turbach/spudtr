@@ -116,7 +116,7 @@ jobs:
 
       # ------------------------------------------------------------
       # 2. CI
-      - name: conda mambabuild --python=${{ env.PY_VER }} conda
+      - name: conda mambabuild ${{ env.PY_VER }}
         id: conda-bld
         run: |
           conda mambabuild --python=$PY_VER -c conda-forge -c defaults conda

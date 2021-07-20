@@ -22,11 +22,10 @@ spudtr
 
 .. toctree::
    :maxdepth: 2
-   :glob:
 
    introduction
 
-   user_guide/*
+   user_guide/user_guide.rst
 
    reference
 
