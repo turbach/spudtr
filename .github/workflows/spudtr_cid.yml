@@ -116,10 +116,10 @@ jobs:
 
       # ------------------------------------------------------------
       # 2. CI
-      - name: conda build --python=${{ env.PY_VER }} conda
+      - name: conda mambabuild ${{ env.PY_VER }}
         id: conda-bld
         run: |
-          conda mambabuild --python=$PY_VER -c defaults -c conda-forge conda
+          conda mambabuild --python=$PY_VER -c conda-forge -c defaults conda
           tarball=$(conda build --python=$PY_VER conda --output)
           conda convert -p osx-64 -p win-64 -o $CONDA_BLD_PATH $tarball
           echo "::set-output name=conda-tarball::$tarball"
@@ -130,10 +130,9 @@ jobs:
           env_${{ env.PY_VER }}
           python=${{ env.PY_VER }}
           ${{ env.PACKAGE_NAME}}
-          -c local -c defaults -c conda-forge
 
         run: |
-          mamba create -n env_$PY_VER python=$PY_VER "blas=*=mkl*" $PACKAGE_NAME -c local -c defaults -c conda-forge
+          mamba create -n env_$PY_VER python=$PY_VER "blas=*=mkl*" $PACKAGE_NAME -c $CONDA_BLD_PATH -c conda-forge -c defaults
           conda activate env_$PY_VER
           mamba install -q black pytest pytest-cov
           conda list
@@ -146,7 +145,7 @@ jobs:
         if: ${{ matrix.py_ver == env.DEPLOY_PY_VER && matrix.os == env.DEPLOY_OS }}
         run: |
           conda activate env_$PY_VER  # required to run doc demos
-          mamba install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c defaults -c conda-forge
+          mamba install -q sphinx sphinx_rtd_theme jupyter nbsphinx "nbconvert!=5.4" -c conda-forge -c defaults
           mamba install -q pandoc -c conda-forge
           make -C docs html
           touch docs/build/html/.nojekyll

@@ -1,8 +1,18 @@
 .. _user_guide:
 
-=================
+==========
 User Guide
-=================
+==========
+
+
+Installation
+------------
+
+.. toctree::
+   :maxdepth: 2
+
+   installation/installation
+
 
 
 Epochs data
@@ -10,6 +20,7 @@ Epochs data
 
 .. toctree::
    :maxdepth: 2
+
 
 
 Format

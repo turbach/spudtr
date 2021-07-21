@@ -36,6 +36,12 @@ def OpenYaml_config():
     print(config_file)
 
 
+def quit(n):
+    global epochs_plot
+    epochs_plot = n
+    root.destroy()
+
+
 b1 = tkinter.Button(
     root,
     text="Select a eeg file. *",
@@ -56,15 +62,6 @@ b2 = tkinter.Button(
     command=OpenYaml_config,
 )
 b2.pack(fill="x")
-
-epochs_plot = 0
-
-
-def quit(n):
-    global epochs_plot
-    epochs_plot = n
-    root.destroy()
-
 
 button_plot1 = tkinter.Button(
     root,
@@ -133,107 +130,111 @@ button_plot6 = tkinter.Button(
 button_plot6.pack(fill="x")
 
 
-root.wm_title("Spudtr epochs plots")
-root.geometry("320x618")
-root.mainloop()
+if __name__ == '__main__':
 
-with open(config_file, "r") as stream:
-    config_data = yaml.safe_load(stream)
+    epochs_plot = 0
 
-eeg_streams = config_data["eeg_streams"]
-time = config_data["time"]
-epoch_id = config_data["epoch_id"]
-sfreq = config_data["sfreq"]
-time_unit = config_data["time_unit"]
-categories = config_data["categories"]
-time_stamp = config_data["time_stamp"]
-key = config_data["key"]
-scale = config_data["scale"]
+    root.wm_title("Spudtr epochs plots")
+    root.geometry("320x618")
+    root.mainloop()
 
-eeg_locations_f = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
+    with open(config_file, "r") as stream:
+        config_data = yaml.safe_load(stream)
 
-epochs = mneutils.read_spudtr_epochs(
-    f_eeg,
-    eeg_streams,
-    eeg_locations_f,
-    categories,
-    time_stamp,
-    epoch_id,
-    time,
-    time_unit,
-)
+    eeg_streams = config_data["eeg_streams"]
+    time = config_data["time"]
+    epoch_id = config_data["epoch_id"]
+    sfreq = config_data["sfreq"]
+    time_unit = config_data["time_unit"]
+    categories = config_data["categories"]
+    time_stamp = config_data["time_stamp"]
+    key = config_data["key"]
+    scale = config_data["scale"]
 
-mne_event_id = epochs.event_id
-events_list = list(epochs.event_id.keys())
+    eeg_locations_f = RESOURCES_DIR / "mne_32chan_xyz_spherical.yml"
 
-evokeds_dict = {cond: epochs[cond].average() for cond in mne_event_id}
-
-if epochs_plot == 1:
-    fig, ax = plt.subplots(len(evokeds_dict), 1, figsize=(10, len(evokeds_dict) * 3))
-    if len(evokeds_dict) == 1:
-        for x in evokeds_dict:
-            evokeds_dict[x].plot(
-                spatial_colors=True,
-                gfp=True,
-                picks="eeg",
-                time_unit="ms",
-                axes=ax,
-                show=False,
-            )
-        ax.set_title(x)
-    else:
-        n = 0
-        for x in evokeds_dict:
-            n = n + 1
-            evokeds_dict[x].plot(
-                spatial_colors=True,
-                gfp=True,
-                picks="eeg",
-                time_unit="ms",
-                axes=ax[n - 1],
-                show=False,
-            )
-            ax[n - 1].set_title(x)
-    plt.show()
-
-elif epochs_plot == 2:
-    # compare evokeds for all evokes
-    mne.viz.plot_compare_evokeds(
-        evokeds_dict, picks="eeg", split_legend=False, axes="topo"
+    epochs = mneutils.read_spudtr_epochs(
+        f_eeg,
+        eeg_streams,
+        eeg_locations_f,
+        categories,
+        time_stamp,
+        epoch_id,
+        time,
+        time_unit,
     )
-elif epochs_plot == 3:
-    for x in events_list:
-        epochs[x].plot(
-            picks="eeg", scalings="auto", show=False, n_channels=10, n_epochs=10,
-        )
-    plt.show()
-elif epochs_plot == 4:
-    # plotting channelwise information arranged into a shape of the channel array.
-    for x in events_list:
-        epochs[x].plot_topo_image(
-            vmin=-3e7,
-            vmax=2.0e7,
-            title=x,
-            sigma=2.0,
-            fig_facecolor="w",
-            font_color="k",
-            show=False,
-        )
-    plt.show()
-elif epochs_plot == 5:
-    for x in events_list:
-        fig = epochs[x].plot_psd_topomap(
-            ch_type="eeg", normalize=True, cmap="RdBu_r", show=False
-        )
-        fig.suptitle(x)
-        fig.set_figheight(2)
-    plt.show()
 
-elif epochs_plot == 6:
-    times = epochs_df[time].unique() / 1000
-    for x in evokeds_dict:
-        fig, anim = evokeds_dict[x].animate_topomap(
-            ch_type="eeg", times=times, frame_rate=2, time_unit="ms", show=False
+    mne_event_id = epochs.event_id
+    events_list = list(epochs.event_id.keys())
+
+    evokeds_dict = {cond: epochs[cond].average() for cond in mne_event_id}
+
+    if epochs_plot == 1:
+        fig, ax = plt.subplots(len(evokeds_dict), 1, figsize=(10, len(evokeds_dict) * 3))
+        if len(evokeds_dict) == 1:
+            for x in evokeds_dict:
+                evokeds_dict[x].plot(
+                    spatial_colors=True,
+                    gfp=True,
+                    picks="eeg",
+                    time_unit="ms",
+                    axes=ax,
+                    show=False,
+                )
+            ax.set_title(x)
+        else:
+            n = 0
+            for x in evokeds_dict:
+                n = n + 1
+                evokeds_dict[x].plot(
+                    spatial_colors=True,
+                    gfp=True,
+                    picks="eeg",
+                    time_unit="ms",
+                    axes=ax[n - 1],
+                    show=False,
+                )
+                ax[n - 1].set_title(x)
+        plt.show()
+
+    elif epochs_plot == 2:
+        # compare evokeds for all evokes
+        mne.viz.plot_compare_evokeds(
+            evokeds_dict, picks="eeg", split_legend=False, axes="topo"
         )
-        fig.suptitle(x)
-    plt.show()
+    elif epochs_plot == 3:
+        for x in events_list:
+            epochs[x].plot(
+                picks="eeg", scalings="auto", show=False, n_channels=10, n_epochs=10,
+            )
+        plt.show()
+    elif epochs_plot == 4:
+        # plotting channelwise information arranged into a shape of the channel array.
+        for x in events_list:
+            epochs[x].plot_topo_image(
+                vmin=-3e7,
+                vmax=2.0e7,
+                title=x,
+                sigma=2.0,
+                fig_facecolor="w",
+                font_color="k",
+                show=False,
+            )
+        plt.show()
+    elif epochs_plot == 5:
+        for x in events_list:
+            fig = epochs[x].plot_psd_topomap(
+                ch_type="eeg", normalize=True, cmap="RdBu_r", show=False
+            )
+            fig.suptitle(x)
+            fig.set_figheight(2)
+        plt.show()
+
+    elif epochs_plot == 6:
+        times = epochs[time].unique() / 1000
+        for x in evokeds_dict:
+            fig, anim = evokeds_dict[x].animate_topomap(
+                ch_type="eeg", times=times, frame_rate=2, time_unit="ms", show=False
+            )
+            fig.suptitle(x)
+        plt.show()
