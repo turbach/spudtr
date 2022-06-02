@@ -113,7 +113,8 @@ jobs:
           conda config --add channels conda-forge
 
           # revised mamba channel priority semantics, strict in 0.14 is flexible in 0.15
-          conda config --set channel_priority flexible  # should be default but enforce
+          # conda config --set channel_priority flexible  # should be default but enforce
+          conda config --set channel_priority strict  # should be default but enforce
           
           conda config --set always_yes yes --set changeps1 no
           conda config --set bld_path $CONDA_BLD_PATH
