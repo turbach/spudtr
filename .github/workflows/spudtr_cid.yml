@@ -91,6 +91,7 @@ jobs:
       - uses: actions/checkout@v2  # fetch the current commit, verified action
       - name: conda setup
         run: |
+          # set up conda, mamba,  boa
           # short SHA gets baked into the conda package filename in conda/meta.yaml
           echo "GIT_ABBREV_COMMIT=_g${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
@@ -114,8 +115,9 @@ jobs:
           # revised mamba channel priority semantics, strict in 0.14 is flexible in 0.15
           conda config --set channel_priority flexible  # should be default but enforce
           
-          conda config --set always_yes yes --set changeps1 
+          conda config --set always_yes yes --set changeps1 no
           conda config --set bld_path $CONDA_BLD_PATH
+          conda install conda -c conda-forge -c defaults
           conda info -a
           conda install -q conda-build conda-verify anaconda-client twine
           conda install -n base mamba boa -c conda-forge
