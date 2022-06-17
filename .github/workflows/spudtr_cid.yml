@@ -104,23 +104,29 @@ jobs:
             # sudo chown -R 501:20 /usr/local/miniconda
           fi
           wget $miniconda_url -O $HOME/miniconda.sh
+
+          # -----------
           bash ~/miniconda.sh -b -p $HOME/miniconda
           hash -r
           $HOME/miniconda/bin/conda shell.bash hook >> ~/.bash_profile  # instead of conda init bash
           source ~/.bash_profile
+
           
+          hash -r
+          conda config --set always_yes yes --set changeps1 no
+          conda config --set bld_path $CONDA_BLD_PATH
+
           # switch to mamba/boa and conda-forge
           conda config --add channels conda-forge
 
           # revised mamba channel priority semantics, strict in 0.14 is flexible in 0.15
-          conda config --set channel_priority strict # should be default but enforce
-          
-          conda config --set always_yes yes --set changeps1 no
-          conda config --set bld_path $CONDA_BLD_PATH
+          conda config --set channel_priority flexible  # should be default but enforce
+          conda install -n base -q conda-build conda-verify anaconda-client mamba boa
+          echo "# ------------------------------------------------------------"
           conda info -a
-          conda install -q conda-build conda-verify anaconda-client twine
-          conda info -a
-          conda install -n base mamba boa # -c conda-forge --strict-channel-priority
+          echo "# ------------------------------------------------------------"
+          mamba info -a
+
 
       # ------------------------------------------------------------
       # 2. CI
